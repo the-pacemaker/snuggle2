@@ -8,18 +8,24 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: #0f0f12;
-      color: #e2e8f0;
+      background: #3c280d;
+      color: #ffffff;
       font-family: 'Inter', system-ui, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+      background-image: radial-gradient(
+        ellipse at 50% 35%,
+        rgba(244, 162, 97, 0.06) 0%,
+        rgba(231, 111, 81, 0.03) 30%,
+        transparent 70%
+      );
     }
 
     .card {
-      background: #1a1a23;
-      border: 1px solid #2a2a38;
+      background: #876a4b;
+      border: 1px solid rgba(244, 162, 97, 0.2);
       border-radius: 16px;
       padding: 40px;
       width: 100%;
@@ -33,7 +39,8 @@
       justify-content: center;
       width: 56px;
       height: 56px;
-      background: #2a1f3d;
+      background: rgba(244, 162, 97, 0.15);
+      border: 1px solid rgba(244, 162, 97, 0.25);
       border-radius: 14px;
       margin: 0 auto 24px;
     }
@@ -41,7 +48,7 @@
     .lock-icon svg {
       width: 26px;
       height: 26px;
-      stroke: #a78bfa;
+      stroke: #f4a261;
       fill: none;
       stroke-width: 2;
       stroke-linecap: round;
@@ -52,14 +59,14 @@
       text-align: center;
       font-size: 1.4rem;
       font-weight: 700;
-      color: #f1f5f9;
+      color: #ffffff;
       margin-bottom: 6px;
     }
 
     .subtitle {
       text-align: center;
       font-size: 0.85rem;
-      color: #64748b;
+      color: #e0e0e0;
       margin-bottom: 32px;
     }
 
@@ -67,7 +74,7 @@
       display: block;
       font-size: 0.8rem;
       font-weight: 600;
-      color: #94a3b8;
+      color: #ffffff;
       margin-bottom: 8px;
       letter-spacing: 0.05em;
       text-transform: uppercase;
@@ -78,20 +85,21 @@
       margin-bottom: 20px;
     }
 
-    input[type="password"] {
+    input[type="password"], input[type="text"] {
       width: 100%;
-      background: #0f0f12;
-      border: 1.5px solid #2a2a38;
+      background: #3c280d;
+      border: 1.5px solid rgba(244, 162, 97, 0.2);
       border-radius: 10px;
       padding: 12px 44px 12px 14px;
       font-size: 1rem;
-      color: #f1f5f9;
+      color: #ffffff;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s, background 0.2s;
     }
 
-    input[type="password"]:focus {
-      border-color: #7c3aed;
+    input[type="password"]:focus, input[type="text"]:focus {
+      border-color: #f4a261;
+      background: rgba(244, 162, 97, 0.05);
     }
 
     .toggle-pw {
@@ -102,35 +110,37 @@
       background: none;
       border: none;
       cursor: pointer;
-      color: #4b5563;
+      color: #ffffff;
+      opacity: 0.6;
       padding: 4px;
+      transition: opacity 0.2s;
     }
 
-    .toggle-pw:hover { color: #94a3b8; }
+    .toggle-pw:hover { opacity: 1; }
     .toggle-pw svg { width: 18px; height: 18px; display: block; }
 
     .btn {
       width: 100%;
-      background: #7c3aed;
-      color: #fff;
+      background: #f4a261;
+      color: #3c280d;
       border: none;
       border-radius: 10px;
       padding: 13px;
       font-size: 0.95rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.2s, transform 0.1s;
     }
 
-    .btn:hover { background: #6d28d9; }
+    .btn:hover { background: #e76f51; }
     .btn:active { transform: scale(0.98); }
-    .btn:disabled { background: #3b2f6e; cursor: not-allowed; }
+    .btn:disabled { background: #af804f; cursor: not-allowed; }
 
     .error {
       margin-top: 14px;
-      background: #3b1a1a;
-      border: 1px solid #7f1d1d;
-      color: #fca5a5;
+      background: rgba(231, 111, 81, 0.2);
+      border: 1px solid #e76f51;
+      color: #ffffff;
       border-radius: 8px;
       padding: 10px 14px;
       font-size: 0.85rem;

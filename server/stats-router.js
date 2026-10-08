@@ -94,7 +94,14 @@ router.post('/login', express.urlencoded({ extended: false }), express.json(), a
   clearAttempts(ip);
   req.session.statsAuthed = true;
   req.session.authedAt = Date.now();
-  return res.json({ ok: true });
+  
+  req.session.save((err) => {
+    if (err) {
+      console.error('[Stats API] Session save error:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+    return res.json({ ok: true });
+  });
 });
 
 // ── POST /stats/logout ────────────────────────────────────────────────────

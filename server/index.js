@@ -18,16 +18,17 @@ const statsRouter = require('./stats-router');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Session middleware (must come before routes) ───────────────────────────
+app.set('trust proxy', 1); // Trust first proxy for secure cookies
+
 const SESSION_SECRET = process.env.SESSION_SECRET || 'snuggle-stats-fallback-secret-change-me';
 app.use(session({
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production', // HTTPS-only in production
+    secure: process.env.NODE_ENV === 'production' ? 'auto' : false, // auto sets secure if connection is HTTPS
     httpOnly: true,   // inaccessible via client-side JS
-    sameSite: 'strict',
+    sameSite: 'lax',  // 'strict' can cause issues with redirects from external providers, 'lax' is safer
     maxAge: 4 * 60 * 60 * 1000 // 4 hours
   }
 }));
