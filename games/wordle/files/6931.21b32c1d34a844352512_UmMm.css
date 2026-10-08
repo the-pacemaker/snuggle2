@@ -1,0 +1,829 @@
+/** 
+  * PLAYBOOK SPACING DESIGN TOKENS
+  */
+
+:root {
+  /**
+    * Non Directional Spacing Tokens
+    * These tokens are used to define the spacing between elements that do not have a specific direction.  
+    */
+  --spacing-0-5: 4px;
+  --spacing-1: 8px;
+  --spacing-1-5: 12px;
+  --spacing-2: 16px;
+  --spacing-2-5: 20px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-7: 56px;
+  --spacing-8: 64px;
+  --spacing-9: 72px;
+  --spacing-10: 80px;
+
+  /**
+    * Horizontal Spacing Tokens 
+    * These tokens are used to define the horizontal spacing between elements.  
+    */
+  --horizontal-spacing-0-5: 4px;
+  --horizontal-spacing-1: 8px;
+  --horizontal-spacing-1-5: 12px;
+  --horizontal-spacing-2: 16px;
+  --horizontal-spacing-2-5: 20px;
+  --horizontal-spacing-3: 24px;
+  --horizontal-spacing-4: 32px;
+  --horizontal-spacing-5: 40px;
+  --horizontal-spacing-6: 48px;
+  --horizontal-spacing-7: 56px;
+  --horizontal-spacing-8: 64px;
+  --horizontal-spacing-9: 72px;
+  --horizontal-spacing-10: 80px; 
+  
+  /**
+    * Vertical Spacing Tokens 
+    * These tokens are used to define the vertical spacing between elements.  
+    */
+  --vertical-spacing-0-5: 4px;
+  --vertical-spacing-1: 8px;
+  --vertical-spacing-1-5: 12px;
+  --vertical-spacing-2: 16px;
+  --vertical-spacing-2-5: 20px;
+  --vertical-spacing-3: 24px;
+  --vertical-spacing-4: 32px;
+  --vertical-spacing-5: 40px;
+  --vertical-spacing-6: 48px;
+  --vertical-spacing-7: 56px;
+  --vertical-spacing-8: 64px;
+  --vertical-spacing-9: 72px;
+  --vertical-spacing-10: 80px;
+}
+/**
+  * PLAYBOOK DESIGN SYSTEM PALETTE
+  */
+
+:root {
+  /* Games Identity */
+  --games-yellow: #fbd300;
+
+  /* Brand Colors */
+  --xd-blue: #6493e6;
+  --mini-blue: #95befa;
+  --tiles-green: #b5e352;
+  --sb-yellow: #f7da21;
+  --lb-red: #fc716b;
+  --lb-pink: #faa6a4;
+  --sudoku-orange: #fb9b00;
+  --wordle-gray: #d3d6da;
+  --chess-beige: #ede1ca;
+  --connections-purple: #b4a8ff;
+  --strands-mint: #b2ded8;
+  --trivia-orange: #ff945c;
+  --pips-purple: #9251ca;
+  --pips-soft-pink: #daa8d0;
+
+  /* Core / Interaction */
+  --white: #fff;
+  --dark-black: #121212;
+  --med-black: #1b1b1b;
+  --black: #2a2a2a;
+  --darkest-gray: #363636;
+  --extra-dark-gray: #424242;
+  --darker-gray: #5a5a5a;
+  --dark-gray: #727272;
+  --gray2: #8b8b8b;
+  --gray: #979797;
+  --light-gray: #a3a3a3;
+  --lighter-gray: #bbb;
+  --extra-light-gray: #dfdfdf;
+  --lightest-gray: #ebebeb;
+  --cool-gray: #f8f8f8;
+  --scrim: #12121260;
+  --light-scrim: #ffffff60;
+  --accent-xd-blue: #4f85e5;
+  --accent-blue: #346eb7;
+  --accent-light-blue: #6ba1dd;
+  --transparent: #fff0;
+  --accent-bright-blue: #2873dc;
+  --accent-green: #267c30;
+  --accent-light-green: #63a859;
+  --accent-red: #a90111;
+  --accent-light-red: #ea7980;
+  --hover: #121212cc;
+  --focus-outline: #add8e6;
+  --white-hover: #ffffffcc;
+  --light-hover: #1212121f;
+  --white-hover2: #f8f8f829;
+
+  /* Gameplay */
+  --connections-lightest-beige: #efefe6;
+  --connections-light-beige: #cfcfbf;
+  --connections-beige: #a39f95;
+  --connections-dark-beige: #5a594ebf;
+  --connections-darker-beige: #787668;
+  --connections-extra-dark-beige: #656458;
+  --connections-darkest-beige: #5a594e;
+  --connections-yellow: #f9df6d;
+  --connections-maroon: #ba81c5;
+  --connections-blue: #b0c4ef;
+  --connections-green: #a0c35a;
+  --connections-dark-purple: #861cab;
+  --pips-light-purple: #e3c3ff;
+  --pips-lighter-purple: #8046b14d;
+  --pips-dark-purple: #8046b1;
+  --pips-darker-purple: #7000cf;
+  --pips-orange: #d15609;
+  --pips-dark-orange: #ca4e00;
+  --pips-darker-orange: #ae4300;
+  --pips-light-orange: #eba376;
+  --pips-pink: #db137a;
+  --pips-hot-pink: #ea004e;
+  --pips-dark-pink: #cb036a;
+  --pips-dark-hot-pink: #c70042;
+  --pips-light-pink: #ed9bc5;
+  --pips-blue: #008293;
+  --pips-dark-blue: #006a78;
+  --pips-darker-blue: #005460;
+  --pips-light-blue: #70cdd9;
+  --pips-lighter-blue: #00a3b84d;
+  --pips-navy: #124076;
+  --pips-dark-navy: #003674;
+  --pips-darker-navy: #0c386a;
+  --pips-lighter-navy: #1240764D;
+  --pips-green: #547601;
+  --pips-dark-green: #4c6b00;
+  --pips-darker-green: #3f5900;
+  --pips-lighter-green: #5476014D;
+  --pips-cool-gray: #f6f6f6;
+  --pips-gray: #444444;
+  --pips-light-gray: #e2dbdb;
+  --pips-beige: #dbc2b9;
+  --pips-dark-beige: #b9a096;
+  --pips-darker-beige: #aa9289;
+  --pips-brown-gray: #574e49;
+  --pips-light-beige: #e1cbc5;
+  --pips-lighter-beige: #f5efee;
+  --pips-lighter-orange: #fd9d094d;
+  --pips-lighter-pink: #f93a7a4d;
+
+  --sb-dark-gray: #38383f;
+  --sb-gray: #e7e7e7;
+  --sb-light-yellow: #ffeca0;
+  --sb-dark-yellow: #847306;
+  --strands-yellow: #f8cd05;
+  --strands-beige: #dbd8c5;
+  --strands-dark-beige: #c4c1af;
+  --strands-blue: #aedfee;
+  --strands-dark-mint: #3f9ebc;
+  --strands-darker-mint: #0f7ea0;
+  --strands-dark-yellow: #db9e00;
+  --lb-darker-red: #fc5f5a;
+  --lb-dark-red: #fc5f5ad9;
+  --lb-light-red: #fc5f5a4d;
+  --sudoku-light-yellow: #f9eac2;
+  --sudoku-dark-yellow: #fec468;
+  --sudoku-light-yellow-gray: #d3c6af;
+  --sudoku-dark-yellow-gray: #e69100;
+  --sudoku-walnut: #5e5638;
+  --sudoku-walnut-gray: #413b25;
+  --sudoku-orange-gray: #d48200;
+  --sudoku-brown: #9f6509;
+  --sudoku-brown-gray: #563a0c;
+  --sudoku-orange-brown: #9f6f21;
+  --sudoku-red: #ff4b56;
+  --sudoku-blue: #2c64d5;
+  --sudoku-light-blue: #b4cdff;
+  --sudoku-dark-blue: #0037a5;
+  --tiles-granada-brown: #564646;
+  --tiles-granada-blue: #8deee6;
+  --tiles-soho-yellow: #f7da2f;
+  --tiles-lisbon-blue: #0d3264;
+  --tiles-kuala-pink: #f3b3b3;
+  --tiles-kuala-brown: #665c54;
+  --tiles-hongkong-green: #195f39;
+  --tiles-austin-yellow: #f3e9b3;
+  --tiles-austin-brown: #746634;
+  --tiles-haven-beige: #deddd6;
+  --tiles-paris-gray: #bdc4ce;
+  --tiles-paris-dark-gray: #4d4d4d;
+  --tiles-brighton-blue: #91d8e8;
+  --tiles-brighton-dark-blue: #32557b;
+  --tiles-tangier-purple: #393362;
+  --tiles-holland-blue: #95c0ef;
+  --tiles-la-black: #1c1f23;
+  --tiles-utrecht-yellow: #fef5d7;
+  --tiles-utrecht-black: #0a0a0a;
+  --tiles-topeka-green: #678400;
+}
+
+/* Core Semantic Tokens - Light */
+[data-mode='light'],
+[data-mode],
+:root {
+  /* Enabled with light theme or no theme set */
+
+  /* Text */
+  --text: var(--dark-black);
+  --text-subdued: var(--darkest-gray);
+  --text-secondary: var(--darker-gray);
+  --text-secondary-subdued: var(--dark-gray);
+  --text-secondary-inverse: var(--lighter-gray);
+  --text-constant: var(--dark-black);
+  --text-alternate: var(--cool-gray);
+  --text-alternate-constant: var(--cool-gray);
+  --text-accent: var(--accent-blue);
+  --text-tertiary: var(--gray2);
+  --text-quarternary: var(--lightest-gray);
+  --text-accent-old: var(--accent-bright-blue);
+  --text-positive: var(--accent-green);
+  --text-negative: var(--accent-red);
+
+  /* Background */
+  --bg-games: var(--games-yellow);
+  --bg-page: var(--white);
+  --bg-page-subdued: var(--cool-gray);
+  --bg-modal: var(--white);
+  --bg-moment: var(--white);
+  --bg-toolbar: var(--white);
+  --bg-toolbar-selected: var(--lightest-gray);
+  --bg-dropdown: var(--white);
+  --bg-scrim: var(--light-scrim);
+  --bg-tooltip: var(--black);
+  --bg-toast: var(--dark-black);
+  --bg-toast-alternate: var(--white);
+  --bg-toast-alternate-constant: var(--white);
+  --bg-toast-constant: var(--dark-black);
+  --bg-toggle-deselected: var(--lightest-gray);
+  --bg-toggle-selected: var(--white);
+  --bg-toggle-selected-constant: var(--white);
+  --bg-toggle-deselected-constant: var(--light-hover);
+  --bg-statsbar: var(--gray2);
+  --bg-slider: var(--dark-gray);
+  --bg-loading: var(--light-scrim);
+  --bg-btn-emphasis: var(--dark-black);
+  --bg-btn-emphasis-constant: var(--dark-black);
+  --bg-btn-standard: var(--transparent);
+  --bg-btn-standard-pressed: var(--light-hover);
+  --bg-btn-emphasis-pressed: var(--hover);
+
+  /* Background Semantic */
+  --bg-xd: var(--xd-blue);
+  --bg-mini: var(--mini-blue);
+  --bg-tiles: var(--tiles-green);
+  --bg-sb: var(--sb-yellow);
+  --bg-lb: var(--lb-red);
+  --bg-sudoku: var(--sudoku-orange);
+  --bg-wordle: var(--wordle-gray);
+  --bg-chess: var(--chess-beige);
+  --bg-connections: var(--connections-purple);
+  --bg-strands: var(--strands-mint);
+  --bg-trivia: var(--trivia-orange);
+  --bg-pips: var(--pips-soft-pink);
+
+  /* Stroke */
+  --stroke: var(--dark-black);
+  --stroke-secondary: var(--gray);
+  --stroke-tertiary: var(--extra-light-gray);
+  --stroke-constant: var(--dark-black);
+  --stroke-btn-hover: var(--light-hover);
+
+  /* Connections */
+  --text-connections-mistake: var(--connections-darkest-beige);
+  --bg-tile-connections: var(--connections-lightest-beige);
+  --bg-tile-connections-selected: var(--connections-darkest-beige);
+  --bg-tile-connections-error: var(--connections-dark-beige);
+  --bg-connections-straightforward: var(--connections-yellow);
+  --bg-connections-easy: var(--connections-green);
+  --bg-connections-medium: var(--connections-blue);
+  --bg-connections-tricky: var(--connections-maroon);
+  --bg-statsbar-connections: var(--connections-dark-purple);
+
+  /* Spelling Bee */
+  --text-sb-progress: var(--lightest-gray);
+  --bg-tile-sb: var(--sb-gray);
+  --bg-toast-sb-error: var(--dark-black);
+  --bg-sb-light: var(--sb-light-yellow);
+
+  /* Strands */
+  --text-strands-theme: var(--strands-dark-mint);
+  --text-strands-theme-emphasis: var(--strands-darker-mint);
+  --text-strands-theme-light: var(--strands-dark-mint);
+  --text-spangram: var(--strands-yellow);
+  --bg-strands-theme: var(--strands-blue);
+  --bg-spangram: var(--strands-yellow);
+  --bg-strands-hint: var(--strands-beige);
+  --text-strands-hint: var(--strands-dark-beige);
+
+  /* Sudoku */
+  --text-sudoku-error: var(--sudoku-red);
+  --text-sudoku-correct: var(--sudoku-blue);
+  --text-sudoku-correct-selected: var(--sudoku-blue);
+  --bg-tile-sudoku-directly-highlighted: var(--sudoku-orange);
+  --bg-tile-sudoku-prefilled-directly-highlighted: var(
+    --sudoku-orange-gray
+  );
+  --bg-tile-sudoku-highlighted-indirectly: var(--sudoku-light-yellow);
+  --bg-tile-sudoku-prefilled-highlighted-indirectly: var(
+    --sudoku-light-yellow-gray
+  );
+  --bg-tile-sudoku-highlighted-instance: var(--sudoku-dark-yellow);
+  --bg-tile-sudoku-prefilled-highlighted-instance: var(
+    --sudoku-dark-yellow-gray
+  );
+  --bg-tile-sudoku-filled: var(--extra-light-gray);
+  --bg-tile-sudoku-unfilled: var(--white);
+  --bg-toggle-sudoku-deselected: var(--white);
+
+  /* Letter Boxed */
+  --text-lb: var(--lb-darker-red);
+  --text-lb-temporary: var(--dark-black);
+  --text-lb-complete-temporary: var(--lb-pink);
+  --bg-lb-temporary: var(--lb-pink);
+  --stroke-lb: var(--lb-darker-red);
+  --stroke-lb-complete: var(--lb-light-red);
+  --stroke-lb-temporary: var(--lb-pink);
+  --stroke-lb-complete-temporary: var(--white);
+
+  /* Tiles */
+  --bg-tiles-granada: var(--tiles-granada-brown);
+  --text-tiles-granada: var(--tiles-granada-blue);
+  --bg-tiles-soho: var(--tiles-soho-yellow);
+  --text-tiles-soho: var(--dark-black);
+  --bg-tiles-lisbon: var(--tiles-lisbon-blue);
+  --text-tiles-lisbon: var(--white);
+  --bg-tiles-kuala: var(--tiles-kuala-pink);
+  --text-tiles-kuala: var(--tiles-kuala-brown);
+  --bg-tiles-hongkong: var(--tiles-hongkong-green);
+  --text-tiles-hongkong: var(--white);
+  --bg-tiles-austin: var(--tiles-austin-yellow);
+  --text-tiles-austin: var(--tiles-austin-brown);
+  --bg-tiles-haven: var(--tiles-haven-beige);
+  --text-tiles-haven: var(--dark-black);
+  --bg-tiles-paris: var(--tiles-paris-gray);
+  --text-tiles-paris: var(--tiles-paris-dark-gray);
+  --bg-tiles-brighton: var(--tiles-brighton-blue);
+  --text-tiles-brighton: var(--tiles-brighton-dark-blue);
+  --bg-tiles-tangier: var(--tiles-tangier-purple);
+  --text-tiles-tangier: var(--white);
+  --bg-tiles-holland: var(--tiles-holland-blue);
+  --text-tiles-holland: var(--white);
+  --bg-tiles-la: var(--tiles-la-black);
+  --text-tiles-la: var(--white);
+  --bg-tiles-utrecht: var(--tiles-utrecht-yellow);
+  --text-tiles-utrecht: var(--tiles-utrecht-black);
+  --bg-tiles-topeka: var(--tiles-topeka-green);
+  --text-tiles-topeka: var(--white);
+
+  /* Pips */
+  /* text */
+  --text-pips-tag: var(--white);
+  --text-pips-purple: var(--pips-purple);
+  --text-pips-orange: var(--pips-orange);
+  --text-pips-pink: var(--pips-pink);
+  --text-pips-blue: var(--pips-blue);
+  --text-pips-navy: var(--pips-navy);
+  --text-pips-green: var(--pips-green);
+  /* background */
+  --bg-pips-domino: var(--pips-cool-gray);
+  --bg-pips-domino-dot: var(--pips-gray);
+  --bg-pips-domino-empty: var(--pips-lighter-beige);
+  --bg-pips-tag-purple: var(--pips-purple);
+  --bg-pips-tag-orange: var(--pips-orange);
+  --bg-pips-tag-pink: var(--pips-pink);
+  --bg-pips-tag-blue: var(--pips-blue);
+  --bg-pips-tag-navy: var(--pips-navy);
+  --bg-pips-tag-green: var(--pips-green);
+  --bg-pips-region-purple: var(--pips-lighter-purple);
+  --bg-pips-region-orange: var(--pips-lighter-orange);
+  --bg-pips-region-pink: var(--pips-lighter-pink);
+  --bg-pips-region-blue: var(--pips-lighter-blue);
+  --bg-pips-region-navy: var(--pips-lighter-navy);
+  --bg-pips-region-green: var(--pips-lighter-green);
+  --bg-pips-board: var(--pips-beige);
+  --bg-pips-board-spaces: var(--pips-light-beige);
+  /* stroke */
+  --stroke-pips-domino-outline: var(--pips-gray);
+  --stroke-pips-domino-divider: var(--pips-light-gray);
+  --stroke-pips-region-purple: var(--pips-dark-purple);
+  --stroke-pips-region-orange: var(--pips-dark-orange);
+  --stroke-pips-region-pink: var(--pips-hot-pink);
+  --stroke-pips-region-blue: var(--pips-dark-blue);
+  --stroke-pips-region-navy: var(--pips-dark-navy);
+  --stroke-pips-region-green: var(--pips-dark-green);
+}
+
+/* Core Semantic Tokens - Dark */
+[data-mode='dark']:is(.display-settings-enabled) {
+  /* The display-settings-enabled class will be set by Abra */
+
+  /* Text */
+  --text: var(--cool-gray);
+  --text-subdued: var(--extra-light-gray);
+  --text-secondary: var(--lighter-gray);
+  --text-secondary-subdued: var(--light-gray);
+  --text-secondary-inverse: var(--darker-gray);
+  --text-constant: var(--dark-black);
+  --text-alternate: var(--dark-black);
+  --text-alternate-constant: var(--cool-gray);
+  --text-tertiary: var(--gray2);
+  --text-quarternary: var(--darkest-gray);
+  --text-accent: var(--accent-light-blue);
+  --text-positive: var(--accent-light-green);
+  --text-negative: var(--accent-light-red);
+
+  /* Background */
+  --bg-games: var(--games-yellow);
+  --bg-page: var(--dark-black);
+  --bg-page-subdued: var(--black);
+  --bg-modal: var(--black);
+  --bg-moment: var(--med-black);
+  --bg-toolbar: var(--dark-black);
+  --bg-toolbar-selected: var(--extra-dark-gray);
+  --bg-dropdown: var(--black);
+  --bg-scrim: var(--scrim);
+  --bg-tooltip: var(--black);
+  --bg-toast: var(--cool-gray);
+  --bg-toast-alternate: var(--darker-gray);
+  --bg-toast-alternate-constant: var(--cool-gray);
+  --bg-toast-constant: var(--dark-black);
+  --bg-toggle-deselected: var(--extra-dark-gray);
+  --bg-toggle-selected: var(--cool-gray);
+  --bg-toggle-selected-constant: var(--white);
+  --bg-toggle-deselected-constant: var(--light-hover);
+  --bg-statsbar: var(--darker-gray);
+  --bg-slider: var(--dark-gray);
+  --bg-loading: var(--light-scrim);
+  --bg-btn-emphasis: var(--white);
+  --bg-btn-emphasis-constant: var(--dark-black);
+  --bg-btn-standard: var(--transparent);
+  --bg-btn-standard-pressed: var(--white-hover2);
+  --bg-btn-emphasis-pressed: var(--white-hover);
+
+  /* Stroke */
+  --stroke: var(--cool-gray);
+  --stroke-secondary: var(--gray);
+  --stroke-tertiary: var(--extra-dark-gray);
+  --stroke-constant: var(--dark-black);
+  --stroke-btn-hover: var(--white-hover2);
+
+  /* Connections */
+  --text-connections-mistake: var(--connections-beige);
+  --bg-tile-connections: var(--connections-light-beige);
+  --bg-tile-connections-selected: var(--connections-extra-dark-beige);
+  --bg-tile-connections-error: var(--connections-extra-dark-beige);
+  --bg-connections-straightforward: var(--connections-yellow);
+  --bg-connections-easy: var(--connections-green);
+  --bg-connections-medium: var(--connections-blue);
+  --bg-connections-tricky: var(--connections-maroon);
+  --bg-statsbar-connections: var(--connections-dark-purple);
+
+  /* Spelling Bee */
+  --text-sb-progress: var(--gray);
+  --bg-tile-sb: var(--sb-dark-gray);
+  --bg-toast-sb-error: var(--sb-dark-gray);
+  --bg-sb-light: var(--sb-dark-yellow);
+
+  /* Strands */
+  --text-strands-theme: var(--strands-dark-mint);
+  --text-strands-theme-emphasis: var(--strands-dark-mint);
+  --text-strands-theme-light: var(--strands-blue);
+  --text-spangram: var(--strands-yellow);
+  --bg-strands-theme: var(--strands-blue);
+  --bg-spangram: var(--strands-yellow);
+
+  /* Sudoku */
+  --text-sudoku-error: var(--sudoku-red);
+  --text-sudoku-correct: var(--sudoku-light-blue);
+  --text-sudoku-correct-selected: var(--sudoku-dark-blue);
+  --bg-tile-sudoku-directly-highlighted: var(--sudoku-orange);
+  --bg-tile-sudoku-prefilled-directly-highlighted: var(
+    --sudoku-orange-brown
+  );
+  --bg-tile-sudoku-highlighted-indirectly: var(--sudoku-walnut);
+  --bg-tile-sudoku-prefilled-highlighted-indirectly: var(
+    --sudoku-walnut-gray
+  );
+  --bg-tile-sudoku-highlighted-instance: var(--sudoku-brown);
+  --bg-tile-sudoku-prefilled-highlighted-instance: var(
+    --sudoku-brown-gray
+  );
+
+  --bg-tile-sudoku-filled: var(--extra-dark-gray);
+  --bg-tile-sudoku-unfilled: var(--dark-black);
+  --bg-toggle-sudoku-deselected: var(--dark-black);
+
+  /* Letter Boxed */
+  --text-lb: var(--lb-darker-red);
+  --text-lb-temporary: var(--lb-darker-red);
+  --text-lb-complete-temporary: var(--lb-darker-red);
+  --bg-lb-temporary: var(--dark-black);
+  --stroke-lb: var(--lb-darker-red);
+  --stroke-lb-complete: var(--lb-dark-red);
+  --stroke-lb-temporary: var(--lb-darker-red);
+  --stroke-lb-complete-temporary: var(--lb-darker-red);
+
+  /* Tiles */
+  --bg-tiles-granada: var(--tiles-granada-brown);
+  --text-tiles-granada: var(--tiles-granada-blue);
+  --bg-tiles-soho: var(--tiles-soho-yellow);
+  --text-tiles-soho: var(--dark-black);
+  --bg-tiles-lisbon: var(--tiles-lisbon-blue);
+  --text-tiles-lisbon: var(--white);
+  --bg-tiles-kuala: var(--tiles-kuala-pink);
+  --text-tiles-kuala: var(--tiles-kuala-brown);
+  --bg-tiles-hongkong: var(--tiles-hongkong-green);
+  --text-tiles-hongkong: var(--white);
+  --bg-tiles-austin: var(--tiles-austin-yellow);
+  --text-tiles-austin: var(--tiles-austin-brown);
+  --bg-tiles-haven: var(--tiles-haven-beige);
+  --text-tiles-haven: var(--dark-black);
+  --bg-tiles-paris: var(--tiles-paris-gray);
+  --text-tiles-paris: var(--tiles-paris-dark-gray);
+  --bg-tiles-brighton: var(--tiles-brighton-blue);
+  --text-tiles-brighton: var(--tiles-brighton-dark-blue);
+  --bg-tiles-tangier: var(--tiles-tangier-purple);
+  --text-tiles-tangier: var(--white);
+  --bg-tiles-holland: var(--tiles-holland-blue);
+  --text-tiles-holland: var(--white);
+  --bg-tiles-la: var(--tiles-la-black);
+  --text-tiles-la: var(--white);
+  --bg-tiles-utrecht: var(--tiles-utrecht-yellow);
+  --text-tiles-utrecht: var(--tiles-utrecht-black);
+  --bg-tiles-topeka: var(--tiles-topeka-green);
+  --text-tiles-topeka: var(--white);
+
+  /* Pips */
+  /* text */
+  --text-pips-tag: var(--white);
+  --text-pips-purple: var(--pips-light-purple);
+  --text-pips-orange: var(--pips-light-orange);
+  --text-pips-pink: var(--pips-light-pink);
+  --text-pips-blue: var(--pips-light-blue);
+  --text-pips-navy: var(--pips-lighter-navy);
+  --text-pips-green: var(--pips-lighter-green);
+  /* background */
+  --bg-pips-domino: var(--pips-cool-gray);
+  --bg-pips-domino-dot: var(--pips-gray);
+  --bg-pips-domino-empty: var(--pips-brown-gray);
+  --bg-pips-tag-purple: var(--pips-dark-purple);
+  --bg-pips-tag-orange: var(--pips-dark-orange);
+  --bg-pips-tag-pink: var(--pips-dark-pink);
+  --bg-pips-tag-blue: var(--pips-dark-blue);
+  --bg-pips-tag-navy: var(--pips-darker-navy);
+  --bg-pips-tag-green: var(--pips-darker-green);
+  --bg-pips-region-purple: var(--pips-lighter-purple);
+  --bg-pips-region-orange: var(--pips-lighter-orange);
+  --bg-pips-region-pink: var(--pips-lighter-pink);
+  --bg-pips-region-blue: var(--pips-lighter-blue);
+  --bg-pips-region-navy: var(--pips-lighter-navy);
+  --bg-pips-region-green: var(--pips-lighter-green);
+  --bg-pips-board: var(--pips-darker-beige);
+  --bg-pips-board-spaces: var(--pips-dark-beige);
+  /* stroke */
+  --stroke-pips-domino-outline: var(--pips-gray);
+  --stroke-pips-domino-divider: var(--pips-light-gray);
+  --stroke-pips-region-purple: var(--pips-darker-purple);
+  --stroke-pips-region-orange: var(--pips-darker-orange);
+  --stroke-pips-region-pink: var(--pips-dark-hot-pink);
+  --stroke-pips-region-blue: var(--pips-darker-blue);
+  --stroke-pips-region-navy: var(--pips-darker-navy);
+  --stroke-pips-region-green: var(--pips-darker-green);
+}
+
+/** 
+  * PLAYBOOK SPACING DESIGN TOKENS
+  */
+
+:root {
+  /**
+    * Non Directional Spacing Tokens
+    * These tokens are used to define the spacing between elements that do not have a specific direction.  
+    */
+  --spacing-0-5: 4px;
+  --spacing-1: 8px;
+  --spacing-1-5: 12px;
+  --spacing-2: 16px;
+  --spacing-2-5: 20px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-7: 56px;
+  --spacing-8: 64px;
+  --spacing-9: 72px;
+  --spacing-10: 80px;
+
+  /**
+    * Horizontal Spacing Tokens 
+    * These tokens are used to define the horizontal spacing between elements.  
+    */
+  --horizontal-spacing-0-5: 4px;
+  --horizontal-spacing-1: 8px;
+  --horizontal-spacing-1-5: 12px;
+  --horizontal-spacing-2: 16px;
+  --horizontal-spacing-2-5: 20px;
+  --horizontal-spacing-3: 24px;
+  --horizontal-spacing-4: 32px;
+  --horizontal-spacing-5: 40px;
+  --horizontal-spacing-6: 48px;
+  --horizontal-spacing-7: 56px;
+  --horizontal-spacing-8: 64px;
+  --horizontal-spacing-9: 72px;
+  --horizontal-spacing-10: 80px; 
+  
+  /**
+    * Vertical Spacing Tokens 
+    * These tokens are used to define the vertical spacing between elements.  
+    */
+  --vertical-spacing-0-5: 4px;
+  --vertical-spacing-1: 8px;
+  --vertical-spacing-1-5: 12px;
+  --vertical-spacing-2: 16px;
+  --vertical-spacing-2-5: 20px;
+  --vertical-spacing-3: 24px;
+  --vertical-spacing-4: 32px;
+  --vertical-spacing-5: 40px;
+  --vertical-spacing-6: 48px;
+  --vertical-spacing-7: 56px;
+  --vertical-spacing-8: 64px;
+  --vertical-spacing-9: 72px;
+  --vertical-spacing-10: 80px;
+}
+/** 
+  * PLAYBOOK SPACING DESIGN TOKENS
+  */
+
+:root {
+  /**
+    * Non Directional Spacing Tokens
+    * These tokens are used to define the spacing between elements that do not have a specific direction.  
+    */
+  --spacing-0-5: 4px;
+  --spacing-1: 8px;
+  --spacing-1-5: 12px;
+  --spacing-2: 16px;
+  --spacing-2-5: 20px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-7: 56px;
+  --spacing-8: 64px;
+  --spacing-9: 72px;
+  --spacing-10: 80px;
+
+  /**
+    * Horizontal Spacing Tokens 
+    * These tokens are used to define the horizontal spacing between elements.  
+    */
+  --horizontal-spacing-0-5: 4px;
+  --horizontal-spacing-1: 8px;
+  --horizontal-spacing-1-5: 12px;
+  --horizontal-spacing-2: 16px;
+  --horizontal-spacing-2-5: 20px;
+  --horizontal-spacing-3: 24px;
+  --horizontal-spacing-4: 32px;
+  --horizontal-spacing-5: 40px;
+  --horizontal-spacing-6: 48px;
+  --horizontal-spacing-7: 56px;
+  --horizontal-spacing-8: 64px;
+  --horizontal-spacing-9: 72px;
+  --horizontal-spacing-10: 80px; 
+  
+  /**
+    * Vertical Spacing Tokens 
+    * These tokens are used to define the vertical spacing between elements.  
+    */
+  --vertical-spacing-0-5: 4px;
+  --vertical-spacing-1: 8px;
+  --vertical-spacing-1-5: 12px;
+  --vertical-spacing-2: 16px;
+  --vertical-spacing-2-5: 20px;
+  --vertical-spacing-3: 24px;
+  --vertical-spacing-4: 32px;
+  --vertical-spacing-5: 40px;
+  --vertical-spacing-6: 48px;
+  --vertical-spacing-7: 56px;
+  --vertical-spacing-8: 64px;
+  --vertical-spacing-9: 72px;
+  --vertical-spacing-10: 80px;
+}
+/** 
+  * PLAYBOOK SPACING DESIGN TOKENS
+  */
+
+:root {
+  /**
+    * Non Directional Spacing Tokens
+    * These tokens are used to define the spacing between elements that do not have a specific direction.  
+    */
+  --spacing-0-5: 4px;
+  --spacing-1: 8px;
+  --spacing-1-5: 12px;
+  --spacing-2: 16px;
+  --spacing-2-5: 20px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-7: 56px;
+  --spacing-8: 64px;
+  --spacing-9: 72px;
+  --spacing-10: 80px;
+
+  /**
+    * Horizontal Spacing Tokens 
+    * These tokens are used to define the horizontal spacing between elements.  
+    */
+  --horizontal-spacing-0-5: 4px;
+  --horizontal-spacing-1: 8px;
+  --horizontal-spacing-1-5: 12px;
+  --horizontal-spacing-2: 16px;
+  --horizontal-spacing-2-5: 20px;
+  --horizontal-spacing-3: 24px;
+  --horizontal-spacing-4: 32px;
+  --horizontal-spacing-5: 40px;
+  --horizontal-spacing-6: 48px;
+  --horizontal-spacing-7: 56px;
+  --horizontal-spacing-8: 64px;
+  --horizontal-spacing-9: 72px;
+  --horizontal-spacing-10: 80px; 
+  
+  /**
+    * Vertical Spacing Tokens 
+    * These tokens are used to define the vertical spacing between elements.  
+    */
+  --vertical-spacing-0-5: 4px;
+  --vertical-spacing-1: 8px;
+  --vertical-spacing-1-5: 12px;
+  --vertical-spacing-2: 16px;
+  --vertical-spacing-2-5: 20px;
+  --vertical-spacing-3: 24px;
+  --vertical-spacing-4: 32px;
+  --vertical-spacing-5: 40px;
+  --vertical-spacing-6: 48px;
+  --vertical-spacing-7: 56px;
+  --vertical-spacing-8: 64px;
+  --vertical-spacing-9: 72px;
+  --vertical-spacing-10: 80px;
+}
+/** 
+  * PLAYBOOK SPACING DESIGN TOKENS
+  */
+
+:root {
+  /**
+    * Non Directional Spacing Tokens
+    * These tokens are used to define the spacing between elements that do not have a specific direction.  
+    */
+  --spacing-0-5: 4px;
+  --spacing-1: 8px;
+  --spacing-1-5: 12px;
+  --spacing-2: 16px;
+  --spacing-2-5: 20px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+  --spacing-5: 40px;
+  --spacing-6: 48px;
+  --spacing-7: 56px;
+  --spacing-8: 64px;
+  --spacing-9: 72px;
+  --spacing-10: 80px;
+
+  /**
+    * Horizontal Spacing Tokens 
+    * These tokens are used to define the horizontal spacing between elements.  
+    */
+  --horizontal-spacing-0-5: 4px;
+  --horizontal-spacing-1: 8px;
+  --horizontal-spacing-1-5: 12px;
+  --horizontal-spacing-2: 16px;
+  --horizontal-spacing-2-5: 20px;
+  --horizontal-spacing-3: 24px;
+  --horizontal-spacing-4: 32px;
+  --horizontal-spacing-5: 40px;
+  --horizontal-spacing-6: 48px;
+  --horizontal-spacing-7: 56px;
+  --horizontal-spacing-8: 64px;
+  --horizontal-spacing-9: 72px;
+  --horizontal-spacing-10: 80px; 
+  
+  /**
+    * Vertical Spacing Tokens 
+    * These tokens are used to define the vertical spacing between elements.  
+    */
+  --vertical-spacing-0-5: 4px;
+  --vertical-spacing-1: 8px;
+  --vertical-spacing-1-5: 12px;
+  --vertical-spacing-2: 16px;
+  --vertical-spacing-2-5: 20px;
+  --vertical-spacing-3: 24px;
+  --vertical-spacing-4: 32px;
+  --vertical-spacing-5: 40px;
+  --vertical-spacing-6: 48px;
+  --vertical-spacing-7: 56px;
+  --vertical-spacing-8: 64px;
+  --vertical-spacing-9: 72px;
+  --vertical-spacing-10: 80px;
+}
+
+/*# sourceMappingURL=6931.21b32c1d34a844352512.css.map*/

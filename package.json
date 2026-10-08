@@ -1,0 +1,26 @@
+{
+  "name": "snuggle-sync-server",
+  "version": "1.0.0",
+  "description": "WebSocket sync server for Snuggle watch-together rooms",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.3",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "qrcode": "^1.5.4",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "allowScripts": {
+    "puppeteer@25.12.0": true,
+    "bcrypt@6.0.0": true
+  }
+}

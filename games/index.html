@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="format-detection" content="telephone=no">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snuggle - Games</title>
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#3c280d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/styles.css?v=2">
+</head>
+<body>
+  <main class="home" id="home">
+
+    <!-- Header / Branding -->
+    <header class="home__header">
+      <h1 class="home__logo">GAMES</h1>
+      <p class="home__tagline">
+        Play as a team <br>
+        You both control the game
+      </p>
+    </header>
+
+    <!-- Back link -->
+    <a href="/" class="yt-lobby__back" id="yt-back-home" aria-label="Back to home">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="19" y1="12" x2="5" y2="12"/>
+        <polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Back to Home
+    </a>
+
+    <!-- Navigation Buttons -->
+    <nav class="home__nav" aria-label="Games navigation">
+
+      <!-- Wordle -->
+      <a href="/games/wordle/" class="nav-btn" id="nav-wordle">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="4" height="4" rx="0.5"></rect>
+            <rect x="10" y="4" width="4" height="4" rx="0.5"></rect>
+            <rect x="16" y="4" width="4" height="4" rx="0.5"></rect>
+            <rect x="4" y="10" width="4" height="4" rx="0.5"></rect>
+            <rect x="10" y="10" width="4" height="4" rx="0.5"></rect>
+            <rect x="16" y="10" width="4" height="4" rx="0.5"></rect>
+            <rect x="4" y="16" width="4" height="4" rx="0.5"></rect>
+            <rect x="10" y="16" width="4" height="4" rx="0.5"></rect>
+            <rect x="16" y="16" width="4" height="4" rx="0.5"></rect>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Wordle</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Wordle"
+          data-info="Guess the hidden word in 6 tries."
+          aria-label="Learn more about Wordle"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+      <!-- Connections -->
+      <a href="/games/connections/" class="nav-btn" id="nav-connections">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="7" height="7" rx="1.5"></rect>
+            <rect x="13" y="4" width="7" height="7" rx="1.5"></rect>
+            <rect x="4" y="13" width="7" height="7" rx="1.5"></rect>
+            <rect x="13" y="13" width="7" height="7" rx="1.5"></rect>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Connections</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Connections"
+          data-info="Group words that share a common thread."
+          aria-label="Learn more about Connections"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+      <!-- Strands -->
+      <a href="/games/strands/" class="nav-btn" id="nav-strands">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M 7 7 C 7 3, 17 3, 17 7 C 17 11, 7 13, 7 17 C 7 21, 17 21, 17 17"></path>
+            <circle cx="7" cy="7" r="1.5" fill="currentColor"></circle>
+            <circle cx="17" cy="17" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Strands</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Strands"
+          data-info="Find the hidden words in a grid of letters."
+          aria-label="Learn more about Strands"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+    </nav>
+  </main>
+
+  <!-- Bottom Sheet -->
+  <div class="bottom-sheet" id="bottom-sheet" role="dialog" aria-hidden="true" aria-label="Feature information">
+    <div class="bottom-sheet__backdrop"></div>
+    <div class="bottom-sheet__card">
+      <div class="bottom-sheet__handle" role="button" aria-label="Close" tabindex="0"></div>
+      <h2 class="bottom-sheet__title"></h2>
+      <p class="bottom-sheet__text"></p>
+    </div>
+  </div>
+
+  <script src="../js/analytics.js"></script>
+  <script src="../js/app.js"></script>
+</body>
+</html>

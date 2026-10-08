@@ -1,0 +1,8 @@
+node_modules/
+server/node_modules/
+*.zip
+*.db
+*.db-shm
+*.db-wal
+.env
+colour.txt

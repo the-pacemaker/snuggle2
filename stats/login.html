@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snuggle — Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0f0f12;
+      color: #e2e8f0;
+      font-family: 'Inter', system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background: #1a1a23;
+      border: 1px solid #2a2a38;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .lock-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: #2a1f3d;
+      border-radius: 14px;
+      margin: 0 auto 24px;
+    }
+
+    .lock-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: #a78bfa;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 32px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .input-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      background: #0f0f12;
+      border: 1.5px solid #2a2a38;
+      border-radius: 10px;
+      padding: 12px 44px 12px 14px;
+      font-size: 1rem;
+      color: #f1f5f9;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="password"]:focus {
+      border-color: #7c3aed;
+    }
+
+    .toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4b5563;
+      padding: 4px;
+    }
+
+    .toggle-pw:hover { color: #94a3b8; }
+    .toggle-pw svg { width: 18px; height: 18px; display: block; }
+
+    .btn {
+      width: 100%;
+      background: #7c3aed;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover { background: #6d28d9; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #3b2f6e; cursor: not-allowed; }
+
+    .error {
+      margin-top: 14px;
+      background: #3b1a1a;
+      border: 1px solid #7f1d1d;
+      color: #fca5a5;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .error.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="lock-icon">
+      <svg viewBox="0 0 24 24">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <h1>Admin Access</h1>
+    <p class="subtitle">Enter password to view analytics</p>
+
+    <label for="pw">Password</label>
+    <div class="input-wrap">
+      <input type="password" id="pw" autocomplete="current-password" placeholder="••••••••••" autofocus>
+      <button class="toggle-pw" id="togglePw" type="button" aria-label="Show/hide password">
+        <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </button>
+    </div>
+
+    <button class="btn" id="loginBtn">Unlock</button>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script>
+    const pwInput = document.getElementById('pw');
+    const btn = document.getElementById('loginBtn');
+    const errEl = document.getElementById('errorMsg');
+    const toggleBtn = document.getElementById('togglePw');
+
+    toggleBtn.addEventListener('click', () => {
+      pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+    });
+
+    async function doLogin() {
+      const pw = pwInput.value.trim();
+      if (!pw) return;
+      btn.disabled = true;
+      btn.textContent = 'Checking…';
+      errEl.classList.remove('visible');
+
+      try {
+        const res = await fetch('/stats/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = '/stats';
+        } else {
+          errEl.textContent = data.error || 'Wrong password';
+          errEl.classList.add('visible');
+          btn.disabled = false;
+          btn.textContent = 'Unlock';
+          pwInput.value = '';
+          pwInput.focus();
+        }
+      } catch {
+        errEl.textContent = 'Network error — please try again';
+        errEl.classList.add('visible');
+        btn.disabled = false;
+        btn.textContent = 'Unlock';
+      }
+    }
+
+    btn.addEventListener('click', doLogin);
+    pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  </script>
+</body>
+</html>
