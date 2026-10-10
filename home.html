@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="format-detection" content="telephone=no">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snuggle</title>
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#3c280d">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css?v=2">
+</head>
+<body>
+  <main class="home" id="home">
+
+    <!-- Header / Branding -->
+    <header class="home__header">
+      <h1 class="home__logo">Snuggle</h1>
+      <p class="home__tagline">
+        A place where two can hang out together,<br>
+        from anywhere<br>
+        [You are advised to stay on call]    
+      </p>
+    </header>
+
+    <!-- Navigation Buttons -->
+    <nav class="home__nav" aria-label="Main navigation">
+
+      <!-- YouTube -->
+      <a href="/youtube/" class="nav-btn" id="nav-youtube">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z"/>
+            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/>
+          </svg>
+        </span>
+        <span class="nav-btn__label">YouTube</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="YouTube"
+          data-info="Search for any youtube video and watch it together."
+          aria-label="Learn more about YouTube"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+      <!-- Games -->
+      <a href="/games/" class="nav-btn" id="nav-games">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="12" x2="10" y2="12"></line>
+            <line x1="8" y1="10" x2="8" y2="14"></line>
+            <line x1="15" y1="13" x2="15.01" y2="13"></line>
+            <line x1="18" y1="11" x2="18.01" y2="11"></line>
+            <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Games</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Games"
+          data-info="Play as a team, where you both control the game."
+          aria-label="Learn more about Games"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+      <!-- Movies (downloaded) -->
+      <a href="/movies/" class="nav-btn" id="nav-movies">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            <polygon points="10 11 10 17 15 14 10 11"/>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Movies (downloaded)</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Movies (downloaded)"
+          data-info="Select the same video (or downloaded movie) on both of the devices and watch it together. You can add subtitles too"
+          aria-label="Learn more about Movies (downloaded)"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+    </nav>
+  </main>
+
+  <!-- Bottom Sheet -->
+  <div class="bottom-sheet" id="bottom-sheet" role="dialog" aria-hidden="true" aria-label="Feature information">
+    <div class="bottom-sheet__backdrop"></div>
+    <div class="bottom-sheet__card">
+      <div class="bottom-sheet__handle" role="button" aria-label="Close" tabindex="0"></div>
+      <h2 class="bottom-sheet__title"></h2>
+      <p class="bottom-sheet__text"></p>
+    </div>
+  </div>
+
+  <script src="js/analytics.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCode = urlParams.get('code');
+      if (urlCode) {
+        sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+      }
+      
+      const roomCode = sessionStorage.getItem('snuggle_room_code');
+      if (!roomCode) {
+        window.location.href = '/';
+        return;
+      }
+      
+      if (!urlCode || urlCode.toUpperCase().trim() !== roomCode) {
+        urlParams.set('code', roomCode);
+        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+      }
+      
+      // Inject Room Code and Leave Room button
+      const header = document.querySelector('.home__header');
+      if (header) {
+        const topBarHtml = `
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: -10px; position: relative; z-index: 10;">
+            <button type="button" id="leave-room-btn" style="background: rgba(175, 128, 79, 0.15); border: 1px solid rgba(175, 128, 79, 0.3); border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #af804f; font-family: inherit; font-size: 13px; transition: all 0.2s;">
+              <svg viewBox="0 0 24 24" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span style="font-weight: 500;">Leave Room</span>
+            </button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" id="share-room-btn" style="font-size: 14px; background: rgba(255,255,255,0.1); border: none; padding: 5px 12px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: background 0.2s;" title="Share Room">
+                <span id="room-code-label" style="color: #ffffff; display: flex; align-items: center; gap: 6px;">
+                  <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; color: #f4a261;" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  Room:
+                </span>
+                <strong id="room-code-display" style="color: #f4a261; letter-spacing: 1px; font-family: monospace; font-size: 16px;">${roomCode}</strong>
+              </button>
+            </div>
+          </div>
+        `;
+        header.insertAdjacentHTML('beforebegin', topBarHtml);
+
+        // Create custom confirm overlay
+        const overlayHtml = `
+          <div id="leave-confirm-overlay" style="position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
+            <div style="background: var(--bg-card, #876a4b); padding: 24px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; color: var(--text-heading, #fff); box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-top: 1px solid rgba(244, 162, 97, 0.2);">
+              <p style="margin-bottom: 24px; font-size: 16px; font-weight: 500;">Are you sure you want to leave the room?</p>
+              <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="leave-confirm-cancel" style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-muted, #fff); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Cancel</button>
+                <button id="leave-confirm-ok" style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; background: var(--accent-coral, #e76f51); border: none; color: white; transition: background 0.2s;" onmouseover="this.style.background='#d05f43'" onmouseout="this.style.background='var(--accent-coral, #e76f51)'">Leave</button>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', overlayHtml);
+
+        const confirmOverlay = document.getElementById('leave-confirm-overlay');
+        const confirmCancel = document.getElementById('leave-confirm-cancel');
+        const confirmOk = document.getElementById('leave-confirm-ok');
+
+        confirmCancel.addEventListener('click', () => {
+          confirmOverlay.style.display = 'none';
+        });
+
+        confirmOk.addEventListener('click', () => {
+          sessionStorage.removeItem('snuggle_room_code');
+          window.location.href = '/';
+        });
+
+        document.getElementById('leave-room-btn').addEventListener('click', () => {
+          confirmOverlay.style.display = 'flex';
+        });
+
+        document.getElementById('share-room-btn').addEventListener('click', async () => {
+          const url = window.location.origin + '/?code=' + roomCode;
+          if (navigator.share) {
+            try { await navigator.share({ title: 'Join my room', url }); return; } catch (e) {}
+          }
+          try { await navigator.clipboard.writeText(url); } 
+          catch (e) {
+            const t = document.createElement('textarea'); t.value = url; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+          }
+          
+          const btn = document.getElementById('share-room-btn');
+          if (btn.dataset.copied) return;
+          btn.dataset.copied = "true";
+          
+          const rect = btn.getBoundingClientRect();
+          const oldWidth = rect.width;
+          const oldHeight = rect.height;
+          const oldHtml = btn.innerHTML;
+          
+          btn.style.boxSizing = 'border-box';
+          btn.style.width = oldWidth + 'px';
+          btn.style.height = oldHeight + 'px';
+          btn.style.justifyContent = 'center';
+          btn.innerHTML = '<span style="color: #ffffff;">Copied!</span>';
+          
+          setTimeout(() => {
+            btn.innerHTML = oldHtml;
+            btn.style.width = '';
+            btn.style.height = '';
+            btn.style.boxSizing = '';
+            btn.style.justifyContent = '';
+            delete btn.dataset.copied;
+          }, 2000);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

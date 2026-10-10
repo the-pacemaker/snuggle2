@@ -721,7 +721,7 @@
   }
   const requestedCode = sessionStorage.getItem('snuggle_room_code');
   if (!requestedCode) {
-    window.location.href = '/welcome.html';
+    window.location.href = '/';
     return;
   } else if (!urlCode || urlCode.toUpperCase().trim() !== requestedCode) {
     urlParams.set('code', requestedCode);

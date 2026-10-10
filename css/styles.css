@@ -584,7 +584,7 @@ body.loaded {
   background: none;
   border: none;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
 }
 
 .nav-btn__chevron {

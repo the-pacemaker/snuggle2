@@ -47,7 +47,7 @@
 
   let ROOM_CODE = sessionStorage.getItem('snuggle_room_code');
   if (!ROOM_CODE) {
-    window.location.href = '/welcome.html';
+    window.location.href = '/';
   } else if (!urlCode || urlCode.toUpperCase().trim() !== ROOM_CODE) {
     urlParams.set('code', ROOM_CODE);
     window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);

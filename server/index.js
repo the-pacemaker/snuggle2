@@ -62,6 +62,11 @@ app.use('/stats', (req, res, next) => {
   res.redirect('/stats');
 });
 
+// Route for /home
+app.get('/home', (req, res) => {
+  res.sendFile(path.join(__dirname, '../home.html'));
+});
+
 // Serve the frontend static files from the root of snuggle
 app.use(express.static(path.join(__dirname, '..')));
 
