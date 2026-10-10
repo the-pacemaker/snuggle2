@@ -62,6 +62,20 @@
         min-height: calc(var(--vh) - var(--yt-total-h)) !important;
         height: calc(var(--vh) - var(--yt-total-h)) !important;
       }
+      /* Fix layout to prevent scrolling by forcing game area to fit the viewport */
+      .App-module_game__yruqo {
+        max-height: 100% !important;
+        height: 100% !important;
+      }
+      .Board-module_boardContainer__TBHNL {
+        flex-grow: 1 !important;
+        min-height: 0 !important;
+      }
+      .Board-module_board__jeoPS {
+        /* Ensure the board scales down to fit available height minus keyboard (200px) and margins */
+        max-width: min(350px, calc((var(--vh) - var(--yt-total-h) - 220px) * 5 / 6)) !important;
+        max-height: 100% !important;
+      }
       #ad-top, .Ad-module_adContainer__ZAFEc { display: none !important; }
       #yt-status-bar {
         position: fixed; top: 0; left: 0; right: 0; height: var(--yt-bar-h); z-index: 9999;
