@@ -833,7 +833,19 @@
   }
 
   // ───────────────────────── networking ─────────────────────────
-  const requestedCode = (new URLSearchParams(window.location.search).get('code') || '').trim() || null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCode = urlParams.get('code');
+  if (urlCode) {
+    sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+  }
+  const requestedCode = sessionStorage.getItem('snuggle_room_code');
+  if (!requestedCode) {
+    window.location.href = '/welcome.html';
+    return;
+  } else if (!urlCode || urlCode.toUpperCase().trim() !== requestedCode) {
+    urlParams.set('code', requestedCode);
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+  }
   let ws = null, roomCode = null, joining = false, reconnectTimer = null;
 
   function rawSend(obj) {

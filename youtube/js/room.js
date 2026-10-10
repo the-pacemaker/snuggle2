@@ -35,10 +35,19 @@ let searchTimer = null;
 let lastKnownPos = 0;         // For seek detection via polling
 let seekPollTimer = null;
 
-// Pull room code from URL
-const params   = new URLSearchParams(window.location.search);
-const ACTION   = params.get('action'); // e.g. 'create'
-let ROOM_CODE  = (params.get('code') || '').toUpperCase().trim();
+const urlParams = new URLSearchParams(window.location.search);
+const urlCode = urlParams.get('code');
+if (urlCode) {
+  sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+}
+
+let ROOM_CODE = sessionStorage.getItem('snuggle_room_code');
+if (!ROOM_CODE) {
+  window.location.href = '/welcome.html';
+} else if (!urlCode || urlCode.toUpperCase().trim() !== ROOM_CODE) {
+  urlParams.set('code', ROOM_CODE);
+  window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+}
 
 // ── DOM refs ─────────────────────────────────────
 const roomCodeText   = document.getElementById('yt-room-code-text');
@@ -87,11 +96,6 @@ function isSyncing() {
 // ── Init ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   document.body.classList.add('loaded');
-
-  if (!ROOM_CODE && ACTION !== 'create') {
-    window.location.href = '/youtube/';
-    return;
-  }
 
   roomCodeText.textContent = ROOM_CODE || '------';
   setupEventListeners();
@@ -242,11 +246,7 @@ function connectWS() {
   }
 
   ws.addEventListener('open', () => {
-    if (ACTION === 'create' && !ROOM_CODE) {
-      sendWS({ type: 'create_room' });
-    } else {
-      sendWS({ type: 'join_room', code: ROOM_CODE });
-    }
+    sendWS({ type: 'join_room', code: ROOM_CODE });
   });
 
   ws.addEventListener('message', (event) => {

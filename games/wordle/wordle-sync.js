@@ -518,6 +518,19 @@
   hintBtn.addEventListener('click', openHintPopup);
   hintCloseBtn.addEventListener('click', closeHintPopup);
 
+  hintBody.addEventListener('click', (e) => {
+    if (e.target.classList.contains('yt-hint-word')) {
+      const word = e.target.textContent;
+      closeHintPopup();
+      while (currentCol > 0) {
+        localKey('Backspace');
+      }
+      for (const char of word) {
+        localKey(char);
+      }
+    }
+  });
+
   // Close on backdrop click (outside the popup card)
   hintOverlay.addEventListener('click', (e) => {
     if (e.target === hintOverlay) closeHintPopup();

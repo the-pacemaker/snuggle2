@@ -81,14 +81,23 @@ app.get('/health', (req, res) => {
   });
 });
 
-function collectVideoIds(node, out) {
+function collectVideoData(node, out) {
   if (!node || typeof node !== "object") return;
   if (Array.isArray(node)) {
-    for (const item of node) collectVideoIds(item, out);
+    for (const item of node) collectVideoData(item, out);
     return;
   }
-  if (node.videoRenderer?.videoId) out.push(node.videoRenderer.videoId);
-  for (const key of Object.keys(node)) collectVideoIds(node[key], out);
+  if (node.videoRenderer?.videoId) {
+    const v = node.videoRenderer;
+    out.push({
+      id: v.videoId,
+      title: v.title?.runs?.[0]?.text || '',
+      thumbnail: v.thumbnail?.thumbnails?.[0]?.url || '',
+      duration: v.lengthText?.simpleText || v.lengthText?.runs?.map(r => r.text).join('') || '',
+      channel: v.ownerText?.runs?.[0]?.text || ''
+    });
+  }
+  for (const key of Object.keys(node)) collectVideoData(node[key], out);
 }
 
 app.get('/api/yt-search', async (req, res) => {
@@ -112,14 +121,21 @@ app.get('/api/yt-search', async (req, res) => {
     const match = html.match(/var ytInitialData = (\{.*?\});<\/script>/s);
     if (!match) throw new Error("ytInitialData not found");
 
-    const ids = [];
-    collectVideoIds(JSON.parse(match[1]), ids);
-    const uniqueIds = [...new Set(ids)].slice(0, limit);
+    const items = [];
+    collectVideoData(JSON.parse(match[1]), items);
+    
+    const uniqueMap = new Map();
+    for (const item of items) {
+      if (!uniqueMap.has(item.id)) {
+        uniqueMap.set(item.id, item);
+      }
+    }
+    const uniqueItems = Array.from(uniqueMap.values()).slice(0, limit);
 
     // Log the search query for analytics
-    logEvent('yt_search', { query, resultsCount: uniqueIds.length }, req).catch(() => {});
+    logEvent('yt_search', { query, resultsCount: uniqueItems.length }, req).catch(() => {});
     
-    res.json({ ids: uniqueIds });
+    res.json({ items: uniqueItems });
   } catch (err) {
     console.error('YT Search Error:', err.message);
     res.status(500).json({ error: 'Search failed' });

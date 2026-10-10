@@ -122,5 +122,88 @@
 
   <script src="js/analytics.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCode = urlParams.get('code');
+      if (urlCode) {
+        sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+      }
+      
+      const roomCode = sessionStorage.getItem('snuggle_room_code');
+      if (!roomCode) {
+        window.location.href = '/welcome.html';
+        return;
+      }
+      
+      if (!urlCode || urlCode.toUpperCase().trim() !== roomCode) {
+        urlParams.set('code', roomCode);
+        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+      }
+      
+      // Inject Room Code and Leave Room button
+      const header = document.querySelector('.home__header');
+      if (header) {
+        const topBarHtml = `
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: -10px; position: relative; z-index: 10;">
+            <button type="button" id="leave-room-btn" style="background: rgba(175, 128, 79, 0.15); border: 1px solid rgba(175, 128, 79, 0.3); border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #af804f; font-family: inherit; font-size: 13px; transition: all 0.2s;">
+              <svg viewBox="0 0 24 24" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span style="font-weight: 500;">Leave Room</span>
+            </button>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" id="share-room-btn" style="font-size: 14px; background: rgba(255,255,255,0.1); border: none; padding: 5px 12px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: background 0.2s;" title="Share Room">
+                <span id="room-code-label" style="color: #ccc; display: flex; align-items: center; gap: 6px;">
+                  Room
+                  <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; color: #f4a261;" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="18" cy="5" r="3"></circle>
+                    <circle cx="6" cy="12" r="3"></circle>
+                    <circle cx="18" cy="19" r="3"></circle>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                  </svg>
+                  :
+                </span>
+                <strong id="room-code-display" style="color: #f4a261; letter-spacing: 1px; font-family: monospace; font-size: 16px;">${roomCode}</strong>
+              </button>
+            </div>
+          </div>
+        `;
+        header.insertAdjacentHTML('beforebegin', topBarHtml);
+
+        document.getElementById('leave-room-btn').addEventListener('click', () => {
+          if (confirm('Are you sure you want to leave the room?')) {
+            sessionStorage.removeItem('snuggle_room_code');
+            window.location.href = '/welcome.html';
+          }
+        });
+
+        document.getElementById('share-room-btn').addEventListener('click', async () => {
+          const url = window.location.origin + '/?code=' + roomCode;
+          if (navigator.share) {
+            try { await navigator.share({ title: 'Join my room', url }); return; } catch (e) {}
+          }
+          try { await navigator.clipboard.writeText(url); } 
+          catch (e) {
+            const t = document.createElement('textarea'); t.value = url; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+          }
+          const label = document.getElementById('room-code-label');
+          const display = document.getElementById('room-code-display');
+          label.style.display = 'none';
+          const oldText = display.textContent;
+          display.textContent = 'Copied!';
+          display.style.color = '#4ade80';
+          setTimeout(() => {
+            label.style.display = '';
+            display.textContent = oldText;
+            display.style.color = '#f4a261';
+          }, 2000);
+        });
+      }
+    });
+  </script>
 </body>
 </html>

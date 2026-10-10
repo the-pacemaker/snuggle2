@@ -39,10 +39,19 @@
   let incomingSub = null;
   let subSendCounter = 0;
 
-  // Pull room code from URL
-  const params = new URLSearchParams(window.location.search);
-  const ACTION = params.get('action'); // e.g. 'create'
-  let ROOM_CODE = (params.get('code') || '').toUpperCase().trim();
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCode = urlParams.get('code');
+  if (urlCode) {
+    sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+  }
+
+  let ROOM_CODE = sessionStorage.getItem('snuggle_room_code');
+  if (!ROOM_CODE) {
+    window.location.href = '/welcome.html';
+  } else if (!urlCode || urlCode.toUpperCase().trim() !== ROOM_CODE) {
+    urlParams.set('code', ROOM_CODE);
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+  }
 
   // ── DOM refs ─────────────────────────────────────
   const $ = (id) => document.getElementById(id);
@@ -81,10 +90,7 @@
   function init() {
     document.body.classList.add('loaded');
 
-    if (!ROOM_CODE && ACTION !== 'create') {
-      window.location.href = '/movies/';
-      return;
-    }
+
     roomCodeText.textContent = ROOM_CODE || '------';
 
     initPlayer();
@@ -186,11 +192,7 @@
 
     ws.addEventListener('open', () => {
       reconnectAttempt = 0;
-      if (ACTION === 'create' && !ROOM_CODE) {
-        sendWS({ type: 'create_room' });
-      } else {
-        sendWS({ type: 'join_room', code: ROOM_CODE });
-      }
+      sendWS({ type: 'join_room', code: ROOM_CODE });
     });
 
     ws.addEventListener('message', (event) => {
