@@ -55,10 +55,13 @@
   // ───────────────────────── status bar / ribbon / toast UI ─────────────────────────
   const statusBarHtml = `
     <style>
-      :root { --yt-bar-h: 52px; --yt-ribbon-h: 44px; --yt-total-h: calc(var(--yt-bar-h) + var(--yt-ribbon-h)); }
-      /* keep the fixed bars from covering the game */
-      body { padding-top: var(--yt-total-h) !important; box-sizing: border-box; }
-      /* hide the leftover ad slot AND its "Advertisement" label / skip link */
+      :root { --yt-bar-h: 52px; --yt-ribbon-h: 44px; --yt-total-h: calc(var(--yt-bar-h) + var(--yt-ribbon-h)); --vh: 100vh; }
+      /* keep the fixed bars from covering the game and adjust game container to fit screen */
+      body { padding-top: var(--yt-total-h) !important; box-sizing: border-box; height: var(--vh) !important; margin: 0; overflow: hidden; }
+      .App-module_app__yRiXC, .App-module_gameContainer__K_CBh {
+        min-height: calc(var(--vh) - var(--yt-total-h)) !important;
+        height: calc(var(--vh) - var(--yt-total-h)) !important;
+      }
       #ad-top, .Ad-module_adContainer__ZAFEc { display: none !important; }
       #yt-status-bar {
         position: fixed; top: 0; left: 0; right: 0; height: var(--yt-bar-h); z-index: 9999;
@@ -255,6 +258,14 @@
     </div>
   `;
   document.body.insertAdjacentHTML('afterbegin', statusBarHtml);
+
+  // Maintain precise viewport height for mobile browsers
+  function updateViewportHeight() {
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight}px`);
+  }
+  window.addEventListener('resize', updateViewportHeight);
+  window.addEventListener('orientationchange', updateViewportHeight);
+  updateViewportHeight();
 
   const statusDot = document.getElementById('status-dot');
   const statusLabel = document.getElementById('status-label');
@@ -672,7 +683,19 @@
   }
 
   // ───────────────────────── networking ─────────────────────────
-  const requestedCode = (new URLSearchParams(window.location.search).get('code') || '').trim() || null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlCode = urlParams.get('code');
+  if (urlCode) {
+    sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+  }
+  const requestedCode = sessionStorage.getItem('snuggle_room_code');
+  if (!requestedCode) {
+    window.location.href = '/welcome.html';
+    return;
+  } else if (!urlCode || urlCode.toUpperCase().trim() !== requestedCode) {
+    urlParams.set('code', requestedCode);
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+  }
   let ws = null;
   let roomCode = null;
   let joining = false;
