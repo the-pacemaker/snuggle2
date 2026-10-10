@@ -71,9 +71,13 @@
         flex-grow: 1 !important;
         min-height: 0 !important;
       }
+      .Keyboard-module_keyboard__uYuqf {
+        flex-shrink: 0 !important;
+      }
       .Board-module_board__jeoPS {
         /* Ensure the board scales down to fit available height minus keyboard (200px) and margins */
         max-width: min(350px, calc((var(--vh) - var(--yt-total-h) - 220px) * 5 / 6)) !important;
+        min-width: 0 !important;
         max-height: 100% !important;
       }
       #ad-top, .Ad-module_adContainer__ZAFEc { display: none !important; }
