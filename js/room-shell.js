@@ -1029,6 +1029,13 @@
             localStorage.setItem('snuggle_room_code', ROOM_CODE);
             if (callRoomCode) callRoomCode.textContent = ROOM_CODE;
           }
+          if (window.snuggleTrack) {
+            window.snuggleTrack(msg.type === 'room_created' ? 'room_create' : 'room_join', {
+              roomCode: ROOM_CODE,
+              usersCount: usersCount,
+              section: 'shell'
+            });
+          }
           if (usersCount >= 2) {
             if (!isCallActive) {
               if (remotePlaceholderText) remotePlaceholderText.textContent = 'Friend is here in the room!';
@@ -1358,10 +1365,17 @@
 
     updatePipVisibility();
     showToast('Joined video call 🎥');
+    if (window.snuggleTrack) {
+      window.snuggleTrack('call_start', { roomCode: ROOM_CODE });
+    }
   }
 
   // ── End / Hang Up Call Action ──────────────────
   function endCall() {
+    const elapsedSec = callStartTime ? Math.round((Date.now() - callStartTime) / 1000) : 0;
+    if (window.snuggleTrack) {
+      window.snuggleTrack('call_end', { roomCode: ROOM_CODE, durationSec: elapsedSec });
+    }
     isCallActive = false;
     if (localStream) {
       localStream.getTracks().forEach(t => t.stop());

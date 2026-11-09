@@ -26,11 +26,8 @@ CREATE INDEX IF NOT EXISTS idx_analytics_event_type ON analytics_events (event_t
 CREATE INDEX IF NOT EXISTS idx_analytics_created_at  ON analytics_events (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_analytics_ip_address  ON analytics_events (ip_address);
 
--- Disable Row Level Security so the service role key can insert freely
--- (the service role key is kept server-side only — never exposed to clients)
+-- Disable Row Level Security so the service role / publishable key can insert freely
 ALTER TABLE analytics_events DISABLE ROW LEVEL SECURITY;
 
 -- Optional: auto-delete events older than 90 days to keep storage in check
--- (comment this out if you want to keep all data forever)
--- You can run this manually or set up a Supabase CRON job:
 -- DELETE FROM analytics_events WHERE created_at < NOW() - INTERVAL '90 days';

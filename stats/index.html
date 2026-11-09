@@ -3,771 +3,1513 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snuggle — Analytics</title>
+  <title>Snuggle — Analytics & User Activity</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #3c280d;
-      --surface: #876a4b;
-      --surface2: #af804f;
-      --border: rgba(244, 162, 97, 0.2);
+      --bg: #1f140b;
+      --bg-alt: #26180e;
+      --surface: #362211;
+      --surface2: #4a3019;
+      --surface-hover: #573a1e;
+      --border: rgba(244, 162, 97, 0.16);
+      --border-hover: rgba(244, 162, 97, 0.35);
       --text: #ffffff;
-      --muted: #e0e0e0;
+      --text-muted: #d4c5b3;
+      --text-subtle: #998772;
       --accent: #f4a261;
+      --accent-hover: #e76f51;
       --accent2: #e76f51;
-      --green: #10b981;
-      --yellow: #f59e0b;
-      --red: #e76f51;
-      --purple: #f4a261;
+      --green: #2ec4b6;
+      --green-bg: rgba(46, 196, 182, 0.15);
+      --blue: #3a86ff;
+      --purple: #9d4edd;
+      --yellow: #ffb703;
+      --red: #ef476f;
+      --font: system-ui, -apple-system, 'Inter', Roboto, sans-serif;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, 'Inter', sans-serif;
+      font-family: var(--font);
       font-size: 14px;
       line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    /* ── Sidebar ── */
+    /* ── Layout ── */
     .layout { display: flex; min-height: 100vh; }
 
+    /* ── Sidebar ── */
     .sidebar {
-      width: 220px;
+      width: 240px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      padding: 20px 0;
       position: fixed;
       top: 0; bottom: 0; left: 0;
       z-index: 100;
+      padding: 20px 0;
     }
 
-    .sidebar-logo {
-      padding: 0 20px 24px;
-      font-weight: 800;
-      font-size: 1.1rem;
-      color: var(--purple);
+    .sidebar-brand {
+      padding: 0 20px 20px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
-    .sidebar-logo span { color: var(--muted); font-size: 0.72rem; font-weight: 400; display: block; margin-top: 2px; }
+    .brand-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #fff;
+      background: rgba(244, 162, 97, 0.2);
+      border: 1px solid rgba(244, 162, 97, 0.3);
+      padding: 2px 7px;
+      border-radius: 6px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .nav-list { display: flex; flex-direction: column; gap: 3px; padding: 0 10px; flex: 1; overflow-y: auto; }
 
     .nav-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 20px;
-      color: var(--muted);
+      gap: 12px;
+      padding: 10px 14px;
+      color: var(--text-muted);
+      border-radius: 9px;
       cursor: pointer;
-      transition: all 0.15s;
-      border-left: 3px solid transparent;
       font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.15s ease;
       user-select: none;
     }
 
-    .nav-item:hover { color: var(--text); background: var(--surface2); }
-    .nav-item.active { color: var(--purple); border-left-color: var(--purple); background: rgba(244, 162, 97, 0.08); }
-    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-
-    .sidebar-footer {
-      margin-top: auto;
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
+    .nav-item:hover { color: #fff; background: var(--surface2); }
+    .nav-item.active {
+      color: #fff;
+      background: rgba(244, 162, 97, 0.18);
+      font-weight: 600;
+      border: 1px solid rgba(244, 162, 97, 0.28);
     }
 
-    .logout-btn {
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; color: var(--accent); }
+    .nav-badge {
+      margin-left: auto;
+      font-size: 0.72rem;
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 16px 14px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-side {
       width: 100%;
       background: none;
       border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 8px 12px;
+      color: var(--text-muted);
+      padding: 9px 12px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.15s;
+      font-size: 0.84rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.15s ease;
     }
-    .logout-btn:hover { border-color: var(--red); color: var(--red); }
 
-    /* ── Main ── */
+    .btn-side:hover { border-color: var(--accent); color: #fff; background: var(--surface2); }
+    .btn-side.danger:hover { border-color: var(--red); color: var(--red); background: rgba(239, 71, 111, 0.1); }
+
+    /* ── Main Content Area ── */
     .main {
-      margin-left: 220px;
+      margin-left: 240px;
       flex: 1;
-      padding: 28px;
-      max-width: 1300px;
+      padding: 28px 36px 60px;
+      max-width: 1400px;
     }
 
-    .page-header {
+    /* ── Top Bar / Header ── */
+    .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .page-header h1 { font-size: 1.5rem; font-weight: 700; }
-    .page-header .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+    .topbar-title h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
 
-    .refresh-btn {
-      background: var(--surface2);
+    .topbar-title p {
+      color: var(--text-subtle);
+      font-size: 0.86rem;
+      margin-top: 2px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pill-btn {
+      background: var(--surface);
       border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 16px;
-      border-radius: 8px;
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 20px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
+      font-weight: 600;
       display: flex;
       align-items: center;
       gap: 6px;
       transition: all 0.15s;
     }
-    .refresh-btn:hover { border-color: var(--accent); color: var(--purple); }
-    .refresh-btn svg { width: 14px; height: 14px; }
 
-    /* ── Section ── */
-    .section { display: none; }
-    .section.active { display: block; }
+    .pill-btn:hover { border-color: var(--accent); color: #fff; }
+    .pill-btn.active { background: var(--accent); color: #1f140b; border-color: var(--accent); }
 
-    /* ── Stat cards ── */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 28px;
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
     }
 
-    .stat-card {
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .refresh-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.15s;
+    }
+
+    .refresh-btn:hover { background: var(--surface-hover); border-color: var(--accent); }
+    .refresh-btn svg { width: 14px; height: 14px; }
+    .refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* ── Sections ── */
+    .section { display: none; }
+    .section.active { display: block; animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── KPI Grid ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 26px;
+    }
+
+    .kpi-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
     }
 
-    .stat-card .label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--muted);
+    .kpi-card:hover { border-color: var(--border-hover); transform: translateY(-2px); }
+
+    .kpi-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 10px;
     }
 
-    .stat-card .value {
-      font-size: 2rem;
+    .kpi-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .kpi-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(244, 162, 97, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .kpi-icon svg { width: 16px; height: 16px; }
+
+    .kpi-value {
+      font-size: 1.85rem;
       font-weight: 800;
-      color: var(--text);
-      line-height: 1;
+      color: #fff;
+      line-height: 1.1;
       margin-bottom: 6px;
     }
 
-    .stat-card .meta { font-size: 0.78rem; color: var(--muted); }
-    .stat-card .meta .up { color: var(--green); }
-    .stat-card .meta .down { color: var(--red); }
-
-    /* ── Charts ── */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 28px;
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: var(--text-subtle);
     }
 
-    @media (max-width: 900px) { .charts-grid { grid-template-columns: 1fr; } }
+    /* ── Charts Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+      margin-bottom: 26px;
+    }
 
     .chart-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
+      border-radius: 14px;
+      padding: 20px 22px;
     }
 
-    .chart-card.wide {
-      grid-column: 1 / -1;
+    .chart-card.col-8 { grid-column: span 8; }
+    .chart-card.col-4 { grid-column: span 4; }
+    .chart-card.col-6 { grid-column: span 6; }
+    .chart-card.col-12 { grid-column: span 12; }
+
+    @media (max-width: 1024px) {
+      .chart-card.col-8, .chart-card.col-4, .chart-card.col-6 { grid-column: span 12; }
     }
 
-    .chart-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 16px;
-    }
-
-    .chart-wrap { position: relative; height: 220px; }
-    .chart-wrap.tall { height: 280px; }
-
-    /* ── Tables ── */
-    .table-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 20px;
-    }
-
-    .table-card-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+    .chart-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 16px;
     }
 
-    .badge {
-      background: rgba(244, 162, 97, 0.15);
-      color: var(--purple);
-      border-radius: 20px;
-      padding: 2px 10px;
-      font-size: 0.75rem;
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 250px;
+      width: 100%;
+    }
+
+    .chart-wrap.tall { height: 320px; }
+
+    /* ── Tables & Cards ── */
+    .card-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 24px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-count {
+      background: var(--surface2);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.74rem;
       font-weight: 700;
     }
 
-    .table-wrap { overflow-x: auto; }
+    .table-responsive {
+      overflow-x: auto;
+      width: 100%;
+    }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      text-align: left;
     }
 
     th {
-      padding: 10px 16px;
-      text-align: left;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--muted);
+      background: rgba(0, 0, 0, 0.18);
+      color: var(--text-subtle);
+      font-size: 0.74rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      background: rgba(255,255,255,0.02);
+      padding: 11px 18px;
       border-bottom: 1px solid var(--border);
+      white-space: nowrap;
     }
 
     td {
-      padding: 10px 16px;
-      font-size: 0.82rem;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(244, 162, 97, 0.07);
+      font-size: 0.86rem;
+      color: var(--text-muted);
       vertical-align: middle;
     }
 
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-
-    .tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
+    tr:hover td {
+      background: rgba(244, 162, 97, 0.04);
+      color: #fff;
     }
 
-    .tag-page { background: rgba(6,182,212,0.15); color: var(--accent2); }
-    .tag-yt { background: rgba(239,68,68,0.15); color: #f87171; }
-    .tag-game { background: rgba(16,185,129,0.15); color: var(--green); }
-    .tag-room { background: rgba(245,158,11,0.15); color: var(--yellow); }
-    .tag-search { background: rgba(244, 162, 97, 0.15); color: var(--purple); }
-    .tag-other { background: rgba(100,116,139,0.15); color: var(--muted); }
-
-    /* ── Search section ── */
-    .search-bar {
+    /* ── Specific Table Elements ── */
+    .user-cell {
       display: flex;
+      align-items: center;
       gap: 10px;
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #1f140b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .user-name-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .user-name-text {
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .user-ip-sub {
+      font-size: 0.74rem;
+      color: var(--text-subtle);
+      font-family: monospace;
+    }
+
+    .ip-tag {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.84rem;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-color: rgba(244, 162, 97, 0.4);
+    }
+    .ip-tag:hover { color: #fff; }
+
+    .tag-chip {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .chip-page { background: rgba(58, 134, 255, 0.15); color: #60a5fa; border: 1px solid rgba(58, 134, 255, 0.3); }
+    .chip-yt { background: rgba(239, 71, 111, 0.15); color: #f87171; border: 1px solid rgba(239, 71, 111, 0.3); }
+    .chip-game { background: rgba(244, 162, 97, 0.15); color: #fbbf24; border: 1px solid rgba(244, 162, 97, 0.3); }
+    .chip-movie { background: rgba(157, 78, 221, 0.15); color: #c084fc; border: 1px solid rgba(157, 78, 221, 0.3); }
+    .chip-call { background: rgba(46, 196, 182, 0.15); color: #2dd4bf; border: 1px solid rgba(46, 196, 182, 0.3); }
+    .chip-room { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .btn-action {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .btn-action:hover {
+      background: var(--accent);
+      color: #1f140b;
+      border-color: var(--accent);
+    }
+
+    .btn-edit-name {
+      background: none;
+      border: none;
+      color: var(--text-subtle);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-edit-name:hover { color: var(--accent); background: rgba(244, 162, 97, 0.1); }
+    .btn-edit-name svg { width: 13px; height: 13px; }
+
+    /* ── Search & Filter Bars ── */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
       flex-wrap: wrap;
+    }
+
+    .input-search {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 14px;
+      color: #fff;
+      font-size: 0.86rem;
+      outline: none;
+      flex: 1;
+      min-width: 200px;
+      transition: border-color 0.2s;
+    }
+
+    .input-search:focus { border-color: var(--accent); background: rgba(244, 162, 97, 0.05); }
+
+    .select-filter {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 0.86rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ── Modal / Drawer for Individual User Profile ── */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border-hover);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 820px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      transform: scale(0.97);
+      transition: transform 0.2s ease;
+      overflow: hidden;
+    }
+
+    .modal-backdrop.open .modal-card { transform: scale(1); }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-alt);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: #fff; background: var(--surface2); }
+    .modal-close svg { width: 20px; height: 20px; display: block; }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    /* ── Timeline in User Profile ── */
+    .timeline {
+      position: relative;
+      margin-top: 20px;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 8px; bottom: 8px; left: 7px;
+      width: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item {
+      position: relative;
       margin-bottom: 20px;
     }
 
-    .search-bar input, .search-bar select {
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
       background: var(--surface);
-      border: 1.5px solid var(--border);
-      color: var(--text);
-      border-radius: 8px;
-      padding: 9px 14px;
-      font-size: 0.85rem;
-      outline: none;
-      transition: border-color 0.15s;
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .search-bar input:focus, .search-bar select:focus { border-color: var(--accent); }
-    .search-bar input[type="text"] { flex: 1; min-width: 200px; }
-    .search-bar select option { background: var(--surface2); }
+    .timeline-content {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
 
-    .search-btn {
-      background: var(--accent);
+    .timeline-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .timeline-desc {
+      font-size: 0.88rem;
       color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 9px 20px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.85rem;
-      transition: background 0.15s;
     }
-    .search-btn:hover { background: #e76f51; }
 
-    /* ── Loader ── */
+    .timeline-meta {
+      font-size: 0.74rem;
+      color: var(--text-subtle);
+    }
+
+    /* ── JSON Details ── */
+    details.detail-json summary {
+      cursor: pointer;
+      color: var(--accent);
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+
+    details.detail-json pre {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      margin-top: 6px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* ── Empty & Loading States ── */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-subtle);
+    }
+
+    .empty-state svg { width: 40px; height: 40px; margin-bottom: 10px; opacity: 0.6; }
+
     .loader {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 60px;
-      color: var(--muted);
-      font-size: 0.9rem;
       gap: 10px;
+      padding: 40px;
+      color: var(--accent);
+      font-weight: 600;
     }
 
     .spinner {
-      width: 20px; height: 20px;
-      border: 2px solid var(--border);
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(244, 162, 97, 0.2);
       border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Responsive ── */
-    @media (max-width: 700px) {
-      .sidebar { transform: translateX(-100%); }
-      .main { margin-left: 0; }
-    }
-
-    .empty { color: var(--muted); text-align: center; padding: 30px; font-size: 0.85rem; }
-
-    .detail-json {
-      font-family: monospace;
-      font-size: 0.72rem;
-      color: var(--muted);
-      max-width: 260px;
-    }
-    .detail-json summary {
-      cursor: pointer;
-      outline: none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--accent);
-    }
-    .detail-json summary:hover { color: var(--accent2); }
-    .detail-json[open] {
-      white-space: pre-wrap;
-      word-break: break-all;
-      color: var(--text);
-    }
-    .detail-json[open] summary {
-      margin-bottom: 4px;
-      color: var(--muted);
-    }
-
-    .ip-link {
-      color: var(--accent);
-      text-decoration: underline;
-      cursor: pointer;
-    }
-    .ip-link:hover { color: var(--accent2); }
   </style>
 </head>
 <body>
+
 <div class="layout">
 
-  <!-- Sidebar -->
-  <nav class="sidebar">
-    <div class="sidebar-logo">
-      Snuggle
-      <span>Analytics Dashboard</span>
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-title">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        Snuggle
+      </div>
+      <span class="brand-badge">Activity & Admin</span>
     </div>
 
-    <div class="nav-item active" data-section="overview">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-      </svg>
-      Overview
-    </div>
+    <nav class="nav-list">
+      <div class="nav-item active" data-section="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+        </svg>
+        Overview
+      </div>
 
-    <div class="nav-item" data-section="visitors">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-      Visitors
-    </div>
+      <div class="nav-item" data-section="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Users
+        <span class="nav-badge" id="navUsersCount">0</span>
+      </div>
 
-    <div class="nav-item" data-section="youtube">
-      <svg viewBox="0 0 24 24" fill="currentColor">
-        <path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.6.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.94 1.95C5.12 20 12 20 12 20s6.88 0 8.6-.47a2.78 2.78 0 0 0 1.94-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/>
-        <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="white"/>
-      </svg>
-      YouTube
-    </div>
+      <div class="nav-item" data-section="ip-directory">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
+        </svg>
+        IP Names
+        <span class="nav-badge" id="navIpCount">0</span>
+      </div>
 
-    <div class="nav-item" data-section="games">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/>
-        <line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/>
-        <rect x="2" y="6" width="20" height="12" rx="2"/>
-      </svg>
-      Games
-    </div>
+      <div class="nav-item" data-section="media">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        YouTube & Movies
+      </div>
 
-    <div class="nav-item" data-section="rooms">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-      Rooms
-    </div>
+      <div class="nav-item" data-section="games">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4"/><circle cx="17" cy="10" r="1"/><circle cx="15" cy="13" r="1"/>
+        </svg>
+        Games
+      </div>
 
-    <div class="nav-item" data-section="logs">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
-      </svg>
-      All Logs
-    </div>
+      <div class="nav-item" data-section="calls">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Calls & Rooms
+      </div>
 
-    <div class="nav-item" data-section="search">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      Search
-    </div>
+      <div class="nav-item" data-section="stream">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Event Stream
+      </div>
+
+      <div class="nav-item" data-section="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Search
+      </div>
+    </nav>
 
     <div class="sidebar-footer">
-      <button class="logout-btn" id="logoutBtn">Sign Out</button>
-    </div>
-  </nav>
+      <button class="btn-side danger" id="btnWipe">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+        Wipe Analytics Data
+      </button>
 
-  <!-- Main -->
+      <button class="btn-side" id="btnLogout">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Workspace ── -->
   <main class="main">
-    <div id="loadingState" class="loader">
-      <div class="spinner"></div>
-      Loading analytics…
-    </div>
 
-    <!-- OVERVIEW -->
-    <section class="section" id="sec-overview">
-      <div class="page-header">
-        <div>
-          <h1>Overview</h1>
-          <div class="subtitle" id="lastUpdated">–</div>
-        </div>
-        <button class="refresh-btn" id="refreshBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-title">
+        <h1 id="pageTitle">General Analytics</h1>
+        <p id="pageSubtitle">Real-time overview of visitor activity, sessions, and media</p>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="pill-btn" id="btnLiveToggle">
+          <span class="live-dot"></span>
+          <span id="liveStatusText">Live (30s)</span>
+        </button>
+
+        <button class="refresh-btn" id="btnRefresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
           </svg>
           Refresh
         </button>
       </div>
+    </header>
 
-      <div class="stat-grid" id="statCards"></div>
+    <div id="loading" class="loader">
+      <div class="spinner"></div>
+      Loading analytics data…
+    </div>
 
+    <!-- ── 1. OVERVIEW SECTION ── -->
+    <section class="section active" id="sec-overview">
+      <div class="filter-bar">
+        <div style="font-weight: 600; color: var(--text-muted); font-size: 0.85rem;">Time Range:</div>
+        <button class="pill-btn active" data-range="today">Today</button>
+        <button class="pill-btn" data-range="7d">Last 7 Days</button>
+        <button class="pill-btn" data-range="30d">Last 30 Days</button>
+        <button class="pill-btn" data-range="all">All Time</button>
+      </div>
+
+      <!-- KPI Stat Cards -->
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <!-- Charts -->
       <div class="charts-grid">
-        <div class="chart-card wide">
-          <div class="chart-title">Visits over the last 30 days</div>
-          <div class="chart-wrap tall"><canvas id="chartVisits30"></canvas></div>
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title">Activity Timeline</div>
+            <div style="font-size: 0.78rem; color: var(--text-subtle);">Events volume over time</div>
+          </div>
+          <div class="chart-wrap tall"><canvas id="chartTimeline"></canvas></div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Event types today</div>
-          <div class="chart-wrap"><canvas id="chartEventTypes"></canvas></div>
+
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title">Event Breakdown</div>
+          </div>
+          <div class="chart-wrap tall"><canvas id="chartBreakdown"></canvas></div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Device breakdown</div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title">Top Games Played</div>
+          </div>
+          <div class="chart-wrap"><canvas id="chartGames"></canvas></div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title">Devices & Platforms</div>
+          </div>
           <div class="chart-wrap"><canvas id="chartDevices"></canvas></div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Browser breakdown</div>
-          <div class="chart-wrap"><canvas id="chartBrowsers"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">OS breakdown</div>
-          <div class="chart-wrap"><canvas id="chartOS"></canvas></div>
-        </div>
       </div>
-    </section>
 
-    <!-- VISITORS -->
-    <section class="section" id="sec-visitors">
-      <div class="page-header">
-        <div><h1>Visitors</h1><div class="subtitle">Page views & device data</div></div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Top Users (by IP)</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>IP Address</th><th>Events Logged</th><th>Most Used Device</th><th>Last Active</th></tr></thead>
-            <tbody id="topUsersTable"></tbody>
-          </table>
+      <!-- Top Users Preview -->
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Most Active Users
+            <span class="badge-count" id="badgeTopUsers">0</span>
+          </div>
+          <button class="btn-action" onclick="switchSection('users')">View All Users →</button>
         </div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Recent page views <span class="badge" id="visitorsBadge">–</span></div>
-        <div class="table-wrap">
+        <div class="table-responsive">
           <table>
             <thead>
               <tr>
-                <th>Time</th><th>Page</th><th>IP</th><th>Device</th><th>Browser</th><th>OS</th><th>Language</th><th>Referrer</th>
+                <th>User / Name</th>
+                <th>IP Address</th>
+                <th>Device</th>
+                <th>Total Events</th>
+                <th>Last Active</th>
+                <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="visitorsTable"></tbody>
+            <tbody id="topUsersBody"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- YOUTUBE -->
-    <section class="section" id="sec-youtube">
-      <div class="page-header">
-        <div><h1>YouTube</h1><div class="subtitle">Videos watched & search queries</div></div>
+    <!-- ── 2. USERS SECTION (INDIVIDUAL USERS) ── -->
+    <section class="section" id="sec-users">
+      <div class="filter-bar">
+        <input type="text" class="input-search" id="userSearchInput" placeholder="Search by name, IP, visitor ID, device, OS...">
+        <select class="select-filter" id="userFilterSort">
+          <option value="recent">Sort by Most Recent</option>
+          <option value="events">Sort by Most Active</option>
+          <option value="name">Sort by Name</option>
+        </select>
       </div>
-      <div class="charts-grid">
-        <div class="chart-card wide">
-          <div class="chart-title">YouTube activity (last 7 days)</div>
-          <div class="chart-wrap tall"><canvas id="chartYt7days"></canvas></div>
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Individual Users Directory
+            <span class="badge-count" id="badgeUsersTotal">0</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-subtle);">Click any user to view complete activity timeline</div>
         </div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Videos Watched <span class="badge" id="ytWatchBadge">–</span></div>
-        <div class="table-wrap">
+        <div class="table-responsive">
           <table>
-            <thead><tr><th>Time</th><th>Video ID</th><th>Title</th><th>Room</th><th>IP</th><th>Device</th></tr></thead>
-            <tbody id="ytWatchTable"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Search Queries <span class="badge" id="ytSearchBadge">–</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Time</th><th>Query</th><th>Results Returned</th><th>IP</th></tr></thead>
-            <tbody id="ytSearchTable"></tbody>
+            <thead>
+              <tr>
+                <th>User (Assigned Name)</th>
+                <th>IP Address</th>
+                <th>Primary Device</th>
+                <th>Location</th>
+                <th>Views</th>
+                <th>YouTube</th>
+                <th>Games</th>
+                <th>Calls</th>
+                <th>Total Events</th>
+                <th>Last Active</th>
+                <th>Profile</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- GAMES -->
+    <!-- ── 3. IP DIRECTORY SECTION ── -->
+    <section class="section" id="sec-ip-directory">
+      <div class="filter-bar">
+        <input type="text" class="input-search" id="ipSearchInput" placeholder="Search IP addresses or assigned names...">
+        <button class="refresh-btn" id="btnAddIpModal" style="background: var(--accent); color: #1f140b;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Assign Name to IP
+        </button>
+      </div>
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Assigned IP Address Names
+            <span class="badge-count" id="badgeIpDirectory">0</span>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-subtle);">
+            Names assigned here appear everywhere across all stats and timelines
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>IP Address</th>
+                <th>Assigned Name</th>
+                <th>Description / Notes</th>
+                <th>Events Logged</th>
+                <th>Last Seen</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ipDirectoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 4. MEDIA SECTION (YOUTUBE & MOVIES) ── -->
+    <section class="section" id="sec-media">
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Movies Watched
+            <span class="badge-count" id="badgeMovies">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Movie / File Name</th>
+                <th>Duration</th>
+                <th>Room</th>
+                <th>User / IP</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody id="moviesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            YouTube Videos Watched
+            <span class="badge-count" id="badgeYtWatch">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Video</th>
+                <th>Room</th>
+                <th>User / IP</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody id="ytWatchBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            YouTube Search Queries
+            <span class="badge-count" id="badgeYtSearch">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Query</th>
+                <th>Results Returned</th>
+                <th>User / IP</th>
+              </tr>
+            </thead>
+            <tbody id="ytSearchBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 5. GAMES SECTION ── -->
     <section class="section" id="sec-games">
-      <div class="page-header">
-        <div><h1>Games</h1><div class="subtitle">Game sessions & activity</div></div>
-      </div>
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Games played (all time)</div>
-          <div class="chart-wrap"><canvas id="chartGames"></canvas></div>
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Game Sessions & Activity
+            <span class="badge-count" id="badgeGamesSessions">0</span>
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Games per day (last 7 days)</div>
-          <div class="chart-wrap"><canvas id="chartGames7days"></canvas></div>
-        </div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Game Sessions <span class="badge" id="gamesBadge">–</span></div>
-        <div class="table-wrap">
+        <div class="table-responsive">
           <table>
-            <thead><tr><th>Time</th><th>Game</th><th>Action</th><th>Room</th><th>IP</th><th>Device</th></tr></thead>
-            <tbody id="gamesTable"></tbody>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Game</th>
+                <th>Action</th>
+                <th>Room</th>
+                <th>User / IP</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody id="gamesTableBody"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ROOMS -->
-    <section class="section" id="sec-rooms">
-      <div class="page-header">
-        <div><h1>Rooms</h1><div class="subtitle">Room creation & join events</div></div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Room Events <span class="badge" id="roomsBadge">–</span></div>
-        <div class="table-wrap">
+    <!-- ── 6. CALLS & ROOMS SECTION ── -->
+    <section class="section" id="sec-calls">
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Calls (WebRTC Video & Audio)
+            <span class="badge-count" id="badgeCallsList">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
           <table>
-            <thead><tr><th>Time</th><th>Event</th><th>Room Code</th><th>Users</th><th>IP</th><th>Device</th></tr></thead>
-            <tbody id="roomsTable"></tbody>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Room Code</th>
+                <th>Duration</th>
+                <th>User / IP</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody id="callsTableBody"></tbody>
           </table>
         </div>
       </div>
-      <div class="table-card">
-        <div class="table-card-header">Room Pairs (IPs & Devices in same room)</div>
-        <div class="table-wrap">
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Room Pairs (Users Connected Together)
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-subtle);">Pairs of users who shared rooms</div>
+        </div>
+        <div class="table-responsive">
           <table>
-            <thead><tr><th>Room Code</th><th>User 1</th><th>User 2</th><th>Last Activity</th></tr></thead>
-            <tbody id="roomPairsTable"></tbody>
+            <thead>
+              <tr>
+                <th>Room Code</th>
+                <th>User 1</th>
+                <th>User 2</th>
+                <th>Last Active</th>
+              </tr>
+            </thead>
+            <tbody id="roomPairsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Room Activity (Create & Join)
+            <span class="badge-count" id="badgeRoomsList">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Event</th>
+                <th>Room Code</th>
+                <th>Users Count</th>
+                <th>User / IP</th>
+                <th>Device</th>
+              </tr>
+            </thead>
+            <tbody id="roomsTableBody"></tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ALL LOGS -->
-    <section class="section" id="sec-logs">
-      <div class="page-header">
-        <div><h1>All Logs</h1><div class="subtitle">Full event stream (last 500 events)</div></div>
-      </div>
-      <div class="table-card">
-        <div class="table-card-header">Events <span class="badge" id="logsBadge">–</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Time</th><th>Type</th><th>IP</th><th>Device</th><th>Browser</th><th>OS</th><th>Data</th></tr></thead>
-            <tbody id="logsTable"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- SEARCH -->
-    <section class="section" id="sec-search">
-      <div class="page-header">
-        <div><h1>Search Logs</h1><div class="subtitle">Filter & search all events</div></div>
-      </div>
-      <div class="search-bar">
-        <input type="text" id="searchQuery" placeholder="Search IP, user agent, data…">
-        <select id="searchType">
-          <option value="all">All types</option>
+    <!-- ── 7. EVENT STREAM SECTION ── -->
+    <section class="section" id="sec-stream">
+      <div class="filter-bar">
+        <select class="select-filter" id="streamTypeFilter">
+          <option value="all">All Events</option>
           <option value="page_view">Page Views</option>
           <option value="yt_watch">YouTube Watch</option>
           <option value="yt_search">YouTube Search</option>
+          <option value="movie_watch">Movie Watch</option>
           <option value="game_play">Game Play</option>
+          <option value="call_start">Call Start</option>
+          <option value="call_end">Call End</option>
           <option value="room_create">Room Create</option>
           <option value="room_join">Room Join</option>
+          <option value="activity_select">Activity Select</option>
         </select>
-        <input type="date" id="searchFrom" title="From date">
-        <input type="date" id="searchTo" title="To date">
-        <button class="search-btn" id="searchBtn">Search</button>
+        <input type="text" class="input-search" id="streamSearchInput" placeholder="Filter stream by IP, name, room...">
       </div>
-      <div class="table-card">
-        <div class="table-card-header">Results <span class="badge" id="searchBadge">–</span></div>
-        <div class="table-wrap">
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Live Event Stream
+            <span class="badge-count" id="badgeStreamCount">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
           <table>
-            <thead><tr><th>Time</th><th>Type</th><th>IP</th><th>Device</th><th>Browser</th><th>OS</th><th>UA</th><th>Data</th></tr></thead>
-            <tbody id="searchTable"></tbody>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>User / IP</th>
+                <th>Device / OS</th>
+                <th>Browser</th>
+                <th>Payload Data</th>
+              </tr>
+            </thead>
+            <tbody id="streamTableBody"></tbody>
           </table>
         </div>
       </div>
     </section>
+
+    <!-- ── 8. SEARCH SECTION ── -->
+    <section class="section" id="sec-search">
+      <div class="filter-bar">
+        <input type="text" class="input-search" id="searchQ" placeholder="Search keywords in IP, user name, data JSON, user agent...">
+        <select class="select-filter" id="searchType">
+          <option value="all">All event types</option>
+          <option value="page_view">page_view</option>
+          <option value="yt_watch">yt_watch</option>
+          <option value="yt_search">yt_search</option>
+          <option value="movie_watch">movie_watch</option>
+          <option value="game_play">game_play</option>
+          <option value="call_start">call_start</option>
+          <option value="call_end">call_end</option>
+          <option value="room_create">room_create</option>
+          <option value="room_join">room_join</option>
+        </select>
+        <input type="date" class="select-filter" id="searchDateFrom" title="From date">
+        <input type="date" class="select-filter" id="searchDateTo" title="To date">
+        <button class="refresh-btn" id="btnRunSearch" style="background: var(--accent); color: #1f140b;">
+          Search
+        </button>
+      </div>
+
+      <div class="card-table">
+        <div class="card-header">
+          <div class="card-title">
+            Search Results
+            <span class="badge-count" id="badgeSearchResults">0</span>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>User / IP</th>
+                <th>Device</th>
+                <th>Browser</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="searchResultsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
+<!-- ── MODAL: INDIVIDUAL USER PROFILE & TIMELINE ── -->
+<div class="modal-backdrop" id="userModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div class="user-avatar" id="modalUserAvatar" style="width: 44px; height: 44px; font-size: 1.1rem;">U</div>
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h2 id="modalUserName" style="font-size: 1.25rem; font-weight: 800; color: #fff;">User Name</h2>
+            <button class="btn-edit-name" id="btnEditModalUserName" title="Edit Name for this IP">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-subtle); display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+            <span>IP: <strong id="modalUserIp" style="font-family: monospace; color: var(--accent);">0.0.0.0</strong></span>
+            <span>•</span>
+            <span id="modalUserDevice">Desktop</span>
+            <span>•</span>
+            <span id="modalUserCountry">Country</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="modal-close" onclick="closeUserModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Mini stats for this user -->
+      <div class="kpi-grid" id="modalUserKpis" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom: 20px;"></div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: #fff;">Chronological Activity Timeline</h3>
+        <span style="font-size: 0.78rem; color: var(--text-subtle);" id="modalTimelineCount">0 events</span>
+      </div>
+
+      <div class="timeline" id="modalTimeline"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: ASSIGN / EDIT IP NAME ── -->
+<div class="modal-backdrop" id="ipNameModal">
+  <div class="modal-card" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: #fff;">Assign Name to IP Address</h3>
+      <button class="modal-close" onclick="closeIpNameModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">IP Address</label>
+        <input type="text" id="ipModalInputIp" class="input-search" style="width: 100%; font-family: monospace;" placeholder="e.g. 192.168.1.15">
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Name / Label</label>
+        <input type="text" id="ipModalInputName" class="input-search" style="width: 100%;" placeholder="e.g. Aarav's Phone, Riya's Laptop">
+      </div>
+
+      <div style="margin-bottom: 22px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">Notes (Optional)</label>
+        <input type="text" id="ipModalInputNotes" class="input-search" style="width: 100%;" placeholder="e.g. Living room Wi-Fi, Android Chrome">
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn-side" style="width: auto; padding: 8px 16px;" onclick="closeIpNameModal()">Cancel</button>
+        <button class="refresh-btn" id="btnSaveIpName" style="background: var(--accent); color: #1f140b;">Save Name</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: WIPE CONFIRMATION ── -->
+<div class="modal-backdrop" id="wipeModal">
+  <div class="modal-card" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--red);">Wipe Analytics Data?</h3>
+      <button class="modal-close" onclick="closeWipeModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+        This will permanently clear all recorded analytics events from the database and local logs. This action cannot be undone.
+      </p>
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button class="btn-side" style="width: auto; padding: 8px 16px;" onclick="closeWipeModal()">Cancel</button>
+        <button class="refresh-btn" id="btnConfirmWipe" style="background: var(--red); color: #fff;">Yes, Wipe Everything</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Client Script ── -->
 <script>
-// ── State ─────────────────────────────────────────────────────────────────
-let statsData = null;
+// ── Global State ──────────────────────────────────────────────────────────
+let rawStats = null;
+let currentRange = 'today';
+let activeUserModalIp = null;
+let liveIntervalId = null;
+let isLive = true;
 const charts = {};
 
-// ── Nav ───────────────────────────────────────────────────────────────────
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('sec-' + item.dataset.section).classList.add('active');
+// ── Nav & Sections ────────────────────────────────────────────────────────
+const SECTIONS = {
+  overview: { title: 'General Analytics', sub: 'Real-time overview of visitor activity, sessions, and media' },
+  users: { title: 'Individual Users', sub: 'Explore individual profiles, behavior, and complete activity history' },
+  'ip-directory': { title: 'IP Names Directory', sub: 'Assign and manage friendly names and notes for all IP addresses' },
+  media: { title: 'YouTube & Movies', sub: 'Watch sessions, search queries, and duration' },
+  games: { title: 'Games Activity', sub: 'Wordle, Connections, Strands, Contra, and Battle City sessions' },
+  calls: { title: 'Calls & Rooms', sub: 'WebRTC video calls, connected durations, and room peer pairs' },
+  stream: { title: 'Event Stream', sub: 'Live feed of raw incoming events' },
+  search: { title: 'Search Logs', sub: 'Filter and inspect events by keyword, type, or date' }
+};
+
+function switchSection(secId) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+
+  const nav = document.querySelector(`.nav-item[data-section="${secId}"]`);
+  const sec = document.getElementById(`sec-${secId}`);
+  if (nav) nav.classList.add('active');
+  if (sec) sec.classList.add('active');
+
+  const meta = SECTIONS[secId] || { title: 'Analytics', sub: '' };
+  document.getElementById('pageTitle').textContent = meta.title;
+  document.getElementById('pageSubtitle').textContent = meta.sub;
+}
+
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => switchSection(el.dataset.section));
+});
+
+// Time range pills
+document.querySelectorAll('.filter-bar button[data-range]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-bar button[data-range]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRange = btn.dataset.range;
+    if (rawStats) renderOverview(rawStats);
   });
 });
 
-function searchForIp(ip) {
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelector('.nav-item[data-section="search"]').classList.add('active');
-  document.getElementById('sec-search').classList.add('active');
-  
-  document.getElementById('searchQuery').value = ip;
-  document.getElementById('searchType').value = 'all';
-  document.getElementById('searchFrom').value = '';
-  document.getElementById('searchTo').value = '';
-  
-  document.getElementById('searchBtn').click();
-}
-
-function ipLink(ip) {
-  if (!ip || ip === 'Unknown') return '<span style="color:var(--muted)">–</span>';
-  return `<a class="ip-link" onclick="searchForIp('${safe(ip)}')">${safe(ip)}</a>`;
-}
-
-function jsonDetails(obj, limit = 35) {
-  if (!obj || Object.keys(obj).length === 0) return '<span style="color:var(--muted)">–</span>';
-  const str = JSON.stringify(obj);
-  const summary = str.length > limit ? str.substring(0, limit) + '…' : str;
-  return `<details class="detail-json"><summary>${safe(summary)}</summary>${safe(str)}</details>`;
-}
-
-function textDetails(str, limit = 35) {
-  if (!str) return '<span style="color:var(--muted)">–</span>';
-  const summary = str.length > limit ? str.substring(0, limit) + '…' : str;
-  return `<details class="detail-json"><summary>${safe(summary)}</summary>${safe(str)}</details>`;
-}
-
-// ── Logout ────────────────────────────────────────────────────────────────
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-  await fetch('/stats/logout', { method: 'POST' });
-  window.location.href = '/stats';
-});
-
-// ── Refresh ───────────────────────────────────────────────────────────────
-document.getElementById('refreshBtn').addEventListener('click', loadData);
-
 // ── Helpers ───────────────────────────────────────────────────────────────
-function fmtTime(iso) {
-  if (!iso) return '–';
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
-
-function tagHtml(type) {
-  const map = {
-    page_view: 'tag-page',
-    yt_watch: 'tag-yt',
-    yt_search: 'tag-yt',
-    game_play: 'tag-game',
-    game_sync: 'tag-game',
-    room_create: 'tag-room',
-    room_join: 'tag-room',
-    room_leave: 'tag-room',
-  };
-  const cls = map[type] || 'tag-other';
-  return `<span class="tag ${cls}">${type}</span>`;
-}
-
 function safe(v) {
-  if (v === null || v === undefined || v === '') return '<span style="color:var(--muted)">–</span>';
+  if (v === null || v === undefined || v === '') return '–';
   return String(v).replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function countBy(arr, key) {
-  const counts = {};
-  arr.forEach(e => {
-    const v = e[key] || 'Unknown';
-    counts[v] = (counts[v] || 0) + 1;
+function fmtTime(iso) {
+  if (!iso) return '–';
+  const d = new Date(iso);
+  return d.toLocaleString(undefined, {
+    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
   });
-  return counts;
 }
 
-function groupByDay(events, field = 'created_at') {
-  const counts = {};
-  events.forEach(e => {
-    const day = (e[field] || '').substring(0, 10);
-    if (day) counts[day] = (counts[day] || 0) + 1;
-  });
-  return counts;
+function timeAgo(iso) {
+  if (!iso) return '–';
+  const diff = Date.now() - new Date(iso).getTime();
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  return `${day}d ago`;
 }
 
-function last30Days() {
-  const days = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000);
-    days.push(d.toISOString().substring(0, 10));
+function fmtSec(sec) {
+  if (!sec || isNaN(sec)) return '0s';
+  const s = Math.round(sec);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const remS = s % 60;
+  if (m < 60) return `${m}m ${remS}s`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
+
+function getUserName(ip, ipNames) {
+  if (!ip) return 'Unnamed User';
+  const dict = ipNames || (rawStats ? rawStats.ipNames : {});
+  return dict[ip]?.name || null;
+}
+
+function userBadgeHtml(ip, ipNames, showIp = true) {
+  const name = getUserName(ip, ipNames);
+  const cleanIp = safe(ip);
+  if (name) {
+    return `<span class="user-name-text">
+      <strong>${safe(name)}</strong>
+      ${showIp ? `<span class="user-ip-sub">(${cleanIp})</span>` : ''}
+      <button class="btn-edit-name" onclick="openIpNameModal('${cleanIp}', '${safe(name)}')" title="Edit assigned name">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </button>
+    </span>`;
   }
-  return days;
+  return `<span class="user-name-text">
+    <a class="ip-tag" onclick="openUserModal('${cleanIp}')">${cleanIp}</a>
+    <button class="btn-edit-name" onclick="openIpNameModal('${cleanIp}', '')" title="Assign name to this IP">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </button>
+  </span>`;
 }
 
-function last7Days() {
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000);
-    days.push(d.toISOString().substring(0, 10));
-  }
-  return days;
+function tagChip(type) {
+  const map = {
+    page_view: 'chip-page',
+    page_leave: 'chip-page',
+    page_heartbeat: 'chip-page',
+    yt_watch: 'chip-yt',
+    yt_search: 'chip-yt',
+    movie_watch: 'chip-movie',
+    game_play: 'chip-game',
+    call_start: 'chip-call',
+    call_end: 'chip-call',
+    call_event: 'chip-call',
+    room_create: 'chip-room',
+    room_join: 'chip-room',
+    activity_select: 'chip-page'
+  };
+  return `<span class="tag-chip ${map[type] || 'chip-page'}">${safe(type)}</span>`;
 }
-
-const CHART_COLORS = ['#f4a261','#e76f51','#af804f','#876a4b','#d4a373','#faedcd','#fefae0','#ccd5ae','#e9edc9','#3c280d'];
 
 function makeChart(id, type, labels, datasets, options = {}) {
   if (charts[id]) charts[id].destroy();
@@ -780,356 +1522,788 @@ function makeChart(id, type, labels, datasets, options = {}) {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          labels: { color: '#94a3b8', font: { size: 11 } },
+          labels: { color: '#d4c5b3', font: { size: 11, family: 'system-ui' } },
           position: type === 'doughnut' ? 'right' : 'top'
         }
       },
       scales: type !== 'doughnut' ? {
-        x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-        y: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+        x: { ticks: { color: '#998772', font: { size: 10 } }, grid: { color: 'rgba(244, 162, 97, 0.05)' } },
+        y: { ticks: { color: '#998772', font: { size: 10 } }, grid: { color: 'rgba(244, 162, 97, 0.07)' }, beginAtZero: true }
       } : {},
       ...options
     }
   });
 }
 
-// ── Render stats ──────────────────────────────────────────────────────────
-function renderAll(data) {
-  statsData = data;
-  const { recentEvents, todayEvents, week7Events, month30Events } = data;
+const PALETTE = ['#f4a261', '#e76f51', '#2ec4b6', '#3a86ff', '#9d4edd', '#ffb703', '#ef476f', '#876a4b'];
 
-  // Counts
-  const todayViews = todayEvents.filter(e => e.event_type === 'page_view').length;
-  const todayYt = todayEvents.filter(e => e.event_type === 'yt_watch').length;
-  const todayGames = todayEvents.filter(e => e.event_type === 'game_play').length;
-  const todayRooms = todayEvents.filter(e => e.event_type === 'room_create').length;
-  const uniqueIPs30 = new Set(month30Events.map(e => e.ip_address).filter(Boolean)).size;
-  const uniqueIPsToday = new Set(todayEvents.map(e => e.ip_address).filter(Boolean)).size;
+// ── Render 1: Overview ────────────────────────────────────────────────────
+function renderOverview(data) {
+  const { recentEvents, todayEvents, week7Events, month30Events, users, ipNames, aggregates } = data;
 
-  // Stat cards
-  document.getElementById('statCards').innerHTML = `
-    <div class="stat-card">
-      <div class="label">Visitors Today</div>
-      <div class="value">${todayViews}</div>
-      <div class="meta">${uniqueIPsToday} unique IP${uniqueIPsToday !== 1 ? 's' : ''}</div>
+  // Filter based on selected time range
+  let activeEvents = recentEvents;
+  if (currentRange === 'today') activeEvents = todayEvents;
+  else if (currentRange === '7d') activeEvents = week7Events;
+  else if (currentRange === '30d') activeEvents = month30Events;
+
+  const totalEv = activeEvents.length;
+  const uniqueUsers = new Set(activeEvents.map(e => e.ip_address).filter(Boolean)).size;
+  const totalViews = activeEvents.filter(e => e.event_type === 'page_view').length;
+  const totalYt = activeEvents.filter(e => e.event_type === 'yt_watch').length;
+  const totalMovies = activeEvents.filter(e => e.event_type === 'movie_watch').length;
+  const totalGames = activeEvents.filter(e => e.event_type === 'game_play').length;
+  const totalCalls = activeEvents.filter(e => e.event_type === 'call_start' || e.event_type === 'call_event').length;
+  const totalRooms = activeEvents.filter(e => e.event_type === 'room_create' || e.event_type === 'room_join').length;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Active Users</span><div class="kpi-icon">👥</div></div>
+      <div class="kpi-value">${uniqueUsers}</div>
+      <div class="kpi-sub">${users.length} total recorded users</div>
     </div>
-    <div class="stat-card">
-      <div class="label">YouTube Watches Today</div>
-      <div class="value">${todayYt}</div>
-      <div class="meta">videos played today</div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Total Events</span><div class="kpi-icon">⚡</div></div>
+      <div class="kpi-value">${totalEv}</div>
+      <div class="kpi-sub">Across selected range</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Games Today</div>
-      <div class="value">${todayGames}</div>
-      <div class="meta">game sessions today</div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Page Views</span><div class="kpi-icon">📄</div></div>
+      <div class="kpi-value">${totalViews}</div>
+      <div class="kpi-sub">Website visits</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Rooms Created Today</div>
-      <div class="value">${todayRooms}</div>
-      <div class="meta">new rooms</div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Movies Watched</span><div class="kpi-icon">🍿</div></div>
+      <div class="kpi-value">${totalMovies}</div>
+      <div class="kpi-sub">Local video stream sessions</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Total Events (30d)</div>
-      <div class="value">${month30Events.length}</div>
-      <div class="meta">${uniqueIPs30} unique IPs</div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">YouTube Watched</span><div class="kpi-icon">📺</div></div>
+      <div class="kpi-value">${totalYt}</div>
+      <div class="kpi-sub">${activeEvents.filter(e => e.event_type === 'yt_search').length} searches performed</div>
     </div>
-    <div class="stat-card">
-      <div class="label">Total Logged (7d)</div>
-      <div class="value">${week7Events.length}</div>
-      <div class="meta">all event types</div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Games Played</span><div class="kpi-icon">🎮</div></div>
+      <div class="kpi-value">${totalGames}</div>
+      <div class="kpi-sub">Wordle, Connections, etc.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Calls Made</span><div class="kpi-icon">📞</div></div>
+      <div class="kpi-value">${totalCalls}</div>
+      <div class="kpi-sub">Video/audio calls</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><span class="kpi-label">Rooms Created/Joined</span><div class="kpi-icon">🚪</div></div>
+      <div class="kpi-value">${totalRooms}</div>
+      <div class="kpi-sub">Sync sessions</div>
     </div>
   `;
 
-  document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+  // Timeline Chart
+  const days = [];
+  const countsByDay = {};
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    days.push(d);
+    countsByDay[d] = 0;
+  }
+  month30Events.forEach(e => {
+    const d = (e.created_at || '').slice(0, 10);
+    if (countsByDay[d] !== undefined) countsByDay[d]++;
+  });
 
-  // Chart: visits 30d
-  const days30 = last30Days();
-  const visitsByDay = groupByDay(month30Events.filter(e => e.event_type === 'page_view'));
-  makeChart('chartVisits30', 'line', days30.map(d => d.slice(5)), [{
-    label: 'Page Views',
-    data: days30.map(d => visitsByDay[d] || 0),
+  makeChart('chartTimeline', 'line', days.map(d => d.slice(5)), [{
+    label: 'Total Activity Events',
+    data: days.map(d => countsByDay[d]),
     borderColor: '#f4a261',
     backgroundColor: 'rgba(244, 162, 97, 0.12)',
     fill: true,
-    tension: 0.4,
-    pointRadius: 3,
+    tension: 0.35,
+    pointRadius: 4,
     pointBackgroundColor: '#f4a261'
   }]);
 
-  // Chart: event types today
-  const typeCountsToday = countBy(todayEvents, 'event_type');
-  makeChart('chartEventTypes', 'doughnut',
-    Object.keys(typeCountsToday),
-    [{ data: Object.values(typeCountsToday), backgroundColor: CHART_COLORS, borderWidth: 0 }]
-  );
-
-  // Chart: devices (30d)
-  const deviceCounts = countBy(month30Events, 'device_type');
-  makeChart('chartDevices', 'doughnut',
-    Object.keys(deviceCounts),
-    [{ data: Object.values(deviceCounts), backgroundColor: CHART_COLORS, borderWidth: 0 }]
-  );
-
-  // Chart: browsers (30d)
-  const browserCounts = countBy(month30Events, 'browser');
-  makeChart('chartBrowsers', 'bar',
-    Object.keys(browserCounts),
-    [{ label: 'Users', data: Object.values(browserCounts), backgroundColor: CHART_COLORS, borderRadius: 6 }]
-  );
-
-  // Chart: OS (30d)
-  const osCounts = countBy(month30Events, 'os');
-  makeChart('chartOS', 'bar',
-    Object.keys(osCounts),
-    [{ label: 'Users', data: Object.values(osCounts), backgroundColor: CHART_COLORS.slice(2), borderRadius: 6 }]
-  );
-
-  // ── Visitors table ─────────────────────────────────────────────────────
-  const pageViews = recentEvents.filter(e => e.event_type === 'page_view');
-  document.getElementById('visitorsBadge').textContent = pageViews.length;
-  document.getElementById('visitorsTable').innerHTML = pageViews.length
-    ? pageViews.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td>${safe(e.data?.page || e.data?.path)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-          <td>${safe(e.device_type)}</td>
-          <td>${safe(e.browser)}</td>
-          <td>${safe(e.os)}</td>
-          <td>${safe(e.language)}</td>
-          <td title="${safe(e.referrer)}">${safe(e.referrer?.substring(0, 40))}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="8" class="empty">No page views logged yet</td></tr>`;
-
-  // ── YouTube ────────────────────────────────────────────────────────────
-  const ytWatches = recentEvents.filter(e => e.event_type === 'yt_watch');
-  const ytSearches = recentEvents.filter(e => e.event_type === 'yt_search');
-
-  // Chart: YT 7 days
-  const days7 = last7Days();
-  const ytByDay = groupByDay(week7Events.filter(e => e.event_type === 'yt_watch'));
-  const searchByDay = groupByDay(week7Events.filter(e => e.event_type === 'yt_search'));
-  makeChart('chartYt7days', 'bar', days7.map(d => d.slice(5)), [
-    { label: 'Videos Watched', data: days7.map(d => ytByDay[d] || 0), backgroundColor: '#e76f51', borderRadius: 6 },
-    { label: 'Searches', data: days7.map(d => searchByDay[d] || 0), backgroundColor: '#af804f', borderRadius: 6 }
-  ]);
-
-  document.getElementById('ytWatchBadge').textContent = ytWatches.length;
-  document.getElementById('ytWatchTable').innerHTML = ytWatches.length
-    ? ytWatches.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td><a href="https://youtu.be/${safe(e.data?.videoId)}" target="_blank" style="color:var(--accent2)">${safe(e.data?.videoId)}</a></td>
-          <td>${safe(e.data?.title)}</td>
-          <td>${safe(e.data?.roomCode)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-          <td>${safe(e.device_type)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="6" class="empty">No videos watched yet</td></tr>`;
-
-  document.getElementById('ytSearchBadge').textContent = ytSearches.length;
-  document.getElementById('ytSearchTable').innerHTML = ytSearches.length
-    ? ytSearches.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td>${safe(e.data?.query)}</td>
-          <td>${safe(e.data?.resultsCount)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="4" class="empty">No searches logged yet</td></tr>`;
-
-  // ── Games ──────────────────────────────────────────────────────────────
-  const gamePlays = recentEvents.filter(e => e.event_type === 'game_play');
-  const gameCountsAll = {};
-  recentEvents.filter(e => e.event_type === 'game_play').forEach(e => {
-    const g = e.data?.game || 'Unknown';
-    gameCountsAll[g] = (gameCountsAll[g] || 0) + 1;
+  // Event Breakdown Doughnut
+  const eventTypes = {};
+  activeEvents.forEach(e => {
+    const t = e.event_type || 'other';
+    eventTypes[t] = (eventTypes[t] || 0) + 1;
   });
-  makeChart('chartGames', 'doughnut',
-    Object.keys(gameCountsAll),
-    [{ data: Object.values(gameCountsAll), backgroundColor: CHART_COLORS, borderWidth: 0 }]
-  );
-
-  const gamesByDay = groupByDay(week7Events.filter(e => e.event_type === 'game_play'));
-  makeChart('chartGames7days', 'bar', days7.map(d => d.slice(5)), [{
-    label: 'Game Sessions',
-    data: days7.map(d => gamesByDay[d] || 0),
-    backgroundColor: '#f4a261', borderRadius: 6
+  makeChart('chartBreakdown', 'doughnut', Object.keys(eventTypes), [{
+    data: Object.values(eventTypes),
+    backgroundColor: PALETTE,
+    borderWidth: 0
   }]);
 
-  document.getElementById('gamesBadge').textContent = gamePlays.length;
-  document.getElementById('gamesTable').innerHTML = gamePlays.length
-    ? gamePlays.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td>${safe(e.data?.game)}</td>
-          <td>${safe(e.data?.action)}</td>
-          <td>${safe(e.data?.roomCode)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-          <td>${safe(e.device_type)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="6" class="empty">No game sessions logged yet</td></tr>`;
+  // Top Games Chart
+  const gameCounts = {};
+  month30Events.filter(e => e.event_type === 'game_play').forEach(e => {
+    const g = e.data?.game || 'Unknown';
+    gameCounts[g] = (gameCounts[g] || 0) + 1;
+  });
+  makeChart('chartGames', 'bar', Object.keys(gameCounts).length ? Object.keys(gameCounts) : ['No games yet'], [{
+    label: 'Sessions',
+    data: Object.keys(gameCounts).length ? Object.values(gameCounts) : [0],
+    backgroundColor: '#f4a261',
+    borderRadius: 6
+  }]);
 
-  // ── Rooms ──────────────────────────────────────────────────────────────
-  const roomEvents = recentEvents.filter(e => ['room_create','room_join','room_leave'].includes(e.event_type));
-  document.getElementById('roomsBadge').textContent = roomEvents.length;
-  document.getElementById('roomsTable').innerHTML = roomEvents.length
-    ? roomEvents.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td>${tagHtml(e.event_type)}</td>
-          <td><code>${safe(e.data?.roomCode)}</code></td>
-          <td>${safe(e.data?.usersCount)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-          <td>${safe(e.device_type)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="6" class="empty">No room events yet</td></tr>`;
+  // Devices Doughnut
+  const devCounts = {};
+  month30Events.forEach(e => {
+    const d = e.device_type || 'desktop';
+    devCounts[d] = (devCounts[d] || 0) + 1;
+  });
+  makeChart('chartDevices', 'doughnut', Object.keys(devCounts), [{
+    data: Object.values(devCounts),
+    backgroundColor: ['#2ec4b6', '#f4a261', '#3a86ff'],
+    borderWidth: 0
+  }]);
 
-  // ── Room Pairs ─────────────────────────────────────────────────────────
+  // Top users preview table (first 6)
+  const topSlice = users.slice(0, 6);
+  document.getElementById('badgeTopUsers').textContent = topSlice.length;
+  document.getElementById('topUsersBody').innerHTML = topSlice.length ? topSlice.map(u => `
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="user-avatar">${(u.name ? u.name[0] : (u.ip[0] || 'U')).toUpperCase()}</div>
+          ${userBadgeHtml(u.ip, ipNames, false)}
+        </div>
+      </td>
+      <td><span class="user-ip-sub" style="font-size:0.86rem;">${safe(u.ip)}</span></td>
+      <td>${safe(u.deviceType)} <span style="font-size:0.75rem; color:var(--text-subtle);">(${safe(u.os)})</span></td>
+      <td><strong>${u.eventCount}</strong></td>
+      <td>${timeAgo(u.lastActive)}</td>
+      <td>
+        <button class="btn-action" onclick="openUserModal('${safe(u.ip)}')">
+          Profile & Timeline →
+        </button>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No user activity recorded yet</td></tr>`;
+}
+
+// ── Render 2: Users Section ───────────────────────────────────────────────
+function renderUsers(users, ipNames) {
+  document.getElementById('navUsersCount').textContent = users.length;
+  document.getElementById('badgeUsersTotal').textContent = users.length;
+
+  const q = (document.getElementById('userSearchInput').value || '').toLowerCase().trim();
+  const sort = document.getElementById('userFilterSort').value;
+
+  let filtered = users.filter(u => {
+    if (!q) return true;
+    const nameMatch = (u.name || '').toLowerCase().includes(q);
+    const ipMatch = (u.ip || '').toLowerCase().includes(q);
+    const devMatch = (u.deviceType || '').toLowerCase().includes(q);
+    const osMatch = (u.os || '').toLowerCase().includes(q);
+    return nameMatch || ipMatch || devMatch || osMatch;
+  });
+
+  if (sort === 'events') filtered.sort((a, b) => b.eventCount - a.eventCount);
+  else if (sort === 'name') filtered.sort((a, b) => (a.name || a.ip).localeCompare(b.name || b.ip));
+  else filtered.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
+
+  document.getElementById('usersTableBody').innerHTML = filtered.length ? filtered.map(u => `
+    <tr>
+      <td>
+        <div class="user-cell">
+          <div class="user-avatar">${(u.name ? u.name[0] : (u.ip[0] || 'U')).toUpperCase()}</div>
+          <div class="user-name-wrap">
+            <span class="user-name-text">
+              ${u.name ? `<strong>${safe(u.name)}</strong>` : `<em style="color:var(--text-subtle)">Unnamed</em>`}
+              <button class="btn-edit-name" onclick="openIpNameModal('${safe(u.ip)}', '${safe(u.name || '')}')" title="Assign / edit name">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </button>
+            </span>
+            ${u.notes ? `<span style="font-size:0.72rem; color:var(--text-subtle);">${safe(u.notes)}</span>` : ''}
+          </div>
+        </div>
+      </td>
+      <td>
+        <a class="ip-tag" onclick="openUserModal('${safe(u.ip)}')">${safe(u.ip)}</a>
+      </td>
+      <td>${safe(u.deviceType)} <span style="font-size:0.75rem; color:var(--text-subtle);">(${safe(u.os)} • ${safe(u.browser)})</span></td>
+      <td>${safe(u.country || '–')}</td>
+      <td>${u.eventCounts.page_view || 0}</td>
+      <td>${u.eventCounts.yt_watch || 0}</td>
+      <td>${u.eventCounts.game_play || 0}</td>
+      <td>${u.eventCounts.call_start || 0}</td>
+      <td><strong style="color:var(--accent);">${u.eventCount}</strong></td>
+      <td>${timeAgo(u.lastActive)}</td>
+      <td>
+        <button class="btn-action" onclick="openUserModal('${safe(u.ip)}')">
+          Timeline →
+        </button>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="11" class="empty-state">No users match the search filter</td></tr>`;
+}
+
+// ── Render 3: IP Directory ────────────────────────────────────────────────
+function renderIpDirectory(users, ipNames) {
+  const dict = ipNames || {};
+  const ipList = Object.keys(dict);
+  document.getElementById('navIpCount').textContent = ipList.length;
+  document.getElementById('badgeIpDirectory').textContent = ipList.length;
+
+  // Merge known IPs from events
+  const allKnownIps = new Set([...ipList, ...users.map(u => u.ip)]);
+  const userByIp = new Map(users.map(u => [u.ip, u]));
+
+  const q = (document.getElementById('ipSearchInput').value || '').toLowerCase().trim();
+
+  const rows = [];
+  allKnownIps.forEach(ip => {
+    if (!ip || ip === 'unknown') return;
+    const item = dict[ip] || {};
+    const name = item.name || '';
+    const notes = item.notes || '';
+    const u = userByIp.get(ip);
+    const eventCount = u ? u.eventCount : 0;
+    const lastSeen = u ? u.lastActive : (item.updatedAt || null);
+
+    if (q) {
+      if (!ip.toLowerCase().includes(q) && !name.toLowerCase().includes(q) && !notes.toLowerCase().includes(q)) {
+        return;
+      }
+    }
+
+    rows.push({ ip, name, notes, eventCount, lastSeen, isAssigned: !!name });
+  });
+
+  // Sort assigned names first, then by event count
+  rows.sort((a, b) => (b.isAssigned - a.isAssigned) || (b.eventCount - a.eventCount));
+
+  document.getElementById('ipDirectoryBody').innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td><strong class="ip-tag" onclick="openUserModal('${safe(r.ip)}')">${safe(r.ip)}</strong></td>
+      <td>
+        <div style="display:flex; align-items:center; gap:6px;">
+          ${r.name ? `<strong style="color:#fff;">${safe(r.name)}</strong>` : `<button class="btn-action" onclick="openIpNameModal('${safe(r.ip)}', '')">+ Assign Name</button>`}
+        </div>
+      </td>
+      <td><span style="color:var(--text-subtle);">${safe(r.notes || '–')}</span></td>
+      <td><strong>${r.eventCount}</strong></td>
+      <td>${timeAgo(r.lastSeen)}</td>
+      <td>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-action" onclick="openIpNameModal('${safe(r.ip)}', '${safe(r.name)}', '${safe(r.notes)}')">Edit</button>
+          <button class="btn-action" onclick="openUserModal('${safe(r.ip)}')">Activity</button>
+          ${r.name ? `<button class="btn-action" style="color:var(--red);" onclick="deleteIpName('${safe(r.ip)}')">Clear</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No IP addresses recorded yet</td></tr>`;
+}
+
+// ── Render 4: Media, Games, Calls, Stream ──────────────────────────────────
+function renderTables(events, ipNames) {
+  // Movies
+  const movies = events.filter(e => e.event_type === 'movie_watch');
+  document.getElementById('badgeMovies').textContent = movies.length;
+  document.getElementById('moviesTableBody').innerHTML = movies.length ? movies.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td><strong>${safe(e.data?.fileName || 'Local Video')}</strong></td>
+      <td>${fmtSec(e.data?.duration)}</td>
+      <td><code>${safe(e.data?.roomCode)}</code></td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+      <td>${safe(e.device_type)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No movie watch sessions logged yet</td></tr>`;
+
+  // YouTube Watched
+  const ytWatches = events.filter(e => e.event_type === 'yt_watch');
+  document.getElementById('badgeYtWatch').textContent = ytWatches.length;
+  document.getElementById('ytWatchBody').innerHTML = ytWatches.length ? ytWatches.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td>
+        <a href="https://youtu.be/${safe(e.data?.videoId)}" target="_blank" style="color:var(--accent); font-weight:600;">
+          ${safe(e.data?.title || e.data?.videoId)}
+        </a>
+      </td>
+      <td><code>${safe(e.data?.roomCode)}</code></td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+      <td>${safe(e.device_type)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="5" class="empty-state">No YouTube watches logged yet</td></tr>`;
+
+  // YouTube Searches
+  const ytSearches = events.filter(e => e.event_type === 'yt_search');
+  document.getElementById('badgeYtSearch').textContent = ytSearches.length;
+  document.getElementById('ytSearchBody').innerHTML = ytSearches.length ? ytSearches.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td><strong>"${safe(e.data?.query)}"</strong></td>
+      <td>${safe(e.data?.resultsCount)} results</td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="4" class="empty-state">No search queries logged yet</td></tr>`;
+
+  // Games
+  const games = events.filter(e => e.event_type === 'game_play');
+  document.getElementById('badgeGamesSessions').textContent = games.length;
+  document.getElementById('gamesTableBody').innerHTML = games.length ? games.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td><strong style="color:var(--accent);">${safe(e.data?.game)}</strong></td>
+      <td>${safe(e.data?.action || 'play')}</td>
+      <td><code>${safe(e.data?.roomCode)}</code></td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+      <td>${safe(e.device_type)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No game sessions logged yet</td></tr>`;
+
+  // Calls
+  const calls = events.filter(e => e.event_type.startsWith('call_'));
+  document.getElementById('badgeCallsList').textContent = calls.length;
+  document.getElementById('callsTableBody').innerHTML = calls.length ? calls.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td>${tagChip(e.event_type)}</td>
+      <td><code>${safe(e.data?.roomCode)}</code></td>
+      <td>${e.data?.durationSec ? fmtSec(e.data?.durationSec) : '–'}</td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+      <td>${safe(e.device_type)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No call sessions logged yet</td></tr>`;
+
+  // Rooms
+  const rooms = events.filter(e => e.event_type.startsWith('room_'));
+  document.getElementById('badgeRoomsList').textContent = rooms.length;
+  document.getElementById('roomsTableBody').innerHTML = rooms.length ? rooms.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td>${tagChip(e.event_type)}</td>
+      <td><code>${safe(e.data?.roomCode)}</code></td>
+      <td>${safe(e.data?.usersCount || '–')}</td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+      <td>${safe(e.device_type)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No room events logged yet</td></tr>`;
+
+  // Room Pairs
+  renderRoomPairs(events, ipNames);
+
+  // Live Stream
+  renderStream(events, ipNames);
+}
+
+function renderRoomPairs(events, ipNames) {
   const roomUsers = {};
-  week7Events.forEach(e => {
-    if (!e.event_type.startsWith('room_') || !e.data?.roomCode || !e.ip_address) return;
-    const rc = e.data.roomCode;
+  events.forEach(e => {
+    if (!e.ip_address) return;
+    const rc = e.data?.roomCode;
+    if (!rc) return;
     if (!roomUsers[rc]) roomUsers[rc] = {};
     if (!roomUsers[rc][e.ip_address] || new Date(e.created_at) > new Date(roomUsers[rc][e.ip_address].lastActive)) {
       roomUsers[rc][e.ip_address] = {
-        device: e.device_type || 'Unknown',
+        device: e.device_type || 'desktop',
         lastActive: e.created_at
       };
     }
   });
 
-  const pairsHtml = [];
+  const pairs = [];
   for (const [rc, users] of Object.entries(roomUsers)) {
     const ips = Object.keys(users);
     if (ips.length >= 2) {
-      // Show all pairs in the room (usually just 2)
       for (let i = 0; i < ips.length; i++) {
         for (let j = i + 1; j < ips.length; j++) {
           const u1 = users[ips[i]];
           const u2 = users[ips[j]];
-          const lastAct = new Date(u1.lastActive) > new Date(u2.lastActive) ? u1.lastActive : u2.lastActive;
-          pairsHtml.push(`<tr>
-            <td><code>${safe(rc)}</code></td>
-            <td>${ipLink(ips[i])} <span class="meta">(${safe(u1.device)})</span></td>
-            <td>${ipLink(ips[j])} <span class="meta">(${safe(u2.device)})</span></td>
-            <td>${fmtTime(lastAct)}</td>
-          </tr>`);
+          const last = new Date(u1.lastActive) > new Date(u2.lastActive) ? u1.lastActive : u2.lastActive;
+          pairs.push({ rc, ip1: ips[i], ip2: ips[j], last });
         }
       }
     }
   }
-  document.getElementById('roomPairsTable').innerHTML = pairsHtml.length > 0
-    ? pairsHtml.join('')
-    : `<tr><td colspan="4" class="empty">No rooms with multiple users yet</td></tr>`;
 
-  // ── Top Users ──────────────────────────────────────────────────────────
-  const userStats = {};
-  month30Events.forEach(e => {
-    if (!e.ip_address) return;
-    if (!userStats[e.ip_address]) userStats[e.ip_address] = { count: 0, devices: {}, lastActive: e.created_at };
-    userStats[e.ip_address].count++;
-    if (e.device_type) {
-      userStats[e.ip_address].devices[e.device_type] = (userStats[e.ip_address].devices[e.device_type] || 0) + 1;
-    }
-    if (new Date(e.created_at) > new Date(userStats[e.ip_address].lastActive)) {
-      userStats[e.ip_address].lastActive = e.created_at;
-    }
-  });
-
-  const topUsers = Object.entries(userStats)
-    .sort((a, b) => b[1].count - a[1].count)
-    .slice(0, 15) // Top 15 users
-    .map(([ip, stats]) => {
-      let topDevice = 'Unknown';
-      let maxD = 0;
-      for (const [d, c] of Object.entries(stats.devices)) {
-        if (c > maxD) { maxD = c; topDevice = d; }
-      }
-      return `<tr>
-        <td>${ipLink(ip)}</td>
-        <td><strong>${stats.count}</strong></td>
-        <td>${safe(topDevice)}</td>
-        <td>${fmtTime(stats.lastActive)}</td>
-      </tr>`;
-    });
-    
-  document.getElementById('topUsersTable').innerHTML = topUsers.length > 0
-    ? topUsers.join('')
-    : `<tr><td colspan="4" class="empty">No user data yet</td></tr>`;
-
-  // ── All logs ───────────────────────────────────────────────────────────
-  document.getElementById('logsBadge').textContent = recentEvents.length;
-  document.getElementById('logsTable').innerHTML = recentEvents.length
-    ? recentEvents.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td>${tagHtml(e.event_type)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-          <td>${safe(e.device_type)}</td>
-          <td>${safe(e.browser)}</td>
-          <td>${safe(e.os)}</td>
-          <td>${jsonDetails(e.data)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="7" class="empty">No events logged yet</td></tr>`;
+  document.getElementById('roomPairsBody').innerHTML = pairs.length ? pairs.map(p => `
+    <tr>
+      <td><code>${safe(p.rc)}</code></td>
+      <td>${userBadgeHtml(p.ip1, ipNames)}</td>
+      <td>${userBadgeHtml(p.ip2, ipNames)}</td>
+      <td>${timeAgo(p.last)}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="4" class="empty-state">No multi-user rooms detected yet</td></tr>`;
 }
 
-// ── Search ────────────────────────────────────────────────────────────────
-document.getElementById('searchBtn').addEventListener('click', async () => {
-  const q = document.getElementById('searchQuery').value.trim();
+function renderStream(events, ipNames) {
+  const filterType = document.getElementById('streamTypeFilter').value;
+  const q = (document.getElementById('streamSearchInput').value || '').toLowerCase().trim();
+
+  let filtered = events;
+  if (filterType !== 'all') filtered = filtered.filter(e => e.event_type === filterType);
+  if (q) {
+    filtered = filtered.filter(e => {
+      const name = (getUserName(e.ip_address, ipNames) || '').toLowerCase();
+      const ip = (e.ip_address || '').toLowerCase();
+      const type = (e.event_type || '').toLowerCase();
+      const json = JSON.stringify(e.data || {}).toLowerCase();
+      return name.includes(q) || ip.includes(q) || type.includes(q) || json.includes(q);
+    });
+  }
+
+  document.getElementById('badgeStreamCount').textContent = filtered.length;
+  document.getElementById('streamTableBody').innerHTML = filtered.length ? filtered.map(e => `
+    <tr>
+      <td>${fmtTime(e.created_at)}</td>
+      <td>${tagChip(e.event_type)}</td>
+      <td>${userBadgeHtml(e.ip_address, ipNames)}</td>
+      <td>${safe(e.device_type)} <span style="font-size:0.75rem; color:var(--text-subtle);">(${safe(e.os)})</span></td>
+      <td>${safe(e.browser)}</td>
+      <td>
+        <details class="detail-json">
+          <summary>${safe(JSON.stringify(e.data).slice(0, 45))}…</summary>
+          <pre>${safe(JSON.stringify(e.data, null, 2))}</pre>
+        </details>
+      </td>
+    </tr>
+  `).join('') : `<tr><td colspan="6" class="empty-state">No events match stream filters</td></tr>`;
+}
+
+// ── Modals: Individual User Profile & Timeline ─────────────────────────────
+async function openUserModal(ip) {
+  if (!ip) return;
+  activeUserModalIp = ip;
+
+  const modal = document.getElementById('userModal');
+  modal.classList.add('open');
+
+  const dict = rawStats ? rawStats.ipNames : {};
+  const name = dict[ip]?.name || 'Unnamed User';
+  const notes = dict[ip]?.notes || '';
+
+  document.getElementById('modalUserName').textContent = name;
+  document.getElementById('modalUserIp').textContent = ip;
+  document.getElementById('modalUserAvatar').textContent = (name[0] || ip[0] || 'U').toUpperCase();
+  document.getElementById('modalTimeline').innerHTML = '<div class="loader"><div class="spinner"></div>Loading timeline…</div>';
+
+  try {
+    const res = await fetch(`/stats/api/user/${encodeURIComponent(ip)}`);
+    const data = await res.json();
+    const user = data.user || {};
+    const events = data.events || [];
+
+    document.getElementById('modalUserDevice').textContent = `${user.deviceType || 'Desktop'} • ${user.os || 'OS'}`;
+    document.getElementById('modalUserCountry').textContent = user.country || 'Location';
+
+    // User KPIs
+    const ec = user.eventCounts || {};
+    document.getElementById('modalUserKpis').innerHTML = `
+      <div class="kpi-card" style="padding:14px;">
+        <div class="kpi-label" style="font-size:0.7rem;">Total Events</div>
+        <div class="kpi-value" style="font-size:1.4rem;">${user.eventCount || events.length}</div>
+      </div>
+      <div class="kpi-card" style="padding:14px;">
+        <div class="kpi-label" style="font-size:0.7rem;">Page Views</div>
+        <div class="kpi-value" style="font-size:1.4rem;">${ec.page_view || 0}</div>
+      </div>
+      <div class="kpi-card" style="padding:14px;">
+        <div class="kpi-label" style="font-size:0.7rem;">YouTube</div>
+        <div class="kpi-value" style="font-size:1.4rem;">${ec.yt_watch || 0}</div>
+      </div>
+      <div class="kpi-card" style="padding:14px;">
+        <div class="kpi-label" style="font-size:0.7rem;">Movies</div>
+        <div class="kpi-value" style="font-size:1.4rem;">${ec.movie_watch || 0}</div>
+      </div>
+      <div class="kpi-card" style="padding:14px;">
+        <div class="kpi-label" style="font-size:0.7rem;">Games</div>
+        <div class="kpi-value" style="font-size:1.4rem;">${ec.game_play || 0}</div>
+      </div>
+      <div class="kpi-card" style="padding:14px;">
+        <div class="kpi-label" style="font-size:0.7rem;">Calls</div>
+        <div class="kpi-value" style="font-size:1.4rem;">${ec.call_start || 0}</div>
+      </div>
+    `;
+
+    document.getElementById('modalTimelineCount').textContent = `${events.length} chronological actions`;
+
+    // Timeline items
+    document.getElementById('modalTimeline').innerHTML = events.length ? events.map(e => {
+      let desc = '';
+      const d = e.data || {};
+      if (e.event_type === 'page_view') desc = `Visited <strong>${safe(d.page || d.path || '/')}</strong>`;
+      else if (e.event_type === 'page_leave') desc = `Left page after <strong>${fmtSec(d.timeOnPageSec)}</strong> (${safe(d.path)})`;
+      else if (e.event_type === 'yt_watch') desc = `Watched YouTube: <strong>${safe(d.title || d.videoId)}</strong> in Room <code>${safe(d.roomCode)}</code>`;
+      else if (e.event_type === 'yt_search') desc = `Searched YouTube for <em>"${safe(d.query)}"</em> (${safe(d.resultsCount)} results)`;
+      else if (e.event_type === 'movie_watch') desc = `Watched Movie: <strong>${safe(d.fileName)}</strong> (${fmtSec(d.duration)}) in Room <code>${safe(d.roomCode)}</code>`;
+      else if (e.event_type === 'game_play') desc = `Played <strong>${safe(d.game)}</strong> (${safe(d.action || 'session')}) in Room <code>${safe(d.roomCode)}</code>`;
+      else if (e.event_type === 'call_start') desc = `Started video call in Room <code>${safe(d.roomCode)}</code>`;
+      else if (e.event_type === 'call_end') desc = `Ended video call in Room <code>${safe(d.roomCode)}</code> (Call length: <strong>${fmtSec(d.durationSec)}</strong>)`;
+      else if (e.event_type === 'room_create') desc = `Created Room <code>${safe(d.roomCode)}</code>`;
+      else if (e.event_type === 'room_join') desc = `Joined Room <code>${safe(d.roomCode)}</code> (${safe(d.usersCount || 1)} user(s) present)`;
+      else if (e.event_type === 'activity_select') desc = `Selected activity: <strong>${safe(d.activity)}</strong>`;
+      else desc = `${safe(e.event_type)}`;
+
+      return `
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-head">
+              <div>${tagChip(e.event_type)}</div>
+              <div class="timeline-meta">${timeAgo(e.created_at)} (${fmtTime(e.created_at)})</div>
+            </div>
+            <div class="timeline-desc">${desc}</div>
+            <details class="detail-json" style="margin-top:6px;">
+              <summary>View raw JSON</summary>
+              <pre>${safe(JSON.stringify(e.data, null, 2))}</pre>
+            </details>
+          </div>
+        </div>
+      `;
+    }).join('') : `<div class="empty-state">No events recorded for this user yet</div>`;
+
+  } catch (err) {
+    document.getElementById('modalTimeline').innerHTML = `<div style="color:var(--red); padding:20px;">Failed to load user timeline: ${safe(err.message)}</div>`;
+  }
+}
+
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('open');
+  activeUserModalIp = null;
+}
+
+document.getElementById('btnEditModalUserName').addEventListener('click', () => {
+  if (activeUserModalIp) {
+    const dict = rawStats ? rawStats.ipNames : {};
+    openIpNameModal(activeUserModalIp, dict[activeUserModalIp]?.name || '', dict[activeUserModalIp]?.notes || '');
+  }
+});
+
+// ── IP Name Modal & CRUD ──────────────────────────────────────────────────
+function openIpNameModal(ip = '', name = '', notes = '') {
+  document.getElementById('ipModalInputIp').value = ip;
+  document.getElementById('ipModalInputName').value = name;
+  document.getElementById('ipModalInputNotes').value = notes;
+  document.getElementById('ipNameModal').classList.add('open');
+  document.getElementById('ipModalInputName').focus();
+}
+
+function closeIpNameModal() {
+  document.getElementById('ipNameModal').classList.remove('open');
+}
+
+document.getElementById('btnAddIpModal').addEventListener('click', () => openIpNameModal('', '', ''));
+
+document.getElementById('btnSaveIpName').addEventListener('click', async () => {
+  const ip = document.getElementById('ipModalInputIp').value.trim();
+  const name = document.getElementById('ipModalInputName').value.trim();
+  const notes = document.getElementById('ipModalInputNotes').value.trim();
+
+  if (!ip) {
+    alert('Please enter an IP address');
+    return;
+  }
+
+  try {
+    const res = await fetch('/stats/api/ip-names', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ip, name, notes })
+    });
+    const result = await res.json();
+    if (result.ok && result.ipNames) {
+      if (rawStats) rawStats.ipNames = result.ipNames;
+      closeIpNameModal();
+      // If modal user is open, update name
+      if (activeUserModalIp === ip) {
+        document.getElementById('modalUserName').textContent = name || 'Unnamed User';
+      }
+      renderAll(rawStats);
+    }
+  } catch (err) {
+    alert('Failed to save IP name: ' + err.message);
+  }
+});
+
+async function deleteIpName(ip) {
+  if (!confirm(`Remove assigned name for ${ip}?`)) return;
+  try {
+    const res = await fetch(`/stats/api/ip-names/${encodeURIComponent(ip)}`, { method: 'DELETE' });
+    const result = await res.json();
+    if (result.ok && result.ipNames) {
+      if (rawStats) rawStats.ipNames = result.ipNames;
+      renderAll(rawStats);
+    }
+  } catch (err) {
+    alert('Failed to delete IP name: ' + err.message);
+  }
+}
+
+// ── Wipe Modal & Action ───────────────────────────────────────────────────
+document.getElementById('btnWipe').addEventListener('click', () => {
+  document.getElementById('wipeModal').classList.add('open');
+});
+
+function closeWipeModal() {
+  document.getElementById('wipeModal').classList.remove('open');
+}
+
+document.getElementById('btnConfirmWipe').addEventListener('click', async () => {
+  const btn = document.getElementById('btnConfirmWipe');
+  btn.disabled = true;
+  btn.textContent = 'Wiping…';
+  try {
+    const res = await fetch('/stats/api/wipe', { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      closeWipeModal();
+      await loadData();
+      alert('All analytics data wiped successfully');
+    }
+  } catch (err) {
+    alert('Failed to wipe data: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Yes, Wipe Everything';
+  }
+});
+
+// ── Search Action ─────────────────────────────────────────────────────────
+document.getElementById('btnRunSearch').addEventListener('click', async () => {
+  const q = document.getElementById('searchQ').value.trim();
   const eventType = document.getElementById('searchType').value;
-  const dateFrom = document.getElementById('searchFrom').value;
-  const dateTo = document.getElementById('searchTo').value;
+  const from = document.getElementById('searchDateFrom').value;
+  const to = document.getElementById('searchDateTo').value;
 
   const params = new URLSearchParams();
   if (q) params.set('q', q);
   if (eventType !== 'all') params.set('eventType', eventType);
-  if (dateFrom) params.set('dateFrom', dateFrom);
-  if (dateTo) params.set('dateTo', dateTo + 'T23:59:59');
+  if (from) params.set('dateFrom', from);
+  if (to) params.set('dateTo', to + 'T23:59:59');
 
-  const res = await fetch('/stats/api/search?' + params);
-  const data = await res.json();
-  const results = data.results || [];
+  try {
+    const res = await fetch('/stats/api/search?' + params);
+    const data = await res.json();
+    const results = data.results || [];
 
-  document.getElementById('searchBadge').textContent = results.length;
-  document.getElementById('searchTable').innerHTML = results.length
-    ? results.map(e => `
-        <tr>
-          <td>${fmtTime(e.created_at)}</td>
-          <td>${tagHtml(e.event_type)}</td>
-          <td>${ipLink(e.ip_address)}</td>
-          <td>${safe(e.device_type)}</td>
-          <td>${safe(e.browser)}</td>
-          <td>${safe(e.os)}</td>
-          <td>${textDetails(e.user_agent, 40)}</td>
-          <td>${jsonDetails(e.data)}</td>
-        </tr>`).join('')
-    : `<tr><td colspan="8" class="empty">No results found</td></tr>`;
+    document.getElementById('badgeSearchResults').textContent = results.length;
+    document.getElementById('searchResultsBody').innerHTML = results.length ? results.map(e => `
+      <tr>
+        <td>${fmtTime(e.created_at)}</td>
+        <td>${tagChip(e.event_type)}</td>
+        <td>${userBadgeHtml(e.ip_address, rawStats?.ipNames)}</td>
+        <td>${safe(e.device_type)} <span style="font-size:0.75rem; color:var(--text-subtle);">(${safe(e.os)})</span></td>
+        <td>${safe(e.browser)}</td>
+        <td>
+          <details class="detail-json">
+            <summary>${safe(JSON.stringify(e.data).slice(0, 45))}…</summary>
+            <pre>${safe(JSON.stringify(e.data, null, 2))}</pre>
+          </details>
+        </td>
+      </tr>
+    `).join('') : `<tr><td colspan="6" class="empty-state">No matching events found</td></tr>`;
+  } catch (err) {
+    alert('Search failed: ' + err.message);
+  }
 });
 
-document.getElementById('searchQuery').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('searchBtn').click();
+// Search input keydowns
+document.getElementById('searchQ').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnRunSearch').click();
+});
+document.getElementById('userSearchInput').addEventListener('input', () => {
+  if (rawStats) renderUsers(rawStats.users, rawStats.ipNames);
+});
+document.getElementById('userFilterSort').addEventListener('change', () => {
+  if (rawStats) renderUsers(rawStats.users, rawStats.ipNames);
+});
+document.getElementById('ipSearchInput').addEventListener('input', () => {
+  if (rawStats) renderIpDirectory(rawStats.users, rawStats.ipNames);
+});
+document.getElementById('streamTypeFilter').addEventListener('change', () => {
+  if (rawStats) renderStream(rawStats.recentEvents, rawStats.ipNames);
+});
+document.getElementById('streamSearchInput').addEventListener('input', () => {
+  if (rawStats) renderStream(rawStats.recentEvents, rawStats.ipNames);
 });
 
-// ── Load data ─────────────────────────────────────────────────────────────
+// ── Master Render ─────────────────────────────────────────────────────────
+function renderAll(data) {
+  rawStats = data;
+  renderOverview(data);
+  renderUsers(data.users || [], data.ipNames || {});
+  renderIpDirectory(data.users || [], data.ipNames || {});
+  renderTables(data.recentEvents || [], data.ipNames || {});
+}
+
+// ── Load Data ─────────────────────────────────────────────────────────────
 async function loadData() {
-  document.getElementById('loadingState').style.display = 'flex';
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const refreshBtn = document.getElementById('btnRefresh');
+  refreshBtn.classList.add('spinning');
 
   try {
     const res = await fetch('/stats/api/data');
-    if (res.status === 401) { window.location.href = '/stats'; return; }
+    if (res.status === 401) {
+      window.location.href = '/stats';
+      return;
+    }
     const data = await res.json();
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('sec-overview').classList.add('active');
-    document.querySelector('[data-section="overview"]').classList.add('active');
+    document.getElementById('loading').style.display = 'none';
     renderAll(data);
   } catch (err) {
-    document.getElementById('loadingState').innerHTML = `<span style="color:var(--red)">Failed to load data: ${err.message}</span>`;
+    document.getElementById('loading').innerHTML = `<span style="color:var(--red);">Failed to load stats: ${safe(err.message)}</span>`;
+  } finally {
+    refreshBtn.classList.remove('spinning');
   }
 }
 
+// ── Live Refresh Toggle ───────────────────────────────────────────────────
+function setupLiveRefresh() {
+  const toggleBtn = document.getElementById('btnLiveToggle');
+  const dot = toggleBtn.querySelector('.live-dot');
+  const text = document.getElementById('liveStatusText');
+
+  function startInterval() {
+    if (liveIntervalId) clearInterval(liveIntervalId);
+    liveIntervalId = setInterval(loadData, 30000); // every 30s
+    isLive = true;
+    dot.style.display = 'block';
+    text.textContent = 'Live (30s)';
+    toggleBtn.classList.add('active');
+  }
+
+  function stopInterval() {
+    if (liveIntervalId) clearInterval(liveIntervalId);
+    liveIntervalId = null;
+    isLive = false;
+    dot.style.display = 'none';
+    text.textContent = 'Paused';
+    toggleBtn.classList.remove('active');
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    if (isLive) stopInterval();
+    else startInterval();
+  });
+
+  startInterval();
+}
+
+document.getElementById('btnRefresh').addEventListener('click', loadData);
+
+document.getElementById('btnLogout').addEventListener('click', async () => {
+  await fetch('/stats/logout', { method: 'POST' });
+  window.location.href = '/stats';
+});
+
+// Keyboard close for modals
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeUserModal();
+    closeIpNameModal();
+    closeWipeModal();
+  }
+});
+
+// Init
 loadData();
+setupLiveRefresh();
 </script>
 </body>
 </html>

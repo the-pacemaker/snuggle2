@@ -9,5 +9,6 @@ colour.txt
 experiment/
 *.log
 server.log
+*.jsonl
 *.pem
 .impeccable/
