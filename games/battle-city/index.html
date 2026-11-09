@@ -1860,27 +1860,6 @@
       }
     };
 
-    if (!urlParams.has('solo_peer')) {
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) setLocalInactive(true);
-        else manualResume();
-      });
-
-      window.addEventListener('focus', manualResume);
-      $('#bc-resume-btn')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        window.focus();
-        manualResume();
-      });
-
-      $('#bc-pause-overlay')?.addEventListener('click', () => {
-        if (window.__bc_state?.isLocalInactive) {
-          window.focus();
-          manualResume();
-        }
-      });
-    }
-
     // ============================================================
     // MAIN APP INITIALIZATION & MINIMAL PLAYER SLOT CHOOSER
     // ============================================================
@@ -1948,6 +1927,25 @@
         if (typeof window.__bc_is_game_paused === 'function') {
           window.__bc_is_game_paused = () => false;
         }
+      } else {
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) setLocalInactive(true);
+          else manualResume();
+        });
+
+        window.addEventListener('focus', manualResume);
+        $('#bc-resume-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.focus();
+          manualResume();
+        });
+
+        $('#bc-pause-overlay')?.addEventListener('click', () => {
+          if (window.__bc_state?.isLocalInactive) {
+            window.focus();
+            manualResume();
+          }
+        });
       }
 
       const minimalLobby = $('#bc-minimal-lobby');
@@ -2034,8 +2032,8 @@
           iframe.style.position = 'fixed';
           iframe.style.left = '0px';
           iframe.style.top = '0px';
-          iframe.style.width = '4px';
-          iframe.style.height = '4px';
+          iframe.style.width = '32px';
+          iframe.style.height = '32px';
           iframe.style.opacity = '0.01';
           iframe.style.pointerEvents = 'none';
           iframe.style.zIndex = '-999';

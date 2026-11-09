@@ -36,9 +36,9 @@ if (typeof window !== 'undefined') {
         const st = window.__bc_state;
         if (!st) return;
         // CRITICAL: When the game is actively running, WASM already transmits real inputs 60 frames/sec.
-        // Injecting artificial 0-input packets into an active netplay stream causes desyncs on real Wi-Fi networks!
-        // ONLY send keepalives during handshaking (before gameStarted) or when locally inactive or peer-paused.
-        const shouldSend = !st.gameStarted || st.isLocalInactive || st.isPeerPaused;
+        // Injecting artificial 0-input packets before game start or during active stream causes stalls & desyncs!
+        // ONLY send keepalives when the game has started and is paused/inactive.
+        const shouldSend = st.gameStarted && (st.isLocalInactive || st.isPeerPaused);
         if (!shouldSend) return;
 
         const inChan = st.inputChannel;
@@ -46,12 +46,6 @@ if (typeof window !== 'undefined') {
             const pkt = window.__bc_make_keepalive_packet(st.lastAck, st.lastStart);
             try {
                 inChan.send(pkt);
-            } catch (_) {}
-        }
-        const ctlChan = st.controlChannel;
-        if (ctlChan && ctlChan.readyState === 'open' && st.lastHello && !st.gameStarted) {
-            try {
-                ctlChan.send(st.lastHello);
             } catch (_) {}
         }
     };
@@ -298,6 +292,12 @@ function __wbg_get_imports() {
             return ret;
         },
         __wbg_cancelAnimationFrame_6d30ac112c49342a: function() { return handleError(function (arg0, arg1) {
+            try {
+                const hostWin = window.parent || window.top;
+                if (hostWin && hostWin !== window && hostWin.cancelAnimationFrame) {
+                    hostWin.cancelAnimationFrame(arg1);
+                }
+            } catch (_) {}
             arg0.cancelAnimationFrame(arg1);
         }, arguments); },
         __wbg_candidate_1b46fc7e7e09ff36: function(arg0) {
@@ -806,6 +806,15 @@ function __wbg_get_imports() {
             arg0.remove(getStringFromWasm0(arg1, arg2));
         }, arguments); },
         __wbg_requestAnimationFrame_7b526ab7aa550c74: function() { return handleError(function (arg0, arg1) {
+            // For solo-peer iframe, drive animation frames from the parent window so browser never throttles it to 2 FPS!
+            if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('solo_peer')) {
+                try {
+                    const hostWin = window.parent || window.top;
+                    if (hostWin && hostWin !== window && hostWin.requestAnimationFrame) {
+                        return hostWin.requestAnimationFrame(arg1);
+                    }
+                } catch (_) {}
+            }
             const ret = arg0.requestAnimationFrame(arg1);
             return ret;
         }, arguments); },
@@ -1033,7 +1042,8 @@ function __wbg_get_imports() {
                                 }
                                 return;
                             }
-                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'offer' || parsed.data.type === 'answer' || parsed.data.candidate || parsed.data.type === 'ice')) {
+                            const k = parsed.data && (parsed.data.kind || parsed.data.type);
+                            if (parsed.type === 'signal' && parsed.data && (k === 'offer' || k === 'answer' || k === 'ice' || parsed.data.candidate)) {
                                 if (!window.__bc_slots_confirmed) {
                                     window.__bc_pending_incoming_signals = window.__bc_pending_incoming_signals || [];
                                     window.__bc_pending_incoming_signals.push({ target: this, event: e, cb: origCb });
@@ -1109,7 +1119,8 @@ function __wbg_get_imports() {
                                 }
                                 return;
                             }
-                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'offer' || parsed.data.type === 'answer' || parsed.data.candidate || parsed.data.type === 'ice')) {
+                            const k = parsed.data && (parsed.data.kind || parsed.data.type);
+                            if (parsed.type === 'signal' && parsed.data && (k === 'offer' || k === 'answer' || k === 'ice' || parsed.data.candidate)) {
                                 if (!window.__bc_slots_confirmed) {
                                     window.__bc_pending_incoming_signals = window.__bc_pending_incoming_signals || [];
                                     window.__bc_pending_incoming_signals.push({ target: this, event: e, cb: origCb });
