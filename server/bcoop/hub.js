@@ -64,31 +64,59 @@ class BattleCityHub {
       slot = 0;
     } else if (room.slots[1] === null) {
       slot = 1;
-    } else if (!conn.isSolo) {
-      // Room is full — but if one of the occupants is a solo-peer bot, preempt it
-      // so a real player can take its place.
-      const soloIdx = [0, 1].find(i => {
-        const st = this.conns.get(room.slots[i]);
-        return st && st.isSolo;
+    } else {
+      // 1. Clean up any slot occupied by a dead or non-open connection
+      const deadIdx = [0, 1].find(i => {
+        const c = room.slots[i];
+        return !c || (c.ws && c.ws.readyState !== 1);
       });
-      if (soloIdx !== undefined) {
-        const soloConn = room.slots[soloIdx];
-        // Kick the solo peer gracefully
-        this._send(soloConn, { type: 'error', code: 'preempted', message: 'a real player has joined' });
-        soloConn.close(4000, 'preempted by real player');
-        this.conns.delete(soloConn);
-        room.slots[soloIdx] = null;
-        // Let the real player take the freed slot
-        slot = soloIdx;
-      } else {
+      if (deadIdx !== undefined) {
+        const deadConn = room.slots[deadIdx];
+        if (deadConn) {
+          try { deadConn.close(4000, 'replaced dead connection'); } catch (_) {}
+          this.conns.delete(deadConn);
+        }
+        room.slots[deadIdx] = null;
+        slot = deadIdx;
+      }
+      // 2. If a player reconnected with matching sessionId, replace their stale slot!
+      else if (conn.sessionId && !conn.isSolo) {
+        const matchIdx = [0, 1].find(i => {
+          const st = this.conns.get(room.slots[i]);
+          return st && st.sessionId === conn.sessionId;
+        });
+        if (matchIdx !== undefined) {
+          const oldConn = room.slots[matchIdx];
+          this._send(oldConn, { type: 'error', code: 'reconnected', message: 'reconnected from another tab or window' });
+          try { oldConn.close(4001, 'reconnected'); } catch (_) {}
+          this.conns.delete(oldConn);
+          room.slots[matchIdx] = null;
+          slot = matchIdx;
+        }
+      }
+
+      // 3. If a slot is occupied by a solo-peer bot, preempt it so the real player can join
+      if (slot === -1 && !conn.isSolo) {
+        const soloIdx = [0, 1].find(i => {
+          const st = this.conns.get(room.slots[i]);
+          return st && st.isSolo;
+        });
+        if (soloIdx !== undefined) {
+          const soloConn = room.slots[soloIdx];
+          this._send(soloConn, { type: 'error', code: 'preempted', message: 'a real player has joined' });
+          try { soloConn.close(4000, 'preempted by real player'); } catch (_) {}
+          this.conns.delete(soloConn);
+          room.slots[soloIdx] = null;
+          slot = soloIdx;
+        }
+      }
+
+      // 4. Truly full with 2 active players
+      if (slot === -1) {
         this._send(conn, { type: 'error', code: 'room_full', message: 'this room already has two players' });
         conn.close(4003, 'room full');
         return false;
       }
-    } else {
-      this._send(conn, { type: 'error', code: 'room_full', message: 'this room already has two players' });
-      conn.close(4003, 'room full');
-      return false;
     }
 
     room.slots[slot] = conn;
@@ -98,6 +126,7 @@ class BattleCityHub {
       roomCode,
       slot,
       isSolo: !!conn.isSolo,
+      sessionId: conn.sessionId || null,
       windowStart: Date.now(),
       msgCount: 0
     });

@@ -1200,7 +1200,7 @@
 
           <!-- Mode Selector: 1 Player (Solo) vs 2 Players (Co-op) -->
           <div class="bc-mode-picker" role="radiogroup" aria-label="Game Mode">
-            <button type="button" class="bc-mode-btn active" id="mode-btn-1p" data-mode="1p">
+            <button type="button" class="bc-mode-btn" id="mode-btn-1p" data-mode="1p">
               <span>👤 1 Player</span>
             </button>
             <button type="button" class="bc-mode-btn" id="mode-btn-2p" data-mode="2p">
@@ -2044,7 +2044,7 @@
 
       let peerPresent = false;
       let peerSlot = null;
-      let chosenMode = '1p'; // '1p' or '2p'
+      let chosenMode = null; // null until user explicitly picks '1p' or '2p'
 
       function switchMode(newMode, broadcast = true) {
         chosenMode = newMode;
@@ -2094,9 +2094,13 @@
               lobbyStatusText.className = 'bc-status-ready';
             }
           } else {
-            lobbyStatusText.textContent = chosenMode === '2p'
-              ? '2-Player mode selected. Press Start to play. Invite friend for 2P co-op.'
-              : 'Single player: Press Start to play. Invite friend for 2P co-op.';
+            if (!chosenMode) {
+              lobbyStatusText.textContent = 'Choose 1 Player or 2 Players to begin!';
+            } else {
+              lobbyStatusText.textContent = chosenMode === '2p'
+                ? '2-Player mode selected. Press Start to play. Invite friend for 2P co-op.'
+                : 'Single player: Press Start to play. Invite friend for 2P co-op.';
+            }
             lobbyStatusText.className = '';
           }
         }
@@ -2171,6 +2175,18 @@
           // If game is already running, Enter toggles pause
           dispatchKey('Enter', true);
           setTimeout(() => dispatchKey('Enter', false), 50);
+          return;
+        }
+
+        // Require explicit mode selection before starting
+        if (!chosenMode) {
+          toast('Choose 1 Player or 2 Players first!');
+          // Visually pulse the mode buttons to draw attention
+          const picker = document.querySelector('.bc-mode-picker');
+          if (picker) {
+            picker.style.outline = '2px solid var(--accent-warm)';
+            setTimeout(() => { picker.style.outline = ''; }, 800);
+          }
           return;
         }
 

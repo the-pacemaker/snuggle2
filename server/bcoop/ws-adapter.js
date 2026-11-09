@@ -10,7 +10,7 @@ function attachBattleCitySignaling(opts = {}) {
   const {
     paths = ['/bcoop-signal', '/bcoop-signal-solo', '/ws'],
     hub = new BattleCityHub(opts.hubOptions),
-    heartbeatMs = 30000,
+    heartbeatMs = 10000,
     maxPayload = 64 * 1024,
     WebSocketServer = require('ws').WebSocketServer,
   } = opts;
@@ -42,10 +42,13 @@ function attachBattleCitySignaling(opts = {}) {
 
     wss.handleUpgrade(req, socket, head, (ws) => {
       const isSolo = url.pathname.endsWith('-solo') || url.searchParams.get('is_solo') === '1';
+      const sessionId = url.searchParams.get('session_id') || url.searchParams.get('sid') || null;
       const conn = {
+        ws,
         send: (s) => ws.send(s),
         close: (code, reason) => ws.close(code, reason),
         isSolo,
+        sessionId,
       };
 
       ws.isAlive = true;
