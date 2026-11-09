@@ -712,10 +712,17 @@ function __wbg_get_imports() {
                         } catch (_) {}
                     }
                 };
-                window.__bc_broadcast_start = function() {
+                window.__bc_broadcast_mode = function(mode) {
                     if (ret && ret.readyState === WebSocket.OPEN) {
                         try {
-                            ret.send(JSON.stringify({ type: 'signal', data: { type: 'start_game', kind: 'start_game' } }));
+                            ret.send(JSON.stringify({ type: 'signal', data: { type: 'mode_choice', mode } }));
+                        } catch (_) {}
+                    }
+                };
+                window.__bc_broadcast_start = function(mode) {
+                    if (ret && ret.readyState === WebSocket.OPEN) {
+                        try {
+                            ret.send(JSON.stringify({ type: 'signal', data: { type: 'start_game', kind: 'start_game', mode } }));
                         } catch (_) {}
                     }
                 };
@@ -993,8 +1000,12 @@ function __wbg_get_imports() {
                                 window.dispatchEvent(new CustomEvent('bc:peer_slot_choice', { detail: { slot: parsed.data.slot } }));
                                 return;
                             }
+                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'mode_choice' || parsed.data.kind === 'mode_choice')) {
+                                window.dispatchEvent(new CustomEvent('bc:peer_mode_choice', { detail: { mode: parsed.data.mode } }));
+                                return;
+                            }
                             if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'start_game' || parsed.data.kind === 'start_game')) {
-                                window.dispatchEvent(new CustomEvent('bc:peer_start_game'));
+                                window.dispatchEvent(new CustomEvent('bc:peer_start_game', { detail: { mode: parsed.data.mode } }));
                                 return;
                             }
                             if (parsed.type === 'welcome') {
@@ -1070,8 +1081,12 @@ function __wbg_get_imports() {
                                 window.dispatchEvent(new CustomEvent('bc:peer_slot_choice', { detail: { slot: parsed.data.slot } }));
                                 return;
                             }
+                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'mode_choice' || parsed.data.kind === 'mode_choice')) {
+                                window.dispatchEvent(new CustomEvent('bc:peer_mode_choice', { detail: { mode: parsed.data.mode } }));
+                                return;
+                            }
                             if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'start_game' || parsed.data.kind === 'start_game')) {
-                                window.dispatchEvent(new CustomEvent('bc:peer_start_game'));
+                                window.dispatchEvent(new CustomEvent('bc:peer_start_game', { detail: { mode: parsed.data.mode } }));
                                 return;
                             }
                             if (parsed.type === 'welcome') {

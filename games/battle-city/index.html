@@ -369,6 +369,60 @@
       text-transform: uppercase;
     }
 
+    .bc-minimal-subtitle {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      color: rgba(255, 255, 255, 0.65);
+      text-transform: uppercase;
+      margin-top: 1px;
+      margin-bottom: -5px;
+    }
+
+    /* Segmented Mode Selector (1 Player vs 2 Players) */
+    .bc-mode-picker {
+      display: flex;
+      background: rgba(0, 0, 0, 0.55);
+      border: 1.5px solid rgba(244, 162, 97, 0.3);
+      border-radius: 12px;
+      padding: 4px;
+      width: 100%;
+      gap: 6px;
+    }
+
+    .bc-mode-btn {
+      flex: 1 1 0px;
+      min-width: 0;
+      width: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 8px;
+      border-radius: 8px;
+      border: 1.5px solid transparent;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.75);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .bc-mode-btn:hover {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+    }
+
+    .bc-mode-btn.active {
+      background: rgba(244, 162, 97, 0.22);
+      border-color: var(--accent-warm);
+      color: var(--accent-gold);
+      box-shadow: 0 0 14px rgba(244, 162, 97, 0.35);
+    }
+
     /* Segmented Tank / Player Selector */
     .bc-slot-picker {
       display: flex;
@@ -388,12 +442,12 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 12px 10px;
+      padding: 9px 8px;
       border-radius: 8px;
       border: 1.5px solid transparent;
       background: transparent;
       color: rgba(255, 255, 255, 0.75);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.15s ease;
@@ -532,6 +586,12 @@
       border: none;
       border-radius: 0;
       box-shadow: none;
+      opacity: 0.65;
+      transition: opacity 0.2s ease;
+    }
+
+    .bc-mobile-controls:active {
+      opacity: 0.9;
     }
 
     .bc-touch-left-zone, .joystick-zone, .bc-center-controls {
@@ -587,12 +647,12 @@
       height: 100%;
       left: calc(50% - 16px);
       top: 0;
-      background: rgba(18, 11, 5, 0.68);
-      border: 1.5px solid rgba(244, 162, 97, 0.35);
+      background: rgba(18, 11, 5, 0.35);
+      border: 1px solid rgba(244, 162, 97, 0.28);
       border-radius: 8px;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 3px 10px rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       pointer-events: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
@@ -603,12 +663,12 @@
       height: 32px;
       top: calc(50% - 16px);
       left: 0;
-      background: rgba(18, 11, 5, 0.68);
-      border: 1.5px solid rgba(244, 162, 97, 0.35);
+      background: rgba(18, 11, 5, 0.35);
+      border: 1px solid rgba(244, 162, 97, 0.28);
       border-radius: 8px;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 3px 10px rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       pointer-events: none;
       transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
@@ -619,7 +679,7 @@
       height: 30px;
       left: calc(50% - 15px);
       top: calc(50% - 15px);
-      background: rgba(18, 11, 5, 0.82);
+      background: rgba(18, 11, 5, 0.45);
       pointer-events: none;
       z-index: 1;
     }
@@ -665,9 +725,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 38% 35%, #3d2212 0%, #1e1006 70%, #0c0502 100%);
-      border: 2px solid rgba(244, 162, 97, 0.85);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8), 0 0 8px rgba(244, 162, 97, 0.25), inset 0 1px 2px rgba(255, 255, 255, 0.3);
+      background: radial-gradient(circle at 38% 35%, rgba(61, 34, 18, 0.65) 0%, rgba(30, 16, 6, 0.55) 70%, rgba(12, 5, 2, 0.6) 100%);
+      border: 1.5px solid rgba(244, 162, 97, 0.65);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5), 0 0 6px rgba(244, 162, 97, 0.2);
       transition: transform 0.14s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
@@ -694,10 +754,10 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      bottom: clamp(4px, 1.2vh, 8px);
+      bottom: clamp(28px, 5vh, 48px);
       display: flex;
       flex-direction: row;
-      gap: 12px;
+      gap: 14px;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
@@ -705,17 +765,17 @@
     }
 
     .bc-sys-btn {
-      height: clamp(20px, 4.5vh, 24px);
-      line-height: clamp(18px, 4.2vh, 22px);
-      padding: 0 clamp(8px, 2vw, 12px);
-      border-radius: 5px;
-      font-size: clamp(9px, 1.8vw, 10px);
+      height: clamp(22px, 4.8vh, 26px);
+      line-height: clamp(20px, 4.5vh, 24px);
+      padding: 0 clamp(10px, 2.5vw, 14px);
+      border-radius: 6px;
+      font-size: clamp(9px, 1.8vw, 11px);
       font-weight: 800;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      background: rgba(26, 14, 6, 0.85);
-      border: 1px solid rgba(244, 162, 97, 0.6);
-      color: rgba(255, 255, 255, 0.92);
+      background: rgba(26, 14, 6, 0.5);
+      border: 1px solid rgba(244, 162, 97, 0.45);
+      color: rgba(255, 255, 255, 0.95);
       cursor: pointer;
       touch-action: none;
       user-select: none;
@@ -723,7 +783,7 @@
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       transition: all 0.1s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     }
 
     .bc-sys-btn:active, .bc-sys-btn.pressed {
@@ -1012,7 +1072,7 @@
     #bc-stage-container:fullscreen .bc-center-controls,
     #bc-stage-container:-webkit-full-screen .bc-center-controls,
     #bc-stage-container.pseudo-fullscreen .bc-center-controls {
-      bottom: clamp(4px, 1.2vh, 8px) !important;
+      bottom: clamp(28px, 5vh, 48px) !important;
     }
 
     #bc-stage-container:fullscreen .bcoop-bar,
@@ -1133,21 +1193,33 @@
         </div>
       </div>
 
-      <!-- Minimal Pre-Game Lobby Card (Choose Player 1 or Player 2) -->
+      <!-- Minimal Pre-Game Lobby Card (Choose Mode & Player Tank) -->
       <div id="bc-minimal-lobby" class="bc-minimal-lobby">
         <div class="bc-minimal-box">
-          <div class="bc-minimal-title">CHOOSE YOUR TANK</div>
+          <div class="bc-minimal-title">GAME MODE</div>
+
+          <!-- Mode Selector: 1 Player (Solo) vs 2 Players (Co-op) -->
+          <div class="bc-mode-picker" role="radiogroup" aria-label="Game Mode">
+            <button type="button" class="bc-mode-btn active" id="mode-btn-1p" data-mode="1p">
+              <span>👤 1 Player</span>
+            </button>
+            <button type="button" class="bc-mode-btn" id="mode-btn-2p" data-mode="2p">
+              <span>👥 2 Players</span>
+            </button>
+          </div>
+
+          <div class="bc-minimal-subtitle">YOUR TANK</div>
 
           <!-- Player 1 vs Player 2 Selector -->
           <div class="bc-slot-picker" role="radiogroup" aria-label="Choose Player">
             <button type="button" class="bc-slot-btn active" id="slot-btn-0" data-slot="0">
               <span class="bc-slot-dot bc-dot-p1"></span>
-              <span>Player 1</span>
+              <span>Player 1 (Yellow)</span>
               <span class="bc-friend-badge" id="friend-badge-0" style="display:none">Friend</span>
             </button>
             <button type="button" class="bc-slot-btn" id="slot-btn-1" data-slot="1">
               <span class="bc-slot-dot bc-dot-p2"></span>
-              <span>Player 2</span>
+              <span>Player 2 (Green)</span>
               <span class="bc-friend-badge" id="friend-badge-1" style="display:none">Friend</span>
             </button>
           </div>
@@ -1281,6 +1353,17 @@
         cancelable: true
       });
       window.dispatchEvent(ev);
+      try {
+        const soloIframe = document.getElementById('solo-peer-iframe');
+        if (soloIframe && soloIframe.contentWindow) {
+          soloIframe.contentWindow.dispatchEvent(new KeyboardEvent(isDown ? 'keydown' : 'keyup', {
+            code,
+            key: code,
+            bubbles: true,
+            cancelable: true
+          }));
+        }
+      } catch (_) {}
     }
 
     // Fullscreen support
@@ -1952,6 +2035,8 @@
       const lobbyStatusText = $('#lobby-status-text');
       const slotBtn0 = $('#slot-btn-0');
       const slotBtn1 = $('#slot-btn-1');
+      const modeBtn1p = $('#mode-btn-1p');
+      const modeBtn2p = $('#mode-btn-2p');
 
       if (isSoloPeer && minimalLobby) {
         minimalLobby.style.display = 'none';
@@ -1959,6 +2044,20 @@
 
       let peerPresent = false;
       let peerSlot = null;
+      let chosenMode = '1p'; // '1p' or '2p'
+
+      function switchMode(newMode, broadcast = true) {
+        chosenMode = newMode;
+        if (modeBtn1p) modeBtn1p.classList.toggle('active', newMode === '1p');
+        if (modeBtn2p) modeBtn2p.classList.toggle('active', newMode === '2p');
+        if (broadcast && peerPresent) {
+          window.__bc_broadcast_mode?.(newMode);
+        }
+        updateSlotUI(chosenSlot);
+      }
+
+      modeBtn1p?.addEventListener('click', () => switchMode('1p'));
+      modeBtn2p?.addEventListener('click', () => switchMode('2p'));
 
       function updateSlotUI(slot = chosenSlot) {
         chosenSlot = slot;
@@ -1991,11 +2090,13 @@
               lobbyStatusText.textContent = `⚠️ Both picked Player ${slot + 1}. Pick different tanks to start!`;
               lobbyStatusText.className = 'bc-status-warn';
             } else {
-              lobbyStatusText.textContent = '🎮 Both ready! Press Start to play co-op.';
+              lobbyStatusText.textContent = `🎮 Both ready! Starting in ${chosenMode === '2p' ? '2-Player Co-op' : 'Single Player'} mode.`;
               lobbyStatusText.className = 'bc-status-ready';
             }
           } else {
-            lobbyStatusText.textContent = 'Single player: Press Start to play. Invite friend for 2P co-op.';
+            lobbyStatusText.textContent = chosenMode === '2p'
+              ? '2-Player mode selected. Press Start to play. Invite friend for 2P co-op.'
+              : 'Single player: Press Start to play. Invite friend for 2P co-op.';
             lobbyStatusText.className = '';
           }
         }
@@ -2041,14 +2142,28 @@
           document.body.appendChild(iframe);
         }
 
-        // 6. Send NES Start button (Enter) after brief sync
+        // 6. Send NES Start button in chosen mode (1 Player vs 2 Players)
         setTimeout(() => {
-          dispatchKey('Enter', true);
-          setTimeout(() => dispatchKey('Enter', false), 50);
+          if (chosenMode === '2p') {
+            // Press Select (ShiftLeft) to move cursor to 2 PLAYERS
+            dispatchKey('ShiftLeft', true);
+            setTimeout(() => {
+              dispatchKey('ShiftLeft', false);
+              setTimeout(() => {
+                // Press Start (Enter) to begin 2-Player mode
+                dispatchKey('Enter', true);
+                setTimeout(() => dispatchKey('Enter', false), 50);
+              }, 150);
+            }, 100);
+          } else {
+            // 1 Player mode (cursor is already at 1 PLAYER)
+            dispatchKey('Enter', true);
+            setTimeout(() => dispatchKey('Enter', false), 50);
+          }
         }, 1200);
 
         setStatus('online', 'Playing');
-        toast('Game started! Defend the eagle base!');
+        toast(chosenMode === '2p' ? '2-Player Co-op started! Defend the eagle base together!' : 'Game started! Defend the eagle base!');
       }
 
       function handleStartGame() {
@@ -2070,7 +2185,7 @@
           }
 
           // Both players have selected different options! Start game!
-          window.__bc_broadcast_start?.();
+          window.__bc_broadcast_start?.(chosenMode);
           startGameSession();
         } else {
           // Only one person in room: still starts on pressing start!
@@ -2088,13 +2203,22 @@
 
       updateSlotUI(chosenSlot);
 
-      // Listen for peer slot choice, start signal, and presence from signaling
+      // Listen for peer slot choice, mode choice, start signal, and presence from signaling
       window.addEventListener('bc:peer_slot_choice', (e) => {
         peerSlot = e.detail?.slot;
         updateSlotUI(chosenSlot);
       });
 
-      window.addEventListener('bc:peer_start_game', () => {
+      window.addEventListener('bc:peer_mode_choice', (e) => {
+        if (e.detail?.mode) {
+          switchMode(e.detail.mode, false);
+        }
+      });
+
+      window.addEventListener('bc:peer_start_game', (e) => {
+        if (e.detail?.mode) {
+          switchMode(e.detail.mode, false);
+        }
         if (!isPlaying) {
           startGameSession();
         }
@@ -2105,7 +2229,8 @@
         if (!peerPresent) {
           peerSlot = null;
         } else {
-          // A peer (real or solo) has joined — broadcast our slot choice
+          // When a friend joins, auto-switch mode to 2-Player co-op!
+          switchMode('2p', false);
           window.__bc_broadcast_slot?.(chosenSlot);
         }
         updateSlotUI(chosenSlot);
