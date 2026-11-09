@@ -84,6 +84,8 @@ if (typeof window !== 'undefined') {
             window.__bc_pending_welcome = null;
             const s = typeof window.__bc_selected_slot === 'number' ? window.__bc_selected_slot : pw.parsed.slot;
             pw.parsed.slot = s;
+            const hasPeer = !!(window.__bc_state && window.__bc_state.peerPresent) || !!pw.parsed.peer_present;
+            pw.parsed.peer_present = hasPeer;
             window.__bc_state = window.__bc_state || {};
             window.__bc_state.localSlot = s;
             try { pw.cb.call(pw.target, new MessageEvent('message', { data: JSON.stringify(pw.parsed) })); } catch (_) {}
@@ -804,14 +806,7 @@ function __wbg_get_imports() {
             arg0.remove(getStringFromWasm0(arg1, arg2));
         }, arguments); },
         __wbg_requestAnimationFrame_7b526ab7aa550c74: function() { return handleError(function (arg0, arg1) {
-            const wrappedCb = function(ts) {
-                if (typeof window !== 'undefined' && window.__bc_is_game_paused && window.__bc_is_game_paused()) {
-                    window.__bc_state.pendingRafCb = wrappedCb;
-                    return;
-                }
-                arg1(ts);
-            };
-            const ret = arg0.requestAnimationFrame(wrappedCb);
+            const ret = arg0.requestAnimationFrame(arg1);
             return ret;
         }, arguments); },
         __wbg_requestFullscreen_4eb8242c77c753fd: function() { return handleError(function (arg0) {
@@ -893,18 +888,6 @@ function __wbg_get_imports() {
             arg0.setAttribute(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
         }, arguments); },
         __wbg_setInterval_aa4e3d3f590ce835: function() { return handleError(function (arg0, arg1, arg2) {
-            if (arg2 <= 300) {
-                // When tab is hidden, WASM schedules setInterval(cb, 250) to heartbeat.
-                // If we run cb(), it steps the emulator 6-8 frames and transmits inputs,
-                // which causes the other peer to stutter and blink!
-                // Instead, we DO NOT step the emulator when hidden, and send empty keepalive packets!
-                const intervalId = arg0.setInterval(() => {
-                    if (window.__bc_send_keepalive) {
-                        window.__bc_send_keepalive();
-                    }
-                }, 1000);
-                return intervalId;
-            }
             const ret = arg0.setInterval(arg1, arg2);
             return ret;
         }, arguments); },
@@ -1024,10 +1007,17 @@ function __wbg_get_imports() {
                             if (parsed.type === 'peer_joined') {
                                 window.__bc_state = window.__bc_state || {};
                                 window.__bc_state.peerPresent = true;
+                                if (window.__bc_pending_welcome) {
+                                    window.__bc_pending_welcome.parsed.peer_present = true;
+                                }
                                 window.dispatchEvent(new CustomEvent('bc:peer_presence', { detail: { present: true } }));
                                 if (typeof window.__bc_selected_slot === 'number') {
                                     window.__bc_broadcast_slot?.(window.__bc_selected_slot);
                                 }
+                                if (window.__bc_slots_confirmed) {
+                                    return origCb.call(this, e);
+                                }
+                                return;
                             }
                             if (parsed.type === 'peer_left') {
                                 window.__bc_state = window.__bc_state || {};
@@ -1093,10 +1083,17 @@ function __wbg_get_imports() {
                             if (parsed.type === 'peer_joined') {
                                 window.__bc_state = window.__bc_state || {};
                                 window.__bc_state.peerPresent = true;
+                                if (window.__bc_pending_welcome) {
+                                    window.__bc_pending_welcome.parsed.peer_present = true;
+                                }
                                 window.dispatchEvent(new CustomEvent('bc:peer_presence', { detail: { present: true } }));
                                 if (typeof window.__bc_selected_slot === 'number') {
                                     window.__bc_broadcast_slot?.(window.__bc_selected_slot);
                                 }
+                                if (window.__bc_slots_confirmed) {
+                                    return origCb.call(this, e);
+                                }
+                                return;
                             }
                             if (parsed.type === 'peer_left') {
                                 window.__bc_state = window.__bc_state || {};

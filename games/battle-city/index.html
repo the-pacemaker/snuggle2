@@ -1860,24 +1860,26 @@
       }
     };
 
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) setLocalInactive(true);
-      else manualResume();
-    });
+    if (!urlParams.has('solo_peer')) {
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) setLocalInactive(true);
+        else manualResume();
+      });
 
-    window.addEventListener('focus', manualResume);
-    $('#bc-resume-btn')?.addEventListener('click', (e) => {
-      e.stopPropagation();
-      window.focus();
-      manualResume();
-    });
-
-    $('#bc-pause-overlay')?.addEventListener('click', () => {
-      if (window.__bc_state?.isLocalInactive) {
+      window.addEventListener('focus', manualResume);
+      $('#bc-resume-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
         window.focus();
         manualResume();
-      }
-    });
+      });
+
+      $('#bc-pause-overlay')?.addEventListener('click', () => {
+        if (window.__bc_state?.isLocalInactive) {
+          window.focus();
+          manualResume();
+        }
+      });
+    }
 
     // ============================================================
     // MAIN APP INITIALIZATION & MINIMAL PLAYER SLOT CHOOSER
@@ -1943,6 +1945,9 @@
         window.__bc_audio_muted = true;
         window.__bc_slots_confirmed = true;
         window.__bc_flush_pending_signals?.();
+        if (typeof window.__bc_is_game_paused === 'function') {
+          window.__bc_is_game_paused = () => false;
+        }
       }
 
       const minimalLobby = $('#bc-minimal-lobby');
@@ -2026,11 +2031,14 @@
           iframe.id = 'solo-peer-iframe';
           const otherSlot = chosenSlot === 0 ? 1 : 0;
           iframe.src = `/games/battle-city/?code=${encodeURIComponent(roomCode)}&slot=${otherSlot}&solo_peer=1&direct=1&embedded=1`;
-          iframe.style.position = 'absolute';
-          iframe.style.width = '0px';
-          iframe.style.height = '0px';
-          iframe.style.opacity = '0';
+          iframe.style.position = 'fixed';
+          iframe.style.left = '0px';
+          iframe.style.top = '0px';
+          iframe.style.width = '4px';
+          iframe.style.height = '4px';
+          iframe.style.opacity = '0.01';
           iframe.style.pointerEvents = 'none';
+          iframe.style.zIndex = '-999';
           iframe.tabIndex = -1;
           document.body.appendChild(iframe);
         }
