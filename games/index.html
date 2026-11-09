@@ -179,6 +179,96 @@
       </a>
 
     </nav>
+
+    <!-- Retro Games Navigation -->
+    <nav class="home__nav" id="retro-nav" aria-label="Retro Games" style="display: none;">
+
+      <!-- Battle City -->
+      <a href="/games/battle-city/" class="nav-btn" id="nav-battle-city">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="4" height="16" rx="1"></rect>
+            <rect x="16" y="4" width="4" height="16" rx="1"></rect>
+            <rect x="8" y="7" width="8" height="10" rx="1"></rect>
+            <circle cx="12" cy="12" r="2"></circle>
+            <line x1="12" y1="10" x2="12" y2="2"></line>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Battle City</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Battle City"
+          data-info="Defend the eagle base and defeat enemy tanks together."
+          aria-label="Learn more about Battle City"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+      <!-- Contra -->
+      <a href="/games/contra/" class="nav-btn" id="nav-contra">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="4"></circle>
+            <line x1="12" y1="2" x2="12" y2="7"></line>
+            <line x1="12" y1="17" x2="12" y2="22"></line>
+            <line x1="2" y1="12" x2="7" y2="12"></line>
+            <line x1="18" y1="12" x2="22" y2="12"></line>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Contra</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Contra"
+          data-info="Classic 2-player co-op run and gun action."
+          aria-label="Learn more about Contra"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+      <!-- Multiplayer Mario -->
+      <a href="#" class="nav-btn" id="nav-mario">
+        <span class="nav-btn__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 14c0-5 3.5-10 8-10s8 5 8 10c0 1.5-1 2-2 2H6c-1 0-2-.5-2-2z"></path>
+            <path d="M8 16v3a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-3"></path>
+            <circle cx="12" cy="9" r="2.5"></circle>
+            <circle cx="6.5" cy="13" r="1.5"></circle>
+            <circle cx="17.5" cy="13" r="1.5"></circle>
+          </svg>
+        </span>
+        <span class="nav-btn__label">Multiplayer Mario</span>
+        <button
+          type="button"
+          class="nav-btn__info"
+          data-title="Multiplayer Mario"
+          data-info="Play Super Mario Bros together in real-time."
+          aria-label="Learn more about Multiplayer Mario"
+        >
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <line x1="12" y1="2" x2="12" y2="6"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+            <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>
+          </svg>
+        </button>
+      </a>
+
+    </nav>
   </main>
 
   <!-- Bottom Sheet -->
@@ -193,6 +283,7 @@
 
   <script src="../js/analytics.js"></script>
   <script src="../js/app.js"></script>
+  <script src="../js/snuggle-invite.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -207,23 +298,33 @@
         return;
       }
       
+      if ((window.self === window.top) && !window.frameElement) {
+        window.location.replace(`/games/?code=${encodeURIComponent(roomCode)}`);
+        return;
+      }
+      
       if (!urlCode || urlCode.toUpperCase().trim() !== roomCode) {
         urlParams.set('code', roomCode);
         window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
       }
+
+      if (window.SnuggleInvite) {
+        window.SnuggleInvite.connectHub(roomCode);
+      }
       
       const catNav = document.getElementById('categories-nav');
       const nytNav = document.getElementById('nyt-nav');
+      const retroNav = document.getElementById('retro-nav');
       const backLink = document.getElementById('yt-back-home');
       
       const originalBackHref = backLink.href;
       const originalBackHtml = backLink.innerHTML;
 
-      document.getElementById('cat-nyt').addEventListener('click', (e) => {
-        if (e.target.closest('.nav-btn__info')) return;
-        e.preventDefault();
+      function openCategoryNav(navToShow) {
         catNav.style.display = 'none';
-        nytNav.style.display = 'flex';
+        nytNav.style.display = 'none';
+        retroNav.style.display = 'none';
+        navToShow.style.display = 'flex';
         
         backLink.href = '#';
         backLink.innerHTML = `
@@ -238,16 +339,46 @@
           ev.preventDefault();
           catNav.style.display = 'flex';
           nytNav.style.display = 'none';
+          retroNav.style.display = 'none';
           backLink.href = originalBackHref;
           backLink.innerHTML = originalBackHtml;
           backLink.onclick = null;
         };
+      }
+
+      document.getElementById('cat-nyt').addEventListener('click', (e) => {
+        if (e.target.closest('.nav-btn__info')) return;
+        e.preventDefault();
+        openCategoryNav(nytNav);
       });
 
       document.getElementById('cat-retro').addEventListener('click', (e) => {
         if (e.target.closest('.nav-btn__info')) return;
         e.preventDefault();
-        // Retro games coming soon, no action needed as requested
+        openCategoryNav(retroNav);
+      });
+
+      // Keep room code in game links
+      document.querySelectorAll('.home__nav a.nav-btn').forEach(link => {
+        try {
+          const currentHref = link.getAttribute('href');
+          if (currentHref && !currentHref.startsWith('#') && !currentHref.includes('code=')) {
+            const separator = currentHref.includes('?') ? '&' : '?';
+            link.setAttribute('href', `${currentHref}${separator}code=${encodeURIComponent(roomCode)}`);
+          }
+        } catch (e) {}
+      });
+
+      ['nav-mario'].forEach((id) => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            if (e.target.closest('.nav-btn__info')) return;
+            e.preventDefault();
+            const infoBtn = btn.querySelector('.nav-btn__info');
+            if (infoBtn) infoBtn.click();
+          });
+        }
       });
 
     });

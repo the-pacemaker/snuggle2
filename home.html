@@ -12,17 +12,257 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css?v=2">
+  <style>
+    body, body.loaded {
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+
+    /* --- Home Ribbon Styles --- */
+    .home-ribbon {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 6px 10px;
+      margin-bottom: var(--space-sm, 8px);
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(244, 162, 97, 0.16);
+      border-radius: var(--radius-md, 12px);
+      position: relative;
+      z-index: 10;
+      box-sizing: border-box;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .home-ribbon + .home__header {
+      padding-top: var(--space-md, 16px);
+    }
+
+    .home-ribbon__btn {
+      font-family: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      border: none;
+      background: transparent;
+      color: #ffffff;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 1. Leave Room Button */
+    .home-ribbon__leave {
+      background: rgba(175, 128, 79, 0.15);
+      border: 1px solid rgba(175, 128, 79, 0.3);
+      border-radius: var(--radius-sm, 8px);
+      padding: 5px 10px;
+      gap: 5px;
+      color: #f4a261;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .home-ribbon__leave:hover,
+    .home-ribbon__leave:focus-visible {
+      background: rgba(231, 111, 81, 0.2);
+      border-color: rgba(231, 111, 81, 0.45);
+      color: #ffffff;
+    }
+
+    .home-ribbon__icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* 2. Connection Status */
+    .home-ribbon__status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+      padding: 4px 6px;
+      user-select: none;
+      flex: 1;
+    }
+
+    .home-ribbon .yt-status-label {
+      font-size: 11.5px;
+      letter-spacing: 0.05em;
+      transition: color 0.2s;
+    }
+
+    .home-ribbon .yt-status-dot {
+      width: 8px;
+      height: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 3. Room Code Button */
+    .home-ribbon__code {
+      position: relative;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(244, 162, 97, 0.2);
+      padding: 5px 9px;
+      border-radius: var(--radius-sm, 8px);
+      gap: 5px;
+      font-size: 13px;
+    }
+
+    .home-ribbon__code:hover,
+    .home-ribbon__code:focus-visible {
+      background: rgba(244, 162, 97, 0.15);
+      border-color: var(--accent-warm, #f4a261);
+    }
+
+    .home-ribbon__code .yt-room-code-icon {
+      color: #f4a261;
+      opacity: 0.9;
+      flex-shrink: 0;
+    }
+
+    .home-ribbon__code-text {
+      color: #f4a261;
+      letter-spacing: 1px;
+      font-family: monospace;
+      font-size: 14.5px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 420px) {
+      .home-ribbon {
+        padding: 5px 8px;
+        gap: 4px;
+      }
+      .home-ribbon__leave {
+        padding: 4px 7px;
+        font-size: 12px;
+      }
+      .home-ribbon__code {
+        padding: 4px 7px;
+        font-size: 12px;
+      }
+      .home-ribbon__code-text {
+        font-size: 13.5px;
+      }
+    }
+
+    /* Leave Confirm Overlay */
+    .leave-confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.65);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .leave-confirm-card {
+      background: var(--bg-card, #876a4b);
+      padding: 24px;
+      border-radius: 14px;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      color: var(--text-heading, #fff);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(244, 162, 97, 0.25);
+    }
+
+    .leave-confirm-prompt {
+      margin: 0 0 22px;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .leave-confirm-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .leave-confirm-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .leave-confirm-cancel {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .leave-confirm-cancel:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .leave-confirm-leave {
+      background: var(--accent-coral, #e76f51);
+      border: none;
+      color: #fff;
+    }
+
+    .leave-confirm-leave:hover {
+      background: #d05f43;
+    }
+  </style>
 </head>
-<body>
+<body class="loaded">
   <main class="home" id="home">
+
+    <!-- ── Ribbon: 1. Leave Room, 2. Connection Status, 3. Room Code ── -->
+    <nav class="home-ribbon" id="home-ribbon" aria-label="Room navigation and status ribbon">
+      <!-- 1. Leave room button -->
+      <button type="button" class="home-ribbon__btn home-ribbon__leave" id="leave-room-btn" aria-label="Leave room" title="Leave room">
+        <svg viewBox="0 0 24 24" class="home-ribbon__icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span class="home-ribbon__btn-text">Leave Room</span>
+      </button>
+
+      <!-- 2. Connection status -->
+      <div class="home-ribbon__status" id="home-status-indicator" role="status" aria-live="polite" aria-label="Connection status">
+        <span class="yt-status-dot home-status-dot yt-status-dot--connecting" id="home-status-dot" aria-hidden="true"></span>
+        <span class="yt-status-label home-status-label" id="home-status-label">Connecting…</span>
+      </div>
+
+      <!-- 3. Room code button -->
+      <button type="button" class="home-ribbon__btn home-ribbon__code yt-room-code-pill" id="share-room-btn" aria-label="Invite and share room code" title="Share Room">
+        <svg class="yt-room-code-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        <strong class="yt-room-code-text home-ribbon__code-text" id="room-code-display">------</strong>
+        <span class="yt-room-code-copied" id="home-code-copied" aria-live="polite">Copied!</span>
+      </button>
+    </nav>
 
     <!-- Header / Branding -->
     <header class="home__header">
       <h1 class="home__logo">Snuggle</h1>
       <p class="home__tagline">
         A place where two can hang out together,<br>
-        from anywhere<br>
-        [You are advised to stay on call]    
+        from anywhere
       </p>
     </header>
 
@@ -120,123 +360,356 @@
     </div>
   </div>
 
+  <!-- Leave Room Confirmation Modal -->
+  <div id="leave-confirm-overlay" class="leave-confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="leave-confirm-title" style="display: none;">
+    <div class="leave-confirm-card">
+      <p id="leave-confirm-title" class="leave-confirm-prompt">Are you sure you want to leave the room?</p>
+      <div class="leave-confirm-actions">
+        <button type="button" id="leave-confirm-cancel" class="leave-confirm-btn leave-confirm-cancel">Cancel</button>
+        <button type="button" id="leave-confirm-ok" class="leave-confirm-btn leave-confirm-leave">Leave</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/analytics.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/snuggle-invite.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('loaded');
+      
       const urlParams = new URLSearchParams(window.location.search);
-      const urlCode = urlParams.get('code');
-      if (urlCode) {
-        sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim());
+      const urlCode = (urlParams.get('code') || '').toUpperCase().trim();
+      let roomCode = urlCode;
+
+      if (!roomCode) {
+        try {
+          roomCode = sessionStorage.getItem('snuggle_room_code') || localStorage.getItem('snuggle_room_code');
+        } catch (e) {}
       }
       
-      const roomCode = sessionStorage.getItem('snuggle_room_code');
       if (!roomCode) {
         window.location.href = '/';
+        return;
+      }
+
+      try {
+        sessionStorage.setItem('snuggle_room_code', roomCode);
+        localStorage.setItem('snuggle_room_code', roomCode);
+      } catch (e) {}
+      
+      // If loaded directly as the top window (not inside room shell), redirect into /room shell
+      const isEmbedded = (window.self !== window.top) || (window.frameElement !== null);
+      if (!isEmbedded) {
+        window.location.replace(`/room?code=${encodeURIComponent(roomCode)}`);
         return;
       }
       
       if (!urlCode || urlCode.toUpperCase().trim() !== roomCode) {
         urlParams.set('code', roomCode);
-        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+        try {
+          window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+        } catch (e) {}
       }
       
-      // Inject Room Code and Leave Room button
-      const header = document.querySelector('.home__header');
-      if (header) {
-        const topBarHtml = `
-          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: -10px; position: relative; z-index: 10;">
-            <button type="button" id="leave-room-btn" style="background: rgba(175, 128, 79, 0.15); border: 1px solid rgba(175, 128, 79, 0.3); border-radius: 8px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #af804f; font-family: inherit; font-size: 13px; transition: all 0.2s;">
-              <svg viewBox="0 0 24 24" style="width: 14px; height: 14px;" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              <span style="font-weight: 500;">Leave Room</span>
-            </button>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <button type="button" id="share-room-btn" style="font-size: 14px; background: rgba(255,255,255,0.1); border: none; padding: 5px 12px; border-radius: 12px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: background 0.2s;" title="Share Room">
-                <span id="room-code-label" style="color: #ffffff; display: flex; align-items: center; gap: 6px;">
-                  <svg viewBox="0 0 24 24" style="width: 14px; height: 14px; color: #f4a261;" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="18" cy="5" r="3"></circle>
-                    <circle cx="6" cy="12" r="3"></circle>
-                    <circle cx="18" cy="19" r="3"></circle>
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-                  </svg>
-                  Room:
-                </span>
-                <strong id="room-code-display" style="color: #f4a261; letter-spacing: 1px; font-family: monospace; font-size: 16px;">${roomCode}</strong>
-              </button>
-            </div>
-          </div>
-        `;
-        header.insertAdjacentHTML('beforebegin', topBarHtml);
+      localStorage.setItem('snuggle_room_code', roomCode);
+      if (!isEmbedded && window.SnuggleInvite) {
+        window.SnuggleInvite.connectHub(roomCode);
+      }
 
-        // Create custom confirm overlay
-        const overlayHtml = `
-          <div id="leave-confirm-overlay" style="position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
-            <div style="background: var(--bg-card, #876a4b); padding: 24px; border-radius: 12px; width: 100%; max-width: 320px; text-align: center; color: var(--text-heading, #fff); box-shadow: 0 4px 20px rgba(0,0,0,0.5); border-top: 1px solid rgba(244, 162, 97, 0.2);">
-              <p style="margin-bottom: 24px; font-size: 16px; font-weight: 500;">Are you sure you want to leave the room?</p>
-              <div style="display: flex; gap: 12px; justify-content: center;">
-                <button id="leave-confirm-cancel" style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-muted, #fff); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Cancel</button>
-                <button id="leave-confirm-ok" style="flex: 1; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; background: var(--accent-coral, #e76f51); border: none; color: white; transition: background 0.2s;" onmouseover="this.style.background='#d05f43'" onmouseout="this.style.background='var(--accent-coral, #e76f51)'">Leave</button>
-              </div>
-            </div>
-          </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', overlayHtml);
-
-        const confirmOverlay = document.getElementById('leave-confirm-overlay');
-        const confirmCancel = document.getElementById('leave-confirm-cancel');
-        const confirmOk = document.getElementById('leave-confirm-ok');
-
-        confirmCancel.addEventListener('click', () => {
-          confirmOverlay.style.display = 'none';
+      // Ensure all navigation links keep the room code in the URL
+      document.querySelectorAll('.home__nav a.nav-btn').forEach(link => {
+        try {
+          const currentHref = link.getAttribute('href');
+          if (currentHref && !currentHref.includes('code=')) {
+            const separator = currentHref.includes('?') ? '&' : '?';
+            link.setAttribute('href', `${currentHref}${separator}code=${encodeURIComponent(roomCode)}`);
+          }
+        } catch (e) {}
+        link.addEventListener('click', () => {
+          try {
+            const currentHref = link.getAttribute('href');
+            if (currentHref && !currentHref.includes('code=')) {
+              const separator = currentHref.includes('?') ? '&' : '?';
+              link.setAttribute('href', `${currentHref}${separator}code=${encodeURIComponent(roomCode)}`);
+            }
+          } catch (e) {}
         });
+      });
+      
+      // ── Populate Room Code ──
+      const roomCodeDisplay = document.getElementById('room-code-display');
+      if (roomCodeDisplay) {
+        roomCodeDisplay.textContent = roomCode;
+      }
 
-        confirmOk.addEventListener('click', () => {
-          sessionStorage.removeItem('snuggle_room_code');
-          window.location.href = '/';
-        });
+      // ── Connection Status Handling ──
+      const statusDot = document.getElementById('home-status-dot');
+      const statusLabel = document.getElementById('home-status-label');
 
-        document.getElementById('leave-room-btn').addEventListener('click', () => {
+      function setStatus(state) {
+        if (!statusDot || !statusLabel) return;
+        statusDot.className = 'yt-status-dot home-status-dot';
+        statusLabel.className = 'yt-status-label home-status-label';
+
+        if (state === 'connected') {
+          statusDot.classList.add('yt-status-dot--connected');
+          statusLabel.textContent = 'Connected';
+          statusLabel.style.color = '#4ade80';
+        } else if (state === 'waiting') {
+          statusDot.classList.add('yt-status-dot--waiting');
+          statusLabel.textContent = 'Waiting';
+          statusLabel.style.color = '#f4a261';
+        } else if (state === 'connecting') {
+          statusDot.classList.add('yt-status-dot--connecting');
+          statusLabel.textContent = 'Connecting…';
+          statusLabel.style.color = 'var(--text-muted, #ffffff)';
+        } else {
+          statusDot.classList.add('yt-status-dot--disconnected');
+          statusLabel.textContent = 'Disconnected';
+          statusLabel.style.color = 'var(--accent-coral, #e76f51)';
+        }
+      }
+
+      let homeWs = null;
+      let pingTimer = null;
+      let reconnectTimer = null;
+      let currentUsersCount = 1;
+
+      // Check if parent window already has tracked users count
+      try {
+        if (window.top && typeof window.top.__snuggleUsersCount === 'number') {
+          currentUsersCount = window.top.__snuggleUsersCount;
+          setStatus(currentUsersCount > 1 ? 'connected' : 'waiting');
+        } else {
+          setStatus('connecting');
+        }
+      } catch (_) {
+        setStatus('connecting');
+      }
+
+      function connectHomeWS() {
+        clearTimeout(reconnectTimer);
+        clearInterval(pingTimer);
+
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}`;
+        const sid = (window.SnuggleInvite && window.SnuggleInvite.getSessionId)
+          ? window.SnuggleInvite.getSessionId()
+          : (sessionStorage.getItem('snuggle_session_id') || 'usr_' + Math.random().toString(36).slice(2, 10));
+
+        try {
+          homeWs = new WebSocket(wsUrl);
+        } catch (e) {
+          setStatus('disconnected');
+          reconnectTimer = setTimeout(connectHomeWS, 3000);
+          return;
+        }
+
+        homeWs.onopen = () => {
+          homeWs.send(JSON.stringify({
+            type: 'join_room',
+            code: roomCode,
+            from: sid,
+            sessionId: sid
+          }));
+
+          pingTimer = setInterval(() => {
+            if (homeWs && homeWs.readyState === 1) {
+              homeWs.send(JSON.stringify({ type: 'ping' }));
+            }
+          }, 25000);
+        };
+
+        homeWs.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(event.data);
+            if (!msg) return;
+
+            if (msg.type === 'room_joined') {
+              currentUsersCount = msg.usersCount || 1;
+              setStatus(currentUsersCount > 1 ? 'connected' : 'waiting');
+            } else if (msg.type === 'user_joined') {
+              currentUsersCount = 2;
+              setStatus('connected');
+            } else if (msg.type === 'user_left') {
+              currentUsersCount = 1;
+              setStatus('waiting');
+            } else if (msg.type === 'room_invite') {
+              if (window.SnuggleInvite) window.SnuggleInvite.showInviteModal(msg);
+            }
+          } catch (e) {}
+        };
+
+        homeWs.onclose = () => {
+          clearInterval(pingTimer);
+          let topAlive = false;
+          try {
+            if (window.top && typeof window.top.__snuggleUsersCount === 'number') {
+              topAlive = true;
+            }
+          } catch (_) {}
+          if (!topAlive) {
+            setStatus('disconnected');
+          }
+          reconnectTimer = setTimeout(connectHomeWS, 3000);
+        };
+
+        homeWs.onerror = () => {
+          setStatus('disconnected');
+        };
+      }
+
+      connectHomeWS();
+
+      // Listen to status updates broadcast by parent shell
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'snuggle_users_count') {
+          currentUsersCount = event.data.usersCount || 1;
+          setStatus(currentUsersCount > 1 ? 'connected' : 'waiting');
+        }
+      });
+
+      window.addEventListener('beforeunload', () => {
+        clearTimeout(reconnectTimer);
+        clearInterval(pingTimer);
+        if (homeWs) {
+          try { homeWs.close(); } catch (_) {}
+        }
+      });
+
+      // ── Leave Room Button & Modal ──
+      const leaveBtn = document.getElementById('leave-room-btn');
+      const confirmOverlay = document.getElementById('leave-confirm-overlay');
+      const confirmCancel = document.getElementById('leave-confirm-cancel');
+      const confirmOk = document.getElementById('leave-confirm-ok');
+
+      if (leaveBtn && confirmOverlay) {
+        leaveBtn.addEventListener('click', () => {
           confirmOverlay.style.display = 'flex';
         });
 
-        document.getElementById('share-room-btn').addEventListener('click', async () => {
-          const url = window.location.origin + '/?code=' + roomCode;
-          if (navigator.share) {
-            try { await navigator.share({ title: 'Join my room', url }); return; } catch (e) {}
+        if (confirmCancel) {
+          confirmCancel.addEventListener('click', () => {
+            confirmOverlay.style.display = 'none';
+          });
+        }
+
+        if (confirmOk) {
+          confirmOk.addEventListener('click', () => {
+            try {
+              sessionStorage.removeItem('snuggle_room_code');
+              localStorage.removeItem('snuggle_room_code');
+            } catch (_) {}
+            if (window.top) {
+              window.top.location.href = '/';
+            } else {
+              window.location.href = '/';
+            }
+          });
+        }
+
+        confirmOverlay.addEventListener('click', (e) => {
+          if (e.target === confirmOverlay) {
+            confirmOverlay.style.display = 'none';
           }
-          try { await navigator.clipboard.writeText(url); } 
-          catch (e) {
-            const t = document.createElement('textarea'); t.value = url; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove();
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && confirmOverlay.style.display === 'flex') {
+            confirmOverlay.style.display = 'none';
           }
-          
-          const btn = document.getElementById('share-room-btn');
-          if (btn.dataset.copied) return;
-          btn.dataset.copied = "true";
-          
-          const rect = btn.getBoundingClientRect();
-          const oldWidth = rect.width;
-          const oldHeight = rect.height;
-          const oldHtml = btn.innerHTML;
-          
-          btn.style.boxSizing = 'border-box';
-          btn.style.width = oldWidth + 'px';
-          btn.style.height = oldHeight + 'px';
-          btn.style.justifyContent = 'center';
-          btn.innerHTML = '<span style="color: #ffffff;">Copied!</span>';
-          
-          setTimeout(() => {
-            btn.innerHTML = oldHtml;
-            btn.style.width = '';
-            btn.style.height = '';
-            btn.style.boxSizing = '';
-            btn.style.justifyContent = '';
-            delete btn.dataset.copied;
-          }, 2000);
+        });
+      }
+
+      // ── Room Code Button (Share / Copy) ──
+      const shareBtn = document.getElementById('share-room-btn');
+      const copiedSpan = document.getElementById('home-code-copied');
+      let copyTimer = null;
+
+      function showCopiedFeedback() {
+        clearTimeout(copyTimer);
+        if (copiedSpan) copiedSpan.classList.add('visible');
+        shareBtn.classList.add('copied');
+        copyTimer = setTimeout(() => {
+          if (copiedSpan) copiedSpan.classList.remove('visible');
+          shareBtn.classList.remove('copied');
+        }, 2000);
+      }
+
+      async function copyLinkToClipboard(text) {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(text);
+            return true;
+          }
+        } catch (_) {}
+
+        try {
+          const t = document.createElement('textarea');
+          t.value = text;
+          t.style.position = 'fixed';
+          t.style.opacity = '0';
+          t.style.top = '0';
+          t.style.left = '0';
+          document.body.appendChild(t);
+          t.focus();
+          t.select();
+          const successful = document.execCommand('copy');
+          document.body.removeChild(t);
+          return successful;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const url = window.location.origin + '/?code=' + encodeURIComponent(roomCode);
+          const shareData = {
+            title: 'Snuggle',
+            text: `Join my room on Snuggle: ${url}`,
+            url: url
+          };
+
+          // Find the best navigator object with native share capability
+          // (top-level window context has primary permissions on mobile)
+          let shareNav = null;
+          try {
+            if (window.top && window.top.navigator && typeof window.top.navigator.share === 'function') {
+              shareNav = window.top.navigator;
+            }
+          } catch (_) {}
+
+          if (!shareNav && typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+            shareNav = navigator;
+          }
+
+          if (shareNav) {
+            try {
+              if (typeof shareNav.canShare === 'function') {
+                if (shareNav.canShare(shareData)) {
+                  await shareNav.share(shareData);
+                  return;
+                } else if (shareNav.canShare({ title: 'Snuggle', url: url })) {
+                  await shareNav.share({ title: 'Snuggle', url: url });
+                  return;
+                }
+              }
+              await shareNav.share(shareData);
+              return;
+            } catch (err) {
+              // If user cancelled or dismissed the native share sheet, do nothing
+              if (err && (err.name === 'AbortError' || err.code === 20)) {
+                return;
+              }
+              console.warn('[Snuggle] Native share failed, falling back to copy:', err);
+            }
+          }
+
+          // Fallback to clipboard copy on desktop or unsupported devices
+          await copyLinkToClipboard(url);
+          showCopiedFeedback();
         });
       }
     });

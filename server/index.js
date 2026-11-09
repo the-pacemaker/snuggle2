@@ -9,11 +9,19 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
 const { setupWebSocket, teardownWebSocket } = require('./sync');
 const { logEvent } = require('./analytics');
 const statsRouter = require('./stats-router');
+const { attachSignaling } = require('./coop/ws-adapter');
+const { attachBattleCitySignaling } = require('./bcoop/ws-adapter');
+const { attachContraSignaling } = require('./ccoop/ws-adapter');
+const { mintToken, verifyToken } = require('./coop/mint-token');
+const { getIceServers } = require('./ice-servers');
+const COOP_SIGNAL_SECRET = process.env.COOP_SIGNAL_SECRET || 'snuggle-coop-secret-key-12345';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -62,9 +70,72 @@ app.use('/stats', (req, res, next) => {
   res.redirect('/stats');
 });
 
-// Route for /home
-app.get('/home', (req, res) => {
-  res.sendFile(path.join(__dirname, '../home.html'));
+// Helper to check if a section request is a top-level room session request
+function isTopLevelRoomRequest(req) {
+  // If explicitly requested as embedded in iframe or browser sec-fetch-dest indicates iframe
+  if (req.query.embedded === '1' || req.query.embedded === 'true') return false;
+  if (req.headers['sec-fetch-dest'] === 'iframe') return false;
+  // If room code is present in query string
+  const code = (req.query.code || '').trim();
+  return Boolean(code);
+}
+
+// Section routes: Top-level requests with room code serve room.html shell;
+// inner iframe requests (or direct access without code) serve the section page.
+const SECTION_ROUTES = [
+  { paths: ['/home'], file: '../home.html' },
+  { paths: ['/games', '/games/'], file: '../games/index.html' },
+  { paths: ['/games/wordle', '/games/wordle/'], file: '../games/wordle/index.html' },
+  { paths: ['/games/connections', '/games/connections/'], file: '../games/connections/index.html' },
+  { paths: ['/games/strands', '/games/strands/'], file: '../games/strands/index.html' },
+  { paths: ['/games/contra', '/games/contra/'], file: '../games/contra/index.html' },
+  { paths: ['/games/battle-city', '/games/battle-city/'], file: '../games/battle-city/index.html' },
+  { paths: ['/movies', '/movies/'], file: '../movies/index.html' },
+  { paths: ['/youtube', '/youtube/'], file: '../youtube/index.html' },
+  { paths: ['/call', '/call/'], file: '../call/index.html' }
+];
+
+SECTION_ROUTES.forEach(({ paths, file }) => {
+  app.get(paths, (req, res) => {
+    if (isTopLevelRoomRequest(req)) {
+      return res.sendFile(path.join(__dirname, '../room.html'));
+    }
+    return res.sendFile(path.join(__dirname, file));
+  });
+});
+
+// Route for /room and /room/
+app.get(['/room', '/room/'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../room.html'));
+});
+
+// Route to retrieve WebRTC ICE servers (STUN and TURN relay)
+app.get('/api/ice-servers', (req, res) => {
+  res.json({ iceServers: getIceServers() });
+});
+
+// Route to mint/retrieve join token for Contra co-op signaling
+app.get('/api/coop-token', (req, res) => {
+  const room = (req.query.room || req.query.code || '').toUpperCase().trim();
+  if (!room || !/^[A-Za-z0-9_-]{1,64}$/.test(room)) {
+    return res.status(400).json({ error: 'Invalid or missing room code' });
+  }
+  const seat = req.query.seat || 'any';
+  try {
+    const token = mintToken({
+      secret: COOP_SIGNAL_SECRET,
+      room,
+      seat: ['host', 'guest', 'any'].includes(seat) ? seat : 'any',
+      ttlSeconds: 120
+    });
+    if (req.headers.accept && req.headers.accept.includes('application/json')) {
+      return res.json({ token, room, seat });
+    }
+    // Return token string directly so r.text() or JSON parse works
+    return res.type('text/plain').send(token);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // Serve the frontend static files from the root of snuggle
@@ -150,8 +221,55 @@ app.get('/api/yt-search', async (req, res) => {
 // Create HTTP server from Express app
 const httpServer = http.createServer(app);
 
-// Attach WebSocket server
-const { rooms } = setupWebSocket(httpServer);
+// Optional HTTPS server for secure mobile WebRTC on local Wi-Fi
+let httpsServer = null;
+const keyPath = path.join(__dirname, 'key.pem');
+const certPath = path.join(__dirname, 'cert.pem');
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+  try {
+    httpsServer = https.createServer({
+      key: fs.readFileSync(keyPath),
+      cert: fs.readFileSync(certPath)
+    }, app);
+  } catch (err) {
+    console.warn('Failed to start HTTPS server:', err.message);
+  }
+}
+
+// Attach WebSocket server to HTTP and HTTPS
+const { rooms } = setupWebSocket(httpServer, httpsServer);
+
+// Attach Contra WebRTC signaling service
+const coopSignaling = attachSignaling({
+  servers: [httpServer, httpsServer].filter(Boolean),
+  path: '/coop-signal',
+  hubOptions: {
+    iceServers: () => getIceServers()
+  },
+  authorize: async (room, req) => {
+    try {
+      const url = new URL(req.url, 'http://localhost');
+      const token = url.searchParams.get('token');
+      if (token) {
+        const verified = verifyToken({ secret: COOP_SIGNAL_SECRET, room, token });
+        if (verified) return { role: verified.seat };
+      }
+    } catch (_) {}
+    return true;
+  }
+});
+
+// Attach Battle City WebRTC signaling service
+const bcoopSignaling = attachBattleCitySignaling({
+  servers: [httpServer, httpsServer].filter(Boolean),
+  paths: ['/bcoop-signal', '/ws']
+});
+
+// Attach Contra WebRTC signaling service
+const ccoopSignaling = attachContraSignaling({
+  servers: [httpServer, httpsServer].filter(Boolean),
+  paths: ['/ccoop-signal', '/contra-signal']
+});
 
 app.get('/api/wordle-daily', async (req, res) => {
   try {
@@ -213,8 +331,14 @@ process.on('SIGINT', shutdown);
 
 function shutdown() {
   console.log('Shutting down...');
+  try { coopSignaling?.close?.(); } catch (e) {}
+  try { bcoopSignaling?.close?.(); } catch (e) {}
+  try { ccoopSignaling?.close?.(); } catch (e) {}
   teardownWebSocket();
   
+  if (httpsServer) {
+    try { httpsServer.close(); } catch (e) {}
+  }
   httpServer.close(() => {
     console.log('Server stopped.');
     process.exit(0);
@@ -222,8 +346,16 @@ function shutdown() {
 }
 
 // --- Start Server ---
+const HTTPS_PORT = process.env.HTTPS_PORT || 3443;
 httpServer.listen(PORT, () => {
   console.log(`🎬 Snuggle Sync Server running on port ${PORT}`);
   console.log(`   Local URL: http://localhost:${PORT}`);
   console.log(`   Health check: http://localhost:${PORT}/health`);
 });
+
+if (httpsServer) {
+  httpsServer.listen(HTTPS_PORT, () => {
+    console.log(`🔒 Snuggle HTTPS Server running on port ${HTTPS_PORT}`);
+    console.log(`   Local HTTPS URL: https://localhost:${HTTPS_PORT}`);
+  });
+}

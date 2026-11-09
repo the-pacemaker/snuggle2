@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="format-detection" content="telephone=no">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Video Call (Beta) — Snuggle</title>
+  <meta name="description" content="Peer-to-peer real-time video call on Snuggle.">
+  <meta name="theme-color" content="#3c280d">
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css?v=2">
+  <link rel="stylesheet" href="/call/call.css?v=2">
+  <script>
+    if (window === window.top) {
+      const p = new URLSearchParams(window.location.search);
+      const code = p.get('code') || sessionStorage.getItem('snuggle_room_code') || localStorage.getItem('snuggle_room_code');
+      if (code) {
+        window.location.replace(`/room?code=${encodeURIComponent(code)}&tab=call`);
+      }
+    }
+  </script>
+</head>
+<body class="call-page loaded">
+
+  <!-- Toast notification -->
+  <div class="call-toast" id="call-toast" aria-live="polite" aria-atomic="true"></div>
+
+  <main class="call-app" id="call-app">
+
+    <!-- ── Top Status Bar (Signal CallingHeader) ── -->
+    <header class="call-header CallingHeader" id="call-header">
+      <div class="call-header__left">
+        <a class="call-back-btn" id="call-back-btn" href="/home" aria-label="Back to Snuggle Home">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          <span>Home</span>
+        </a>
+
+        <div class="call-status" id="call-status" aria-label="Connection Status">
+          <span class="call-status__dot" id="call-status-dot"></span>
+          <span class="call-status__text" id="call-status-text">Connecting...</span>
+          <span class="call-timer-text" id="call-timer-text" hidden>00:00</span>
+        </div>
+      </div>
+
+      <div class="call-header__right">
+        <button type="button" class="call-room-pill" id="call-room-pill" title="Tap to copy invite link">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          <span id="call-room-code-label">Room: <strong id="call-room-code">------</strong></span>
+          <span class="call-copied-tooltip" id="call-copied-tooltip">Copied!</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ── Video Stage ── -->
+    <section class="call-stage" id="call-stage">
+      
+      <!-- Remote Video (Primary Stage) -->
+      <div class="video-container video-container--remote" id="remote-container">
+        <video id="remote-video" playsinline autoplay></video>
+        
+        <!-- Signal Pre-Call Waiting Lobby -->
+        <div class="video-placeholder module-CallingLobby" id="remote-placeholder">
+          <div class="module-calling__background--blur" aria-hidden="true"></div>
+          <div class="video-placeholder__avatar" id="remote-avatar-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          <div class="module-CallingPreCallInfo">
+            <h2 class="module-CallingPreCallInfo__title" style="margin: 0; font-size: 1.25rem;">Snuggle Video Call</h2>
+            <p class="video-placeholder__label module-CallingPreCallInfo__subtitle" id="remote-placeholder-text">Waiting for friend to join...</p>
+          </div>
+          <button type="button" class="btn-invite-friend CallingLobby__JoinButton" id="btn-invite-friend">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            <span>Copy Room Link</span>
+          </button>
+          <div class="CallingLobby__CallLinkNotice">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right: 6px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>End-to-end encrypted</span>
+          </div>
+        </div>
+
+        <!-- Remote Audio / Mic Indicator (Signal Style) -->
+        <div class="video-badge video-badge--remote CallingAudioIndicator CallingAudioIndicator--with-content" id="remote-name-badge">
+          <span class="speaking-indicator" id="remote-speaking-indicator" title="Speaking">
+            <span class="speaking-bar"></span>
+            <span class="speaking-bar"></span>
+            <span class="speaking-bar"></span>
+          </span>
+          <span class="video-badge__muted" id="remote-muted-badge" hidden title="Microphone muted">
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+              <path d="M6.354 10V8.711l4.761 4.761A3.646 3.646 0 0 1 6.355 10Z"/>
+              <path d="M10 15.208c.83 0 1.615-.194 2.312-.54l.922.923a6.417 6.417 0 0 1-2.609.838v1.28h2.708a.625.625 0 1 1 0 1.25H6.667a.625.625 0 0 1 0-1.25h2.708v-1.28A6.46 6.46 0 0 1 3.542 10V8.75a.625.625 0 1 1 1.25 0V10A5.208 5.208 0 0 0 10 15.208Zm4.669-2.896.922.922A6.428 6.428 0 0 0 16.458 10V8.75a.625.625 0 1 0-1.25 0V10c0 .83-.194 1.615-.54 2.312ZM6.464 4.107l7.008 7.008c.113-.351.174-.726.174-1.115V5a3.646 3.646 0 0 0-7.182-.893ZM3.359 2.475a.625.625 0 1 0-.884.884l14.167 14.166a.625.625 0 1 0 .883-.884L3.36 2.475Z"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+
+      <!-- Local Video Container (Signal Local Preview) -->
+      <div class="video-container video-container--local module-ongoing-call__local-preview" id="local-container" title="Click to swap views">
+        <video id="local-video" playsinline autoplay muted></video>
+        
+        <!-- Signal Inset Audio Indicator (Top Right) -->
+        <div class="CallingAudioIndicator CallingAudioIndicator--with-content">
+          <span class="speaking-indicator" id="local-speaking-indicator" title="You are speaking">
+            <span class="speaking-bar"></span>
+            <span class="speaking-bar"></span>
+            <span class="speaking-bar"></span>
+          </span>
+        </div>
+
+        <!-- Signal Camera Off Status (Top Left) -->
+        <div class="video-placeholder" id="local-placeholder" hidden>
+          <div class="video-placeholder__avatar video-placeholder__avatar--small">
+            <svg viewBox="0 0 20 20" width="22" height="22" fill="currentColor">
+              <path d="M1.9 1.85a.625.625 0 0 0-.884.884L16.433 18.15a.625.625 0 0 0 .884-.884L1.9 1.85Zm-.197 3.043a2.783 2.783 0 0 0-.042.08c-.163.319-.236.673-.272 1.11-.035.43-.035.965-.035 1.653v4.528c0 .688 0 1.224.035 1.653.036.437.11.791.272 1.11.27.529.7.96 1.229 1.229.319.162.673.236 1.11.271.429.035.964.035 1.652.035h4.112c.688 0 1.224 0 1.653-.035.437-.035.791-.109 1.11-.271.117-.06.23-.128.336-.202L1.703 4.894Zm12.359 7.646V7.736c0-.688 0-1.224-.035-1.653-.035-.437-.109-.791-.271-1.11-.27-.53-.7-.96-1.23-1.229-.318-.162-.672-.236-1.109-.271-.43-.036-.965-.036-1.653-.036H5.652c-.249 0-.478 0-.69.002l9.1 9.1Zm1.042-4.277v3.476c0 .304.12.596.336.81l2.378 2.378a.73.73 0 0 0 1.244-.515V5.589a.73.73 0 0 0-1.244-.515L15.44 7.452a1.146 1.146 0 0 0-.336.81Z"/>
+            </svg>
+          </div>
+          <p class="video-placeholder__sub">Camera Off</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── Signal Floating Controls Dock ── -->
+    <footer class="call-controls CallControls module-ongoing-call__footer__actions" id="call-controls" role="toolbar" aria-label="Call controls">
+      
+      <!-- Left: Signal Info Display (Name + Status / Live Duration Timer) -->
+      <div class="CallControls__InfoDisplay">
+        <div class="CallControls__CallTitle" id="signal-call-title">Snuggle Call</div>
+        <div class="CallControls__Status">
+          <span class="call-status-text" id="dock-call-status">Connecting...</span>
+          <span class="call-timer-text CallControls__Status--duration" id="dock-call-timer" hidden>00:00</span>
+        </div>
+      </div>
+
+      <!-- Center: Signal Call Buttons (Cam, Mic, Flip, Swap) -->
+      <div class="CallControls__ButtonContainer">
+        <!-- Camera Toggle -->
+        <button type="button" class="ctrl-btn CallingButton__icon CallingButton__icon--video" id="ctrl-cam" aria-label="Turn off camera" title="Camera">
+          <span class="ctrl-btn__icon" id="icon-cam-wrapper">
+            <span class="CallingButton__icon-svg" id="icon-cam-on">
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+                <path d="M5.653 3.438h4.111c.688 0 1.224 0 1.654.035.436.035.79.109 1.109.271.53.27.96.7 1.229 1.23.162.318.236.672.271 1.109.036.43.036.965.036 1.653v4.528c0 .688 0 1.224-.036 1.653-.035.437-.108.791-.271 1.11-.27.53-.7.96-1.23 1.229-.318.162-.672.236-1.108.271-.43.035-.966.035-1.654.035H5.653c-.688 0-1.224 0-1.654-.035-.436-.035-.79-.109-1.11-.271-.528-.27-.959-.7-1.228-1.23-.163-.318-.236-.672-.272-1.109-.035-.43-.035-.965-.035-1.653V7.736c0-.688 0-1.224.035-1.653.036-.437.11-.791.272-1.11.27-.529.7-.96 1.229-1.229.319-.162.673-.236 1.11-.271.429-.035.965-.035 1.653-.035Zm9.451 8.3V8.262c0-.304.121-.596.336-.81l2.378-2.378a.73.73 0 0 1 1.245.515v8.822a.73.73 0 0 1-1.245.515l-2.378-2.378a1.146 1.146 0 0 1-.336-.81Z"/>
+              </svg>
+            </span>
+            <span class="CallingButton__icon-svg" id="icon-cam-off" hidden>
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+                <path d="M1.9 1.85a.625.625 0 0 0-.884.884L16.433 18.15a.625.625 0 0 0 .884-.884L1.9 1.85Zm-.197 3.043a2.783 2.783 0 0 0-.042.08c-.163.319-.236.673-.272 1.11-.035.43-.035.965-.035 1.653v4.528c0 .688 0 1.224.035 1.653.036.437.11.791.272 1.11.27.529.7.96 1.229 1.229.319.162.673.236 1.11-.271.429.035.964.035 1.652.035h4.112c.688 0 1.224 0 1.653-.035.437-.035.791-.109 1.11-.271.117-.06.23-.128.336-.202L1.703 4.894Zm12.359 7.646V7.736c0-.688 0-1.224-.035-1.653-.035-.437-.109-.791-.271-1.11-.27-.53-.7-.96-1.23-1.229-.318-.162-.672-.236-1.109-.271-.43-.036-.965-.036-1.653-.036H5.652c-.249 0-.478 0-.69.002l9.1 9.1Zm1.042-4.277v3.476c0 .304.12.596.336.81l2.378 2.378a.73.73 0 0 0 1.244-.515V5.589a.73.73 0 0 0-1.244-.515L15.44 7.452a1.146 1.146 0 0 0-.336.81Z"/>
+              </svg>
+            </span>
+          </span>
+          <span class="ctrl-btn__label" hidden>Camera</span>
+        </button>
+
+        <!-- Mic Toggle -->
+        <button type="button" class="ctrl-btn CallingButton__icon CallingButton__icon--audio" id="ctrl-mic" aria-label="Mute microphone" title="Microphone">
+          <span class="ctrl-btn__icon" id="icon-mic-wrapper">
+            <span class="CallingButton__icon-svg" id="icon-mic-on">
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+                <path d="M6.354 5a3.646 3.646 0 1 1 7.292 0v5a3.646 3.646 0 1 1-7.292 0V5Z"/>
+                <path d="M4.792 8.75a.625.625 0 1 0-1.25 0V10a6.46 6.46 0 0 0 5.833 6.428v1.28H6.667a.625.625 0 1 0 0 1.25h6.666a.625.625 0 0 0 0-1.25h-2.708v-1.28A6.46 6.46 0 0 0 16.458 10V8.75a.625.625 0 1 0-1.25 0V10a5.208 5.208 0 1 1-10.416 0V8.75Z"/>
+              </svg>
+            </span>
+            <span class="CallingButton__icon-svg" id="icon-mic-off" hidden>
+              <svg viewBox="0 0 20 20" width="20" height="20" fill="currentColor">
+                <path d="M6.354 10V8.711l4.761 4.761A3.646 3.646 0 0 1 6.355 10Z"/>
+                <path d="M10 15.208c.83 0 1.615-.194 2.312-.54l.922.923a6.417 6.417 0 0 1-2.609.838v1.28h2.708a.625.625 0 1 1 0 1.25H6.667a.625.625 0 0 1 0-1.25h2.708v-1.28A6.46 6.46 0 0 1 3.542 10V8.75a.625.625 0 1 1 1.25 0V10A5.208 5.208 0 0 0 10 15.208Zm4.669-2.896.922.922A6.428 6.428 0 0 0 16.458 10V8.75a.625.625 0 1 0-1.25 0V10c0 .83-.194 1.615-.54 2.312ZM6.464 4.107l7.008 7.008c.113-.351.174-.726.174-1.115V5a3.646 3.646 0 0 0-7.182-.893ZM3.359 2.475a.625.625 0 1 0-.884.884l14.167 14.166a.625.625 0 1 0 .883-.884L3.36 2.475Z"/>
+              </svg>
+            </span>
+          </span>
+          <span class="ctrl-btn__label" hidden>Mute</span>
+        </button>
+
+        <!-- Flip Camera Button -->
+        <button type="button" class="ctrl-btn CallingButton__icon CallingButton__icon--flip" id="ctrl-switch-cam" aria-label="Flip camera" title="Flip Camera">
+          <span class="ctrl-btn__icon" id="icon-flip-wrapper">
+            <span class="CallingButton__icon-svg" id="icon-flip">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 11.5V13H9v2.5L5.5 12 9 8.5V11h6V8.5l3.5 3.5-3.5 3.5z"/>
+              </svg>
+            </span>
+          </span>
+          <span class="ctrl-btn__label" hidden>Flip</span>
+        </button>
+      </div>
+
+      <!-- Right: Signal Red Hangup Pill Button -->
+      <div class="CallControls__JoinLeaveButtonContainer">
+        <button type="button" class="ctrl-btn ctrl-btn--danger CallControls__JoinLeaveButton CallControls__JoinLeaveButton--hangup" id="ctrl-leave" aria-label="End call" title="End Call">
+          <span class="CallControls__HangupIcon">
+            <svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">
+              <path d="M2.91 7.244A16.082 16.082 0 0 1 10 5.608c2.543 0 4.95.588 7.09 1.636 1.586.776 2.39 2.47 2.39 4.178v.506a1.98 1.98 0 0 1-2.247 1.96l-2.917-.397a1.98 1.98 0 0 1-1.712-1.96V9.685c-.115-.178-.443-.252-.627-.304-.493-.141-1.192-.232-1.977-.232-.785 0-1.484.091-1.976.232-.185.052-.512.126-.628.304v1.844a1.98 1.98 0 0 1-1.712 1.961l-2.916.398a1.98 1.98 0 0 1-2.248-1.96v-.506c0-1.707.804-3.402 2.39-4.178Z"/>
+            </svg>
+          </span>
+          <span class="CallControls__JoinLeaveButtonText">End call</span>
+        </button>
+      </div>
+    </footer>
+        </span>
+        <span class="ctrl-btn__label">Leave</span>
+      </button>
+
+    </footer>
+
+    <!-- Permission Error Dialog -->
+    <div class="call-dialog-backdrop" id="permission-dialog" hidden>
+      <div class="call-dialog">
+        <div class="call-dialog__icon">
+          <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>
+        <h3 class="call-dialog__title">Camera & Mic Access</h3>
+        <p class="call-dialog__desc" id="perm-dialog-desc">
+          To connect your call, please allow Snuggle permission to access your camera and microphone in browser settings.
+        </p>
+        <button type="button" class="call-dialog__btn" id="btn-retry-perm">Retry Access</button>
+        <a href="#" class="call-dialog__btn" id="btn-switch-https" style="display:none; margin-top: 10px; background: #e76f51; color: #fff; text-decoration: none; text-align: center;">Switch to HTTPS for Mobile</a>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="/js/analytics.js"></script>
+  <script src="/js/snuggle-invite.js"></script>
+  <script src="/call/call.js?v=2"></script>
+</body>
+</html>

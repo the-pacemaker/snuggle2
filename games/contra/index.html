@@ -1,0 +1,2065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="format-detection" content="telephone=no">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <title>Snuggle - Contra Co-op</title>
+  <meta property="og:type" content="website">
+  <meta name="theme-color" content="#1a0f08">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Pacifico&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/styles.css?v=2">
+  <style>
+    /* ============================================================
+       SNUGGLE CONTRA CO-OP — RETRO ARCADE LOCKSTEP DESIGN
+       ============================================================ */
+    :root {
+      --bg-primary: #120904;
+      --bg-secondary: #221208;
+      --bg-chassis: #0a0502;
+      --accent-warm: #f97316;
+      --accent-fire: #ef4444;
+      --accent-blue: #3b82f6;
+      --accent-gold: #fde047;
+      --accent-green: #22c55e;
+      --accent-warm-dim: rgba(249, 115, 22, 0.15);
+      --accent-warm-glow: rgba(249, 115, 22, 0.35);
+      --text-primary: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.78);
+      --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-pixel: 'Press Start 2P', monospace;
+      --ctrl-opacity: 0.88;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 24px;
+    }
+
+    /* Top Navigation Bar */
+    #bar {
+      width: 100%;
+      height: 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 12px;
+      background: rgba(18, 9, 4, 0.96);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(249, 115, 22, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    #bar .l {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      flex: 1 1 auto;
+      overflow: hidden;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #fff;
+      padding: 5px 11px;
+      border-radius: 8px;
+      font: 600 13px var(--font-sans);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      flex-shrink: 0;
+    }
+
+    .pill:hover {
+      background: rgba(249, 115, 22, 0.22);
+      border-color: var(--accent-warm);
+      color: var(--accent-gold);
+    }
+
+    .pill:active { transform: scale(0.96); }
+
+    .pill:focus-visible {
+      outline: 2px solid var(--accent-warm);
+      outline-offset: 2px;
+    }
+
+    #dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #f39c12;
+      transition: background 0.25s ease, box-shadow 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    #dot.online {
+      background: #22c55e;
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.7);
+    }
+
+    #dot.offline {
+      background: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.7);
+    }
+
+    #dot.connecting {
+      background: #f97316;
+      box-shadow: 0 0 10px rgba(249, 115, 22, 0.7);
+      animation: pulseDot 1.4s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.85); }
+    }
+
+    #status {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.92);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Header */
+    .contra-header {
+      text-align: center;
+      margin: 14px 0 10px;
+      padding: 0 12px;
+    }
+
+    .contra-header h1 {
+      margin: 0;
+      font-size: clamp(24px, 5.5vw, 34px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #fff 0%, #fed7aa 30%, #f97316 70%, #c2410c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 10px rgba(249, 115, 22, 0.4));
+    }
+
+    .contra-header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.75);
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Arcade Stage Container */
+    .game-wrapper {
+      width: 100%;
+      max-width: 820px;
+      padding: 0 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .contra-stage-container {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(249, 115, 22, 0.3);
+      aspect-ratio: 4 / 3;
+      max-height: calc(100dvh - 120px);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    /* Fullscreen & Pseudo-fullscreen */
+    .contra-stage-container:fullscreen,
+    .contra-stage-container:-webkit-full-screen,
+    .contra-stage-container.pseudo-fullscreen {
+      max-width: none !important;
+      max-height: none !important;
+      width: 100vw !important;
+      height: 100dvh !important;
+      aspect-ratio: auto !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      z-index: 99999 !important;
+      background: #000 !important;
+    }
+
+    /* CRT scanlines effect overlay */
+    .contra-stage-container.crt::after {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.04));
+      z-index: 20;
+      background-size: 100% 3px, 4px 100%;
+      pointer-events: none;
+    }
+
+    #game {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Scoped TetaNES DOM overrides */
+    .bcoop {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      background: #000 !important;
+    }
+
+    .bcoop-stage {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: auto !important;
+      border-radius: 0 !important;
+      background: #000 !important;
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .bcoop-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+      background: #000 !important;
+      image-rendering: pixelated !important;
+      image-rendering: crisp-edges !important;
+    }
+
+    .bcoop-bar {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: rgba(15, 8, 3, 0.95) !important;
+      padding: 6px 12px !important;
+      border-top: 1px solid rgba(249, 115, 22, 0.2) !important;
+      color: #cbd5e1 !important;
+      font-size: 12px !important;
+    }
+
+    .bcoop-overlay {
+      background: rgba(0, 0, 0, 0.75) !important;
+      z-index: 15 !important;
+    }
+
+    /* On-Screen Corner Buttons (Stage) */
+    .contra-stage-player-btn {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 30;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font: 600 12px var(--font-sans);
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .contra-stage-player-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+      border-color: var(--accent-warm);
+    }
+
+    .contra-stage-player-btn:active { transform: scale(0.95); }
+
+    .contra-stage-fs-btn, .contra-stage-crt-btn {
+      position: absolute;
+      top: 10px;
+      z-index: 30;
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .contra-stage-fs-btn { right: 10px; }
+    .contra-stage-crt-btn { right: 48px; font-size: 12px; }
+
+    .contra-stage-fs-btn:hover, .contra-stage-crt-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+      border-color: var(--accent-warm);
+    }
+
+    /* Commando Dots */
+    .contra-slot-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .contra-dot-p1 { background: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.8); }
+    .contra-dot-p2 { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.8); }
+
+    /* Minimal Pre-Game Lobby Card */
+    .contra-minimal-lobby {
+      position: absolute;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: radial-gradient(circle at center, rgba(30, 15, 6, 0.95) 0%, rgba(10, 5, 2, 0.98) 100%);
+    }
+
+    .contra-minimal-box {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(22, 11, 4, 0.9);
+      border: 1px solid rgba(249, 115, 22, 0.35);
+      border-radius: 14px;
+      padding: 22px 20px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .contra-minimal-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      margin-bottom: 14px;
+    }
+
+    .contra-slot-picker {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 18px;
+    }
+
+    .contra-slot-btn {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      transition: all 0.15s ease;
+    }
+
+    .contra-slot-btn:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(249, 115, 22, 0.5);
+    }
+
+    .contra-slot-btn.active {
+      background: rgba(249, 115, 22, 0.15);
+      border-color: var(--accent-warm);
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.3);
+    }
+
+    .contra-slot-btn.friend-picked {
+      outline: 2px dashed rgba(168, 85, 247, 0.8);
+      outline-offset: 2px;
+    }
+
+    .contra-commando-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .contra-commando-sub {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+    }
+
+    .contra-friend-badge {
+      position: absolute;
+      top: -8px;
+      right: -6px;
+      background: #9333ea;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .contra-pregame-start-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font: 800 15px var(--font-sans);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(234, 88, 12, 0.4);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+    }
+
+    .contra-pregame-start-btn:hover {
+      filter: brightness(1.1);
+      box-shadow: 0 6px 22px rgba(234, 88, 12, 0.55);
+    }
+
+    .contra-pregame-start-btn:active { transform: scale(0.98); }
+
+    .contra-minimal-status {
+      margin-top: 14px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.4;
+    }
+
+    .contra-status-warn { color: #facc15 !important; }
+    .contra-status-ready { color: #4ade80 !important; font-weight: 600; }
+
+    /* On-Screen Touch Controls (In-Game) */
+    .contra-mobile-controls {
+      position: absolute;
+      inset: 0;
+      z-index: 22;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 12px 14px;
+      pointer-events: none;
+      touch-action: none;
+    }
+
+    .contra-touch-left-zone {
+      pointer-events: auto;
+      margin-bottom: clamp(26px, 5.5vh, 48px);
+      margin-left: clamp(12px, 3vw, 30px);
+    }
+
+    /* D-Pad / Joystick Base */
+    .joystick-zone {
+      width: 140px;
+      height: 140px;
+      position: relative;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .joystick-base {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.58);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .joystick-knob {
+      width: 58px;
+      height: 58px;
+      background: radial-gradient(circle at 35% 35%, #52525b 0%, #27272a 70%, #18181b 100%);
+      border: 2px solid rgba(255, 255, 255, 0.45);
+      border-radius: 50%;
+      position: absolute;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.7);
+      transition: transform 0.05s ease-out;
+      pointer-events: none;
+    }
+
+    .rg-dpad-arrow {
+      position: absolute;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+    .rg-arrow-up { top: 7px; }
+    .rg-arrow-down { bottom: 7px; }
+    .rg-arrow-left { left: 7px; }
+    .rg-arrow-right { right: 7px; }
+
+    /* Action Buttons (Right Zone) */
+    .contra-touch-right-zone {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      pointer-events: auto;
+      margin-bottom: clamp(20px, 4.5vh, 40px);
+      margin-right: clamp(10px, 2.5vw, 24px);
+    }
+
+    .contra-btn-diagonal {
+      position: relative;
+      width: 160px;
+      height: 130px;
+    }
+
+    .contra-act-btn {
+      position: absolute;
+      width: 74px;
+      height: 74px;
+      border-radius: 50%;
+      color: #fff;
+      font: 900 26px var(--font-sans);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.7), inset 0 2px 4px rgba(255,255,255,0.3);
+      border: 2.5px solid rgba(255, 255, 255, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      transition: transform 0.08s ease, filter 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    /* Button B: Upper-Left (Shoot - Hold for Turbo) */
+    .contra-act-btn.btn-b {
+      top: 0;
+      left: 0;
+      background: radial-gradient(circle at 35% 35%, #ef4444 0%, #dc2626 65%, #991b1b 100%);
+    }
+
+    /* Button A: Lower-Right (Jump) */
+    .contra-act-btn.btn-a {
+      bottom: 0;
+      right: 0;
+      background: radial-gradient(circle at 35% 35%, #3b82f6 0%, #2563eb 65%, #1d4ed8 100%);
+    }
+
+    .contra-act-btn:active, .contra-act-btn.pressed {
+      transform: scale(0.92);
+      filter: brightness(1.3);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.85);
+    }
+
+    /* Center Select & Start */
+    .contra-center-controls {
+      position: absolute;
+      bottom: clamp(12px, 2.5vh, 22px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      pointer-events: auto;
+      z-index: 23;
+    }
+
+    .contra-sys-btn {
+      padding: 8px 14px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.9);
+      font: 700 11px var(--font-sans);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+    }
+
+    .contra-sys-btn:active {
+      background: rgba(249, 115, 22, 0.4);
+      color: #fff;
+    }
+
+    /* Pause Overlay */
+    .contra-pause-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .contra-pause-card {
+      background: rgba(24, 12, 5, 0.95);
+      border: 1.5px solid var(--accent-warm);
+      border-radius: 12px;
+      padding: 22px 24px;
+      text-align: center;
+      max-width: 360px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+
+    .contra-pause-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: var(--accent-warm);
+      margin-bottom: 8px;
+    }
+
+    .contra-pause-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+      margin-bottom: 16px;
+    }
+
+    .contra-resume-btn {
+      padding: 10px 20px;
+      background: var(--accent-warm);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font: 700 13px var(--font-sans);
+      cursor: pointer;
+    }
+
+    /* Controls Guide Modal */
+    .contra-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .contra-modal-card {
+      background: #180d05;
+      border: 1px solid rgba(249, 115, 22, 0.4);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .contra-modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+    }
+
+    .contra-modal-head h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      color: var(--accent-warm);
+    }
+
+    .contra-modal-close {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .contra-modal-body {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      font-size: 13px;
+    }
+
+    .contra-key-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .contra-key-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .contra-key-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      font-family: monospace;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+
+    .contra-modal-foot {
+      padding: 12px 18px;
+      border-top: 1px solid rgba(249, 115, 22, 0.2);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .contra-modal-btn {
+      padding: 8px 18px;
+      background: var(--accent-warm);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font: 700 13px var(--font-sans);
+      cursor: pointer;
+    }
+
+    /* Weapon & Intel Dossier (Below Stage) */
+    .contra-dossier {
+      width: 100%;
+      margin-top: 24px;
+      background: rgba(20, 10, 4, 0.85);
+      border: 1px solid rgba(249, 115, 22, 0.25);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+
+    .contra-dossier-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent-warm);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .contra-weapons-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .contra-weapon-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .contra-weapon-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: #c2410c;
+      color: #fff;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: monospace;
+      flex-shrink: 0;
+    }
+
+    .contra-weapon-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .contra-weapon-desc {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 2px;
+    }
+
+    .contra-konami-box {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(249, 115, 22, 0.08);
+      border: 1px dashed rgba(249, 115, 22, 0.35);
+      border-radius: 8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(25, 12, 5, 0.96);
+      border: 1px solid var(--accent-warm);
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      z-index: 110;
+    }
+
+    #toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header id="bar" role="banner">
+    <div class="l">
+      <a href="/games/" class="pill" id="back" aria-label="Back to games">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span>Back</span>
+      </a>
+      <span id="dot" class="connecting" aria-hidden="true"></span>
+      <span id="status" aria-live="polite">Waiting…</span>
+    </div>
+
+    <!-- Room / Invite Button -->
+    <div style="display:flex;gap:8px;">
+      <button class="pill" id="btn-controls-guide" type="button" aria-label="Controls Guide" title="Controls Guide">
+        <span>Controls 🎮</span>
+      </button>
+      <button class="pill" id="copy" type="button" aria-label="Invite friend to play Contra" title="Invite friend">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        <span id="code">Invite</span>
+        <span id="copied" style="display:none;color:#4ade80">Copied!</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Title Header -->
+  <header class="contra-header">
+    <h1>Contra</h1>
+    <p>2-Player Run &amp; Gun Lockstep Co-op</p>
+  </header>
+
+  <!-- Main Game Container -->
+  <main class="game-wrapper">
+    <div class="contra-stage-container" id="contra-stage-container">
+      <!-- Stage Player Commando Switcher (Removed once game starts) -->
+      <button type="button" class="contra-stage-player-btn" id="contra-stage-player-btn" title="Switch Commando">
+        <span class="contra-slot-dot contra-dot-p1" id="stage-slot-dot"></span>
+        <span id="stage-slot-text">Bill (P1)</span>
+      </button>
+
+      <!-- Top-Right Stage Buttons -->
+      <button class="contra-stage-crt-btn" id="contra-stage-crt-btn" type="button" aria-label="Toggle CRT filter" title="CRT Scanlines (T)">
+        📺
+      </button>
+      <button class="contra-stage-fs-btn" id="contra-stage-fs-btn" type="button" aria-label="Toggle Fullscreen" title="Toggle Fullscreen (F)">
+        <svg id="stage-fs-icon-enter" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+        <svg id="stage-fs-icon-exit" style="display:none;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 14h6m0 0v6m0-6l-7 7m17-11h-6m0 0V4m0 6l7-7M4 10h6m0 0V4m0 6L3 3m17 11h-6m0 0v6m0-6l7 7"/>
+        </svg>
+      </button>
+
+      <!-- Canvas Mount Root -->
+      <div id="game"></div>
+
+      <!-- In-Game Mobile Controls Overlay -->
+      <div id="contra-mobile-controls" class="contra-mobile-controls" style="display:none;">
+        <!-- Left: 8-Way Joystick -->
+        <div id="contra-touch-left-zone" class="contra-touch-left-zone">
+          <div id="joystick-zone" class="joystick-zone" aria-label="Directional Aiming & Movement">
+            <div id="joystick-base" class="joystick-base">
+              <span class="rg-dpad-arrow rg-arrow-up">▲</span>
+              <span class="rg-dpad-arrow rg-arrow-down">▼</span>
+              <span class="rg-dpad-arrow rg-arrow-left">◀</span>
+              <span class="rg-dpad-arrow rg-arrow-right">▶</span>
+              <div id="joystick-knob" class="joystick-knob"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Select & Start -->
+        <div class="contra-center-controls">
+          <button id="btn-select" class="contra-sys-btn" type="button">Select</button>
+          <button id="btn-start" class="contra-sys-btn" type="button">Start</button>
+        </div>
+
+        <!-- Right: Action Buttons (B: Shoot / Turbo, A: Jump) in diagonal layout -->
+        <div id="contra-touch-right-zone" class="contra-touch-right-zone">
+          <div class="contra-btn-diagonal">
+            <button id="btn-b" class="contra-act-btn btn-b" type="button" title="Shoot (B - Hold for Turbo)" aria-label="Shoot (Hold for Turbo)">B</button>
+            <button id="btn-a" class="contra-act-btn btn-a" type="button" title="Jump (A)" aria-label="Jump">A</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Minimal Pre-Game Lobby Card -->
+      <div id="contra-minimal-lobby" class="contra-minimal-lobby">
+        <div class="contra-minimal-box">
+          <div class="contra-minimal-title">CHOOSE YOUR COMMANDO</div>
+
+          <!-- Operative Selector -->
+          <div class="contra-slot-picker" role="radiogroup" aria-label="Choose Commando">
+            <button type="button" class="contra-slot-btn active" id="slot-btn-0" data-slot="0">
+              <span class="contra-slot-dot contra-dot-p1"></span>
+              <span class="contra-commando-title">Bill Rizer</span>
+              <span class="contra-commando-sub">Player 1 (Blue)</span>
+              <span class="contra-friend-badge" id="friend-badge-0" style="display:none">Friend</span>
+            </button>
+            <button type="button" class="contra-slot-btn" id="slot-btn-1" data-slot="1">
+              <span class="contra-slot-dot contra-dot-p2"></span>
+              <span class="contra-commando-title">Lance Bean</span>
+              <span class="contra-commando-sub">Player 2 (Red)</span>
+              <span class="contra-friend-badge" id="friend-badge-1" style="display:none">Friend</span>
+            </button>
+          </div>
+
+          <!-- Start Mission Button -->
+          <button type="button" class="contra-pregame-start-btn" id="contra-pregame-start-btn">
+            START MISSION
+          </button>
+
+          <!-- Multiplayer Hint Area -->
+          <div class="contra-minimal-status" id="contra-lobby-status-container">
+            <span id="lobby-status-text">Single player: Press Start to play. Invite friend for 2P co-op.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Overlay -->
+      <div id="contra-pause-overlay" class="contra-pause-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Mission paused">
+        <div class="contra-pause-card">
+          <div class="contra-pause-title">MISSION PAUSED</div>
+          <div class="contra-pause-desc" id="contra-pause-desc">Waiting for partner to return…</div>
+          <button class="contra-resume-btn" id="contra-resume-btn" type="button" style="display:none">Resume Mission</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weapon Arsenal & Field Guide -->
+    <section class="contra-dossier" aria-labelledby="dossier-heading">
+      <div class="contra-dossier-title" id="dossier-heading">
+        <span>🔫</span> SPECIAL WEAPONS &amp; INTEL
+      </div>
+      <div class="contra-weapons-grid">
+        <div class="contra-weapon-card">
+          <div class="contra-weapon-icon" style="background:#ef4444">S</div>
+          <div>
+            <div class="contra-weapon-name">Spread Gun</div>
+            <div class="contra-weapon-desc">5-way spread fan, alien shredder</div>
+          </div>
+        </div>
+        <div class="contra-weapon-card">
+          <div class="contra-weapon-icon" style="background:#3b82f6">L</div>
+          <div>
+            <div class="contra-weapon-name">Laser Beam</div>
+            <div class="contra-weapon-desc">High-damage piercing energy beam</div>
+          </div>
+        </div>
+        <div class="contra-weapon-card">
+          <div class="contra-weapon-icon" style="background:#f59e0b">M</div>
+          <div>
+            <div class="contra-weapon-name">Machine Gun</div>
+            <div class="contra-weapon-desc">Automatic continuous rapid fire</div>
+          </div>
+        </div>
+        <div class="contra-weapon-card">
+          <div class="contra-weapon-icon" style="background:#ea580c">F</div>
+          <div>
+            <div class="contra-weapon-name">Fire Gun</div>
+            <div class="contra-weapon-desc">Spinning corkscrew fireball blasts</div>
+          </div>
+        </div>
+        <div class="contra-weapon-card">
+          <div class="contra-weapon-icon" style="background:#10b981">B</div>
+          <div>
+            <div class="contra-weapon-name">Barrier</div>
+            <div class="contra-weapon-desc">Temporary invulnerability shield</div>
+          </div>
+        </div>
+        <div class="contra-weapon-card">
+          <div class="contra-weapon-icon" style="background:#8b5cf6">R</div>
+          <div>
+            <div class="contra-weapon-name">Rapid Fire</div>
+            <div class="contra-weapon-desc">Increases bullet flight speed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="contra-konami-box">
+        <div><strong>⭐ 30-Lives Konami Code:</strong> On Title Screen, press:</div>
+        <div><span class="contra-key-badge">↑</span> <span class="contra-key-badge">↑</span> <span class="contra-key-badge">↓</span> <span class="contra-key-badge">↓</span> <span class="contra-key-badge">←</span> <span class="contra-key-badge">→</span> <span class="contra-key-badge">←</span> <span class="contra-key-badge">→</span> <span class="contra-key-badge">B</span> <span class="contra-key-badge">A</span> <span class="contra-key-badge">START</span></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Keyboard Controls Modal -->
+  <div id="contra-controls-modal" class="contra-modal" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="contra-modal-title">
+    <div class="contra-modal-card">
+      <div class="contra-modal-head">
+        <h2 id="contra-modal-title">🎮 CONTROLS GUIDE</h2>
+        <button type="button" class="contra-modal-close" id="contra-modal-close-btn" aria-label="Close controls guide">&times;</button>
+      </div>
+      <div class="contra-modal-body">
+        <div>
+          <h3 style="margin:0 0 8px;font-size:13px;color:var(--accent-warm);">KEYBOARD CONTROLS</h3>
+          <div class="contra-key-grid">
+            <div class="contra-key-row">
+              <span>Run &amp; Aim (8 Directions)</span>
+              <div><span class="contra-key-badge">WASD</span> or <span class="contra-key-badge">↑ ← ↓ →</span></div>
+            </div>
+            <div class="contra-key-row">
+              <span>Shoot (Hold for Turbo)</span>
+              <div><span class="contra-key-badge">Z</span> or <span class="contra-key-badge">J</span></div>
+            </div>
+            <div class="contra-key-row">
+              <span>Jump</span>
+              <div><span class="contra-key-badge">X</span>, <span class="contra-key-badge">K</span>, or <span class="contra-key-badge">Space</span></div>
+            </div>
+            <div class="contra-key-row">
+              <span>Start / Pause</span>
+              <div><span class="contra-key-badge">Enter</span></div>
+            </div>
+            <div class="contra-key-row">
+              <span>Select Mode (1P / 2P)</span>
+              <div><span class="contra-key-badge">Shift</span> or <span class="contra-key-badge">Backspace</span></div>
+            </div>
+            <div class="contra-key-row">
+              <span>CRT Scanlines Toggle</span>
+              <div><span class="contra-key-badge">T</span></div>
+            </div>
+            <div class="contra-key-row">
+              <span>Toggle Fullscreen</span>
+              <div><span class="contra-key-badge">F</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin:0 0 8px;font-size:13px;color:var(--accent-warm);">GAMEPAD (XBOX / PS / 8BITDO)</h3>
+          <div class="contra-key-grid">
+            <div class="contra-key-row">
+              <span>Move &amp; Aim</span>
+              <span>D-Pad / Left Stick</span>
+            </div>
+            <div class="contra-key-row">
+              <span>Jump</span>
+              <span>A / Cross (Button 0)</span>
+            </div>
+            <div class="contra-key-row">
+              <span>Shoot</span>
+              <span>X / Square (Button 2)</span>
+            </div>
+            <div class="contra-key-row">
+              <span>Start / Select</span>
+              <span>Start / Options / Select</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="contra-modal-foot">
+        <button type="button" class="contra-modal-btn" id="contra-modal-ok-btn">GOT IT</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Snuggle Shared Utilities -->
+  <script src="../../js/analytics.js"></script>
+  <script src="../../js/app.js"></script>
+  <script src="../../js/snuggle-invite.js"></script>
+
+  <!-- Contra WebRTC Lockstep Client -->
+  <script type="module">
+    import init, { mount } from './pkg/client.js';
+
+    const $ = (s) => document.querySelector(s);
+    const toastEl = $('#toast');
+    let toastTimer;
+
+    function toast(msg, ms = 2400) {
+      if (!toastEl) return;
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.classList.remove('show');
+      }, ms);
+    }
+
+    function setStatus(kind, text) {
+      const dot = $('#dot');
+      const statusText = $('#status');
+      if (dot) dot.className = kind;
+      if (statusText) statusText.textContent = text;
+    }
+
+    // Key dispatching helper for synthetic inputs
+    function dispatchKey(code, isDown) {
+      const ev = new KeyboardEvent(isDown ? 'keydown' : 'keyup', {
+        code,
+        key: code,
+        bubbles: true,
+        cancelable: true
+      });
+      ev.__contra_synthetic = true;
+      window.dispatchEvent(ev);
+    }
+
+    // Fullscreen support
+    function isFsActive() {
+      const stage = $('#contra-stage-container');
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || stage?.classList.contains('pseudo-fullscreen'));
+    }
+
+    function updateFsUI(active) {
+      const enter = $('#stage-fs-icon-enter');
+      const exit = $('#stage-fs-icon-exit');
+      if (enter) enter.style.display = active ? 'none' : 'inline';
+      if (exit) exit.style.display = active ? 'inline' : 'none';
+    }
+
+    async function toggleFullscreen() {
+      const container = $('#contra-stage-container') || document.documentElement;
+      if (!container) return;
+
+      if (isFsActive()) {
+        if (container.classList?.contains('pseudo-fullscreen')) {
+          container.classList.remove('pseudo-fullscreen');
+        }
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          try {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+          } catch (_) {}
+        }
+        updateFsUI(false);
+        toast('Exited fullscreen');
+      } else {
+        try {
+          if (container.requestFullscreen) await container.requestFullscreen();
+          else if (container.webkitRequestFullscreen) await container.webkitRequestFullscreen();
+          else container.classList.add('pseudo-fullscreen');
+          updateFsUI(true);
+          toast('Fullscreen mode (Press ESC or F to exit)');
+        } catch (_) {
+          container.classList.add('pseudo-fullscreen');
+          updateFsUI(true);
+          toast('Fullscreen mode');
+        }
+      }
+    }
+    window.__contra_toggle_fullscreen = toggleFullscreen;
+
+    document.addEventListener('fullscreenchange', () => updateFsUI(isFsActive()));
+    document.addEventListener('webkitfullscreenchange', () => updateFsUI(isFsActive()));
+
+    // CRT Toggle
+    function toggleCrt() {
+      const stage = $('#contra-stage-container');
+      if (!stage) return;
+      const isCrt = stage.classList.toggle('crt');
+      toast(isCrt ? 'CRT scanlines enabled' : 'CRT scanlines disabled');
+    }
+    $('#contra-stage-crt-btn')?.addEventListener('click', toggleCrt);
+
+    // Controls Guide Modal
+    function openControlsModal() {
+      const m = $('#contra-controls-modal');
+      if (m) m.style.display = 'flex';
+    }
+
+    function closeControlsModal() {
+      const m = $('#contra-controls-modal');
+      if (m) m.style.display = 'none';
+    }
+
+    $('#btn-controls-guide')?.addEventListener('click', openControlsModal);
+    $('#contra-modal-close-btn')?.addEventListener('click', closeControlsModal);
+    $('#contra-modal-ok-btn')?.addEventListener('click', closeControlsModal);
+    $('#contra-controls-modal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'contra-controls-modal') closeControlsModal();
+    });
+
+    // Keyboard Shortcuts & Turbo
+    let turboInterval = null;
+
+    window.addEventListener('keydown', (e) => {
+      if (e.__contra_synthetic) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      // Fullscreen shortcut (F)
+      if ((e.key === 'f' || e.key === 'F') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        toggleFullscreen();
+        return;
+      }
+
+      // CRT Scanlines shortcut (T)
+      if ((e.key === 't' || e.key === 'T') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        toggleCrt();
+        return;
+      }
+
+      // Controls guide shortcut (?) or (C)
+      if ((e.key === '?' || e.key === 'h' || e.key === 'H') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        const m = $('#contra-controls-modal');
+        if (m?.style.display === 'flex') closeControlsModal();
+        else openControlsModal();
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        const m = $('#contra-controls-modal');
+        if (m?.style.display === 'flex') {
+          closeControlsModal();
+          return;
+        }
+      }
+
+      // Enter triggers Start Game on pregame screen
+      if (e.code === 'Enter' && !isPlaying) {
+        e.preventDefault();
+        window.__contra_handle_start_game?.();
+        return;
+      }
+
+      // Prevent page scrolling during gameplay
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Tab'].includes(e.code) || ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      // WASD navigation mapping
+      if (e.code === 'KeyW') { dispatchKey('ArrowUp', true); return; }
+      if (e.code === 'KeyS') { dispatchKey('ArrowDown', true); return; }
+      if (e.code === 'KeyA') { dispatchKey('ArrowLeft', true); return; }
+      if (e.code === 'KeyD') { dispatchKey('ArrowRight', true); return; }
+
+      // Jump: Space maps to KeyX
+      if (e.code === 'Space') {
+        dispatchKey('KeyX', true);
+        return;
+      }
+
+      // Shoot keys: Z, J, C (Hold for Turbo Rapid-Fire)
+      if (e.code === 'KeyZ' || e.code === 'KeyJ' || e.code === 'KeyC') {
+        if (!e.repeat && !turboInterval) {
+          let state = true;
+          dispatchKey('KeyZ', true);
+          turboInterval = setInterval(() => {
+            state = !state;
+            dispatchKey('KeyZ', state);
+          }, 50);
+        }
+        return;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.__contra_synthetic) return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.code === 'KeyW') { dispatchKey('ArrowUp', false); return; }
+      if (e.code === 'KeyS') { dispatchKey('ArrowDown', false); return; }
+      if (e.code === 'KeyA') { dispatchKey('ArrowLeft', false); return; }
+      if (e.code === 'KeyD') { dispatchKey('ArrowRight', false); return; }
+
+      if (e.code === 'Space') {
+        dispatchKey('KeyX', false);
+        return;
+      }
+
+      if (e.code === 'KeyZ' || e.code === 'KeyJ' || e.code === 'KeyC') {
+        if (turboInterval) {
+          clearInterval(turboInterval);
+          turboInterval = null;
+        }
+        dispatchKey('KeyZ', false);
+        return;
+      }
+    });
+
+    // Touch Controller Handling
+    function setupTouchControls() {
+      // 1. Directional Joystick
+      const zone = $('#joystick-zone');
+      const knob = $('#joystick-knob');
+      if (zone && knob) {
+        let activeTouchId = null;
+        let isMouseDown = false;
+        let currentDirs = [];
+        const maxRadius = 40;
+        const deadzone = 12;
+
+        function setDirections(dirs) {
+          const removed = currentDirs.filter(d => !dirs.includes(d));
+          const added = dirs.filter(d => !currentDirs.includes(d));
+
+          removed.forEach(d => dispatchKey(d, false));
+          added.forEach(d => dispatchKey(d, true));
+
+          currentDirs = [...dirs];
+        }
+
+        function resetJoystick() {
+          activeTouchId = null;
+          isMouseDown = false;
+          knob.style.transform = 'translate(0px, 0px)';
+          setDirections([]);
+        }
+
+        function handlePos(clientX, clientY) {
+          const rect = zone.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const dx = clientX - cx;
+          const dy = clientY - cy;
+          const dist = Math.hypot(dx, dy);
+          const angle = Math.atan2(dy, dx);
+
+          const clampDist = Math.min(dist, maxRadius);
+          const kx = Math.cos(angle) * clampDist;
+          const ky = Math.sin(angle) * clampDist;
+          knob.style.transform = `translate(${kx}px, ${ky}px)`;
+
+          if (dist < deadzone) {
+            setDirections([]);
+          } else {
+            const deg = angle * (180 / Math.PI);
+            const dirs = [];
+            // 8-way directional mapping for Contra
+            if (deg >= -67.5 && deg < -22.5) { dirs.push('ArrowUp', 'ArrowRight'); }
+            else if (deg >= -157.5 && deg < -112.5) { dirs.push('ArrowUp', 'ArrowLeft'); }
+            else if (deg >= 22.5 && deg < 67.5) { dirs.push('ArrowDown', 'ArrowRight'); }
+            else if (deg >= 112.5 && deg < 157.5) { dirs.push('ArrowDown', 'ArrowLeft'); }
+            else if (deg >= -22.5 && deg < 22.5) { dirs.push('ArrowRight'); }
+            else if (deg >= 67.5 && deg < 112.5) { dirs.push('ArrowDown'); }
+            else if (deg >= -112.5 && deg < -67.5) { dirs.push('ArrowUp'); }
+            else { dirs.push('ArrowLeft'); }
+            setDirections(dirs);
+          }
+        }
+
+        zone.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          if (activeTouchId !== null) return;
+          const t = e.changedTouches[0];
+          activeTouchId = t.identifier;
+          handlePos(t.clientX, t.clientY);
+        }, { passive: false });
+
+        zone.addEventListener('touchmove', (e) => {
+          e.preventDefault();
+          if (activeTouchId === null) return;
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            if (t.identifier === activeTouchId) {
+              handlePos(t.clientX, t.clientY);
+              break;
+            }
+          }
+        }, { passive: false });
+
+        const onEnd = (e) => {
+          if (activeTouchId === null) return;
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === activeTouchId) {
+              resetJoystick();
+              break;
+            }
+          }
+        };
+
+        zone.addEventListener('touchend', onEnd, { passive: false });
+        zone.addEventListener('touchcancel', onEnd, { passive: false });
+
+        zone.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          isMouseDown = true;
+          handlePos(e.clientX, e.clientY);
+        });
+        window.addEventListener('mousemove', (e) => {
+          if (!isMouseDown) return;
+          handlePos(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', () => {
+          if (isMouseDown) resetJoystick();
+        });
+      }
+
+      // 2. Action Buttons (Jump: A -> KeyX, Shoot: B -> KeyZ with hold-for-turbo)
+      function bindSimpleBtn(id, keyCode) {
+        const btn = $(id);
+        if (!btn) return;
+
+        const press = (e) => {
+          e.preventDefault();
+          btn.classList.add('pressed');
+          dispatchKey(keyCode, true);
+        };
+        const release = (e) => {
+          e.preventDefault();
+          btn.classList.remove('pressed');
+          dispatchKey(keyCode, false);
+        };
+
+        btn.addEventListener('touchstart', press, { passive: false });
+        btn.addEventListener('touchend', release, { passive: false });
+        btn.addEventListener('touchcancel', release, { passive: false });
+        btn.addEventListener('mousedown', press);
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', release);
+      }
+
+      bindSimpleBtn('#btn-a', 'KeyX'); // Jump
+      bindSimpleBtn('#btn-select', 'ShiftLeft');
+      bindSimpleBtn('#btn-start', 'Enter');
+
+      // Button B: Holding down automatically rapid-fires (Turbo)
+      const btnB = $('#btn-b');
+      if (btnB) {
+        let bTurboInterval = null;
+        let isHoldingB = false;
+
+        const startB = (e) => {
+          e.preventDefault();
+          if (isHoldingB) return;
+          isHoldingB = true;
+          btnB.classList.add('pressed');
+
+          // Immediate first shot
+          dispatchKey('KeyZ', true);
+
+          // Pulse KeyZ at ~10 Hz (50ms on / 50ms off) for rapid fire while held
+          if (!bTurboInterval) {
+            let fireState = true;
+            bTurboInterval = setInterval(() => {
+              fireState = !fireState;
+              dispatchKey('KeyZ', fireState);
+            }, 50);
+          }
+        };
+
+        const stopB = (e) => {
+          e.preventDefault();
+          if (!isHoldingB) return;
+          isHoldingB = false;
+          btnB.classList.remove('pressed');
+
+          if (bTurboInterval) {
+            clearInterval(bTurboInterval);
+            bTurboInterval = null;
+          }
+          dispatchKey('KeyZ', false);
+        };
+
+        btnB.addEventListener('touchstart', startB, { passive: false });
+        btnB.addEventListener('touchend', stopB, { passive: false });
+        btnB.addEventListener('touchcancel', stopB, { passive: false });
+        btnB.addEventListener('mousedown', startB);
+        btnB.addEventListener('mouseup', stopB);
+        btnB.addEventListener('mouseleave', stopB);
+      }
+    }
+
+    // Physical Gamepad Support
+    function setupGamepad() {
+      let prevGp = { up: false, down: false, left: false, right: false, a: false, b: false, start: false, select: false };
+      let gpTurboCounter = 0;
+      function poll() {
+        const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+        for (const gp of gamepads) {
+          if (gp && gp.connected) {
+            const ax = gp.axes[0] || 0;
+            const ay = gp.axes[1] || 0;
+            const up = (gp.buttons[12] && gp.buttons[12].pressed) || ay < -0.4;
+            const down = (gp.buttons[13] && gp.buttons[13].pressed) || ay > 0.4;
+            const left = (gp.buttons[14] && gp.buttons[14].pressed) || ax < -0.4;
+            const right = (gp.buttons[15] && gp.buttons[15].pressed) || ax > 0.4;
+
+            const a = (gp.buttons[0] && gp.buttons[0].pressed) || (gp.buttons[1] && gp.buttons[1].pressed); // Jump (KeyX)
+            const b = (gp.buttons[2] && gp.buttons[2].pressed) || (gp.buttons[3] && gp.buttons[3].pressed); // Shoot (KeyZ)
+            const sel = gp.buttons[8] && gp.buttons[8].pressed;
+            const sta = gp.buttons[9] && gp.buttons[9].pressed;
+
+            function check(code, cur, prev) {
+              if (cur && !prev) dispatchKey(code, true);
+              else if (!cur && prev) dispatchKey(code, false);
+            }
+
+            check('ArrowUp', up, prevGp.up);
+            check('ArrowDown', down, prevGp.down);
+            check('ArrowLeft', left, prevGp.left);
+            check('ArrowRight', right, prevGp.right);
+            check('KeyX', a, prevGp.a);
+
+            // Holding B on gamepad automatically pulses like turbo
+            if (b) {
+              gpTurboCounter = (gpTurboCounter + 1) % 4;
+              dispatchKey('KeyZ', gpTurboCounter < 2);
+            } else if (prevGp.b) {
+              dispatchKey('KeyZ', false);
+            }
+
+            check('ShiftLeft', sel, prevGp.select);
+            check('Enter', sta, prevGp.start);
+
+            prevGp = { up, down, left, right, a, b, start: sta, select: sel };
+          }
+        }
+        requestAnimationFrame(poll);
+      }
+      requestAnimationFrame(poll);
+    }
+
+    // Pause Coordination
+    let isPlaying = false;
+    let localSlot = 0;
+
+    function updatePauseUI() {
+      const overlay = $('#contra-pause-overlay');
+      const desc = $('#contra-pause-desc');
+      const resume = $('#contra-resume-btn');
+      if (!overlay || !desc || !resume) return;
+
+      const st = window.__contra_state;
+      const isPaused = window.__contra_is_game_paused ? window.__contra_is_game_paused() : false;
+
+      if (isPaused && isPlaying) {
+        overlay.style.display = 'flex';
+        if (st && st.isLocalInactive) {
+          desc.textContent = 'You went away. Tap Resume to continue mission.';
+          resume.style.display = 'inline-block';
+        } else if (st && st.isPeerPaused) {
+          const partner = localSlot === 0 ? 'Lance (Player 2)' : 'Bill (Player 1)';
+          desc.textContent = `${partner} is away. Mission paused until they return…`;
+          resume.style.display = 'none';
+        }
+      } else {
+        overlay.style.display = 'none';
+      }
+    }
+
+    function broadcastPause(paused) {
+      const st = window.__contra_state;
+      if (st && st.pauseChannel && st.pauseChannel.readyState === 'open') {
+        try {
+          st.pauseChannel.send(JSON.stringify({ type: paused ? 'pause' : 'resume', slot: localSlot }));
+        } catch (_) {}
+      }
+    }
+
+    function setLocalInactive(inactive) {
+      const st = window.__contra_state;
+      if (!st || st.isLocalInactive === inactive) return;
+      st.isLocalInactive = inactive;
+      broadcastPause(inactive);
+      updatePauseUI();
+    }
+
+    function manualResume() {
+      const st = window.__contra_state;
+      if (!st) return;
+      st.isLocalInactive = false;
+      broadcastPause(false);
+      updatePauseUI();
+      if (window.__contra_resume_raf) window.__contra_resume_raf();
+    }
+
+    window.__contra_on_pause_message = (msg) => {
+      const st = window.__contra_state;
+      if (!st) return;
+      if (msg.type === 'pause') {
+        st.isPeerPaused = true;
+        updatePauseUI();
+      } else if (msg.type === 'resume') {
+        st.isPeerPaused = false;
+        updatePauseUI();
+        if (!st.isLocalInactive && window.__contra_resume_raf) {
+          window.__contra_resume_raf();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) setLocalInactive(true);
+      else manualResume();
+    });
+
+    window.addEventListener('focus', manualResume);
+    $('#contra-resume-btn')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.focus();
+      manualResume();
+    });
+
+    $('#contra-pause-overlay')?.addEventListener('click', () => {
+      if (window.__contra_state?.isLocalInactive) {
+        window.focus();
+        manualResume();
+      }
+    });
+
+    // ============================================================
+    // APPLICATION INITIALIZATION & WEBRTC LOCKSTEP MOUNT
+    // ============================================================
+    let gameInstance = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      setupTouchControls();
+      setupGamepad();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      let roomCode = urlParams.get('code') || urlParams.get('room');
+
+      if (roomCode) {
+        roomCode = roomCode.toUpperCase().trim();
+        sessionStorage.setItem('snuggle_room_code', roomCode);
+      } else {
+        roomCode = sessionStorage.getItem('snuggle_room_code');
+      }
+
+      if (!roomCode) {
+        const saved = localStorage.getItem('snuggle_last_room_code');
+        if (saved) roomCode = saved;
+        else {
+          window.location.href = '/games/';
+          return;
+        }
+      }
+
+      if (window === window.top && !urlParams.has('direct') && !roomCode?.startsWith('PAUSE')) {
+        window.location.replace(`/games/contra/?code=${encodeURIComponent(roomCode)}`);
+        return;
+      }
+
+      localStorage.setItem('snuggle_last_room_code', roomCode);
+      if (urlParams.get('code') !== roomCode) {
+        urlParams.set('code', roomCode);
+        window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+      }
+
+      const backBtn = $('#back');
+      if (backBtn) backBtn.href = `/games/?code=${encodeURIComponent(roomCode)}`;
+
+      const codeSpan = $('#code');
+      if (codeSpan) codeSpan.textContent = roomCode;
+
+      if (window.SnuggleInvite) {
+        window.SnuggleInvite.connectHub(roomCode);
+      }
+
+      if (window.snuggleTrack) {
+        snuggleTrack('game_play', { game: 'contra', roomCode });
+      }
+
+      // Slot preference handling
+      const slotParam = urlParams.get('slot') || urlParams.get('player');
+      let chosenSlot = (slotParam === '1' || slotParam === '2') ? 1 : 0;
+      window.__contra_selected_slot = chosenSlot;
+      localSlot = chosenSlot;
+
+      const isSoloPeer = urlParams.has('solo_peer');
+      if (isSoloPeer) {
+        window.__contra_audio_muted = true;
+        window.__contra_slots_confirmed = true;
+        window.__contra_flush_pending_signals?.();
+      }
+
+      const minimalLobby = $('#contra-minimal-lobby');
+      const lobbyStatusText = $('#lobby-status-text');
+      const slotBtn0 = $('#slot-btn-0');
+      const slotBtn1 = $('#slot-btn-1');
+
+      if (isSoloPeer && minimalLobby) {
+        minimalLobby.style.display = 'none';
+      }
+
+      let peerPresent = false;
+      let peerSlot = null;
+
+      function updateSlotUI(slot = chosenSlot) {
+        chosenSlot = slot;
+        localSlot = slot;
+        window.__contra_selected_slot = slot;
+
+        if (slotBtn0) slotBtn0.classList.toggle('active', slot === 0);
+        if (slotBtn1) slotBtn1.classList.toggle('active', slot === 1);
+
+        const p0Friend = peerPresent && peerSlot === 0;
+        const p1Friend = peerPresent && peerSlot === 1;
+
+        if (slotBtn0) slotBtn0.classList.toggle('friend-picked', p0Friend);
+        if (slotBtn1) slotBtn1.classList.toggle('friend-picked', p1Friend);
+
+        const badge0 = $('#friend-badge-0');
+        const badge1 = $('#friend-badge-1');
+        if (badge0) badge0.style.display = p0Friend ? 'inline-block' : 'none';
+        if (badge1) badge1.style.display = p1Friend ? 'inline-block' : 'none';
+
+        const stageDot = $('#stage-slot-dot');
+        const stageText = $('#stage-slot-text');
+        if (stageDot) stageDot.className = `contra-slot-dot ${slot === 0 ? 'contra-dot-p1' : 'contra-dot-p2'}`;
+        if (stageText) stageText.textContent = slot === 0 ? 'Bill (P1)' : 'Lance (P2)';
+
+        if (lobbyStatusText) {
+          if (peerPresent) {
+            if (peerSlot === null || typeof peerSlot === 'undefined') {
+              lobbyStatusText.textContent = 'Friend joined! Waiting for operative pick…';
+              lobbyStatusText.className = '';
+            } else if (peerSlot === slot) {
+              lobbyStatusText.textContent = `⚠️ Both picked Player ${slot + 1}. Choose different commandos to start!`;
+              lobbyStatusText.className = 'contra-status-warn';
+            } else {
+              lobbyStatusText.textContent = '🎮 Both ready! Press Start to commence mission.';
+              lobbyStatusText.className = 'contra-status-ready';
+            }
+          } else {
+            lobbyStatusText.textContent = 'Single player: Press Start to play. Invite friend for 2P co-op.';
+            lobbyStatusText.className = '';
+          }
+        }
+      }
+
+      function switchSlot(newSlot) {
+        if (chosenSlot === newSlot) return;
+        updateSlotUI(newSlot);
+        window.__contra_broadcast_slot?.(newSlot);
+        toast(`Selected ${newSlot === 0 ? 'Bill Rizer (Player 1)' : 'Lance Bean (Player 2)'}`);
+      }
+
+      function startGameSession() {
+        if (isPlaying) return;
+        isPlaying = true;
+
+        if (minimalLobby) minimalLobby.style.display = 'none';
+
+        const controlsEl = $('#contra-mobile-controls');
+        if (controlsEl) controlsEl.style.display = 'flex';
+
+        const stageBtn = $('#contra-stage-player-btn');
+        if (stageBtn) stageBtn.style.display = 'none';
+
+        window.__contra_slots_confirmed = true;
+        window.__contra_flush_pending_signals?.();
+
+        // If single player, spawn loopback solo peer iframe to run lockstep
+        if (!peerPresent && !$('#solo-peer-iframe')) {
+          const iframe = document.createElement('iframe');
+          iframe.id = 'solo-peer-iframe';
+          const otherSlot = chosenSlot === 0 ? 1 : 0;
+          iframe.src = `/games/contra/?code=${encodeURIComponent(roomCode)}&slot=${otherSlot}&solo_peer=1&direct=1&embedded=1`;
+          iframe.style.position = 'absolute';
+          iframe.style.width = '0px';
+          iframe.style.height = '0px';
+          iframe.style.opacity = '0';
+          document.body.appendChild(iframe);
+        }
+      }
+
+      function handleStartGame() {
+        if (isPlaying) {
+          dispatchKey('Enter', true);
+          setTimeout(() => dispatchKey('Enter', false), 50);
+          return;
+        }
+
+        if (peerPresent) {
+          if (peerSlot === null || typeof peerSlot === 'undefined') {
+            toast('Connecting with partner… Please wait a moment.');
+            return;
+          }
+          if (peerSlot === chosenSlot) {
+            toast(`Both players selected Player ${chosenSlot + 1}. Please choose different commandos to start!`);
+            return;
+          }
+
+          window.__contra_broadcast_start?.();
+          startGameSession();
+        } else {
+          startGameSession();
+        }
+      }
+      window.__contra_handle_start_game = handleStartGame;
+
+      slotBtn0?.addEventListener('click', () => switchSlot(0));
+      slotBtn1?.addEventListener('click', () => switchSlot(1));
+      $('#contra-stage-player-btn')?.addEventListener('click', () => switchSlot(chosenSlot === 0 ? 1 : 0));
+      $('#contra-pregame-start-btn')?.addEventListener('click', handleStartGame);
+      $('#contra-stage-fs-btn')?.addEventListener('click', toggleFullscreen);
+
+      updateSlotUI(chosenSlot);
+
+      window.addEventListener('contra:peer_slot_choice', (e) => {
+        peerSlot = e.detail?.slot;
+        updateSlotUI(chosenSlot);
+      });
+
+      window.addEventListener('contra:peer_start_game', () => {
+        if (!isPlaying) startGameSession();
+      });
+
+      window.addEventListener('contra:peer_presence', (e) => {
+        peerPresent = !!e.detail?.present;
+        if (!peerPresent) {
+          peerSlot = null;
+        } else {
+          window.__contra_broadcast_slot?.(chosenSlot);
+        }
+        updateSlotUI(chosenSlot);
+      });
+
+      // Copy invite link
+      async function copyInvite() {
+        const otherSlot = chosenSlot === 0 ? 1 : 0;
+        const baseHref = window.location.origin + window.location.pathname;
+        const inviteUrl = `${baseHref}?code=${encodeURIComponent(roomCode)}&slot=${otherSlot}`;
+
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: 'Play Contra Co-op on Snuggle', url: inviteUrl });
+            return;
+          } catch (_) {}
+        }
+        try {
+          await navigator.clipboard.writeText(inviteUrl);
+          const copySvg = $('#copy svg');
+          const codeEl = $('#code');
+          const copiedEl = $('#copied');
+          if (copySvg) copySvg.style.display = 'none';
+          if (codeEl) codeEl.style.display = 'none';
+          if (copiedEl) copiedEl.style.display = 'inline';
+          setTimeout(() => {
+            if (copiedEl) copiedEl.style.display = 'none';
+            if (codeEl) codeEl.style.display = '';
+            if (copySvg) copySvg.style.display = '';
+          }, 2000);
+          toast('Invite link copied!');
+        } catch (_) {
+          toast(`Room: ${roomCode}`);
+        }
+      }
+
+      $('#copy')?.addEventListener('click', copyInvite);
+
+      // Web Audio unlock on first user gesture
+      const unlockAudio = () => {
+        try {
+          if (window.__contra_audio_ctx && window.__contra_audio_ctx.state === 'suspended') {
+            window.__contra_audio_ctx.resume().catch(() => {});
+          }
+        } catch (_) {}
+      };
+      window.addEventListener('touchstart', unlockAudio, { passive: true, once: true });
+      window.addEventListener('click', unlockAudio, { passive: true, once: true });
+
+      function setupStatusListeners(gameEl) {
+        gameEl.addEventListener('bcoop:status', (e) => {
+          const detail = e.detail || {};
+          const st = detail.status;
+          const slot = detail.slot ?? window.__contra_state?.localSlot ?? chosenSlot;
+          localSlot = slot;
+
+          if (st === 'playing' || st === 'waiting-for-input') {
+            isPlaying = true;
+            updatePauseUI();
+            if (minimalLobby) minimalLobby.style.display = 'none';
+            const stageBtn = $('#contra-stage-player-btn');
+            if (stageBtn) stageBtn.style.display = 'none';
+            setStatus('online', 'Playing');
+          } else if (st === 'syncing') {
+            isPlaying = true;
+            setStatus('connecting', 'Syncing…');
+            if (minimalLobby) minimalLobby.style.display = 'none';
+            const stageBtn = $('#contra-stage-player-btn');
+            if (stageBtn) stageBtn.style.display = 'none';
+          } else if (st === 'waiting-for-peer') {
+            if (!isPlaying) setStatus('connecting', 'Waiting…');
+          } else if (st === 'negotiating') {
+            setStatus('connecting', 'Waiting…');
+          } else if (st === 'failed') {
+            isPlaying = false;
+            updatePauseUI();
+            setStatus('offline', 'Disconnected');
+          } else if (st === 'peer-left') {
+            isPlaying = false;
+            updatePauseUI();
+            setStatus('connecting', 'Waiting…');
+            if (minimalLobby) minimalLobby.style.display = 'flex';
+          } else {
+            setStatus('connecting', 'Waiting…');
+          }
+        });
+
+        gameEl.addEventListener('bcoop:ended', (e) => {
+          isPlaying = false;
+          updatePauseUI();
+          setStatus('offline', 'Session ended');
+          toast(e.detail?.message || 'Game session ended');
+        });
+      }
+
+      async function startMount() {
+        const gameEl = document.getElementById('game');
+        if (!gameEl) return;
+
+        const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${wsProtocol}//${location.host}/ccoop-signal`;
+        let iceServers = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:global.stun.twilio.com:3478' },
+          { urls: 'stun:openrelay.metered.ca:80' },
+          {
+            urls: 'turn:openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turn:openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          },
+          {
+            urls: 'turns:openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+          }
+        ];
+
+        try {
+          const res = await fetch('/api/ice-servers');
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data && data.iceServers) && data.iceServers.length > 0) {
+              iceServers = data.iceServers;
+            }
+          }
+        } catch (_) {}
+
+        const iceServersJson = JSON.stringify(iceServers);
+
+        gameEl.dataset.room = roomCode;
+        gameEl.dataset.wsUrl = wsUrl;
+        gameEl.dataset.romUrl = './rom/contra.nes';
+        gameEl.dataset.shareMenu = 'true';
+        gameEl.dataset.inputDelay = '3';
+        gameEl.dataset.peerTimeoutMs = '60000';
+        gameEl.dataset.iceServers = iceServersJson;
+
+        gameEl.setAttribute('data-room', roomCode);
+        gameEl.setAttribute('data-ws-url', wsUrl);
+        gameEl.setAttribute('data-rom-url', './rom/contra.nes');
+        gameEl.setAttribute('data-share-menu', 'true');
+        gameEl.setAttribute('data-input-delay', '3');
+        gameEl.setAttribute('data-peer-timeout-ms', '60000');
+        gameEl.setAttribute('data-ice-servers', iceServersJson);
+
+        try {
+          gameInstance = mount('game');
+          window.__contra_game = gameInstance;
+        } catch (err) {
+          console.error('Failed to initialize Contra:', err);
+          setStatus('offline', 'Failed to load');
+          toast('Failed to load emulator: ' + (err.message || err));
+        }
+      }
+
+      await init();
+      const mainGameEl = document.getElementById('game');
+      if (mainGameEl) setupStatusListeners(mainGameEl);
+      await startMount();
+
+      window.addEventListener('beforeunload', () => {
+        try { gameInstance?.stop?.(); } catch (_) {}
+      });
+    });
+  </script>
+</body>
+</html>

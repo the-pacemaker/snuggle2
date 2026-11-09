@@ -270,21 +270,19 @@
     <div class="yt-toast" id="yt-toast" role="status" aria-live="polite" aria-atomic="true"></div>
     <div id="yt-status-bar">
       <div style="display:flex; gap:8px; align-items:center;">
-        <button type="button" id="yt-back-btn" onclick="location.href='/games/'" aria-label="Back to games" style="display:flex; align-items:center; gap:5px; background:none; border:1px solid rgba(255,255,255,0.18); color:#ccc; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:background 0.18s, color 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.color='#fff';" onmouseout="this.style.background='none'; this.style.color='#ccc';">
+        <button type="button" id="yt-back-btn" onclick="location.href='/games/?code=' + encodeURIComponent(sessionStorage.getItem('snuggle_room_code')||'')" aria-label="Back to games" style="display:flex; align-items:center; gap:5px; background:none; border:1px solid rgba(255,255,255,0.18); color:#ccc; padding:5px 10px; border-radius:6px; cursor:pointer; font-size:13px; font-weight:500; transition:background 0.18s, color 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'; this.style.color='#fff';" onmouseout="this.style.background='none'; this.style.color='#ccc';">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
           Back
         </button>
         <span id="status-dot" style="width:10px; height:10px; border-radius:50%; background:#f39c12; display:inline-block;"></span>
         <span id="status-label" style="font-size:14px; font-weight:500;">Connecting...</span>
       </div>
-      <button type="button" id="copy-btn" aria-label="Copy invite link" title="Tap to copy invite link"
+      <button type="button" id="copy-btn" aria-label="Invite" title="Invite friend"
         style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:6px 12px; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:14px; font-weight:600; transition:background 0.2s;">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          
-          
         </svg>
-        <span id="room-code-display" style="letter-spacing:1px;">------</span>
+        <span id="room-code-display" style="letter-spacing:1px;">Invite</span>
         <span id="yt-code-copied" style="display:none; color:#4ade80;">Copied!</span>
       </button>
     </div>
@@ -842,6 +840,9 @@
   if (!requestedCode) {
     window.location.href = '/';
     return;
+  } else if (window === window.top) {
+    window.location.replace(`/games/connections/?code=${encodeURIComponent(requestedCode)}`);
+    return;
   } else if (!urlCode || urlCode.toUpperCase().trim() !== requestedCode) {
     urlParams.set('code', requestedCode);
     window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
@@ -849,7 +850,13 @@
   let ws = null, roomCode = null, joining = false, reconnectTimer = null;
 
   function rawSend(obj) {
-    if (ws && ws.readyState === WebSocket.OPEN) { try { ws.send(JSON.stringify(obj)); } catch (_) {} }
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      if (obj && typeof obj === 'object') {
+        const sid = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+        if (sid && !obj.sessionId) obj.sessionId = sid;
+      }
+      try { ws.send(JSON.stringify(obj)); } catch (_) {}
+    }
   }
   // Payload travels inside `action` so it passes through a relay that only forwards known fields.
   function send(action) { if (roomCode) rawSend({ type: 'game_sync', from: CLIENT_ID, action }); }
@@ -930,10 +937,13 @@
       case 'room_created': case 'room_joined':
         joining = false; roomCode = msg.code || roomCode;
         localStorage.setItem('snuggle_last_room_code', roomCode);
-        roomCodeDisplay.textContent = roomCode; syncUrl();
+        syncUrl();
         showPeers(peerCount(msg, msg.type === 'room_joined' ? 2 : 1));
         if (msg.type === 'room_joined') { sendSnapshot(); sendHello(); }
         if (window.snuggleTrack) { snuggleTrack(msg.type === 'room_created' ? 'room_create' : 'room_join', { roomCode, section: 'connections' }); snuggleTrack('game_play', { game: 'connections', action: msg.type === 'room_created' ? 'create' : 'join', roomCode }); }
+        break;
+      case 'room_invite':
+        if (window.SnuggleInvite) window.SnuggleInvite.showInviteModal(msg);
         break;
       case 'user_joined': showPeers(peerCount(msg, 2)); sendSnapshot(); break;
       case 'user_left':   showPeers(peerCount(msg, 1)); break;
@@ -961,8 +971,9 @@
     ws = socket;
     socket.onopen = () => {
       const code = roomCode || requestedCode;
-      if (code) { joining = true; setStatus('online', 'Joining room...'); rawSend({ type: 'join_room', code }); }
-      else      { setStatus('online', 'Creating room...'); rawSend({ type: 'create_room' }); }
+      const from = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+      if (code) { joining = true; setStatus('online', 'Joining room...'); rawSend({ type: 'join_room', code, from }); }
+      else      { setStatus('online', 'Creating room...'); rawSend({ type: 'create_room', from }); }
     };
     socket.onmessage = ev => {
       let m; try { m = JSON.parse(ev.data); } catch (_) { return; }
@@ -1019,14 +1030,33 @@
   copyBtn.addEventListener('click', async () => {
     copyBtn.blur();
     if (!roomCode) { showToast('Room not ready yet'); return; }
+    if (peers > 1) {
+      const myId = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+      if (window.SnuggleInvite && window.SnuggleInvite.markInviteSent) window.SnuggleInvite.markInviteSent();
+      rawSend({
+        type: 'room_invite',
+        activity: 'Connections',
+        url: window.location.href,
+        from: myId,
+        senderId: myId
+      });
+      showToast('Invite sent to friend!');
+      return;
+    }
     const url = window.location.href;
     if (navigator.share) {
       try { await navigator.share({ title: 'Join my room', url }); return; } catch (e) {}
     }
-    if (!(await copyText(url))) { showToast('Copy failed — copy the link from the address bar', 3000); return; }
-    roomCodeDisplay.style.display = 'none'; copiedSpan.style.display = 'inline';
+    const copySvg = copyBtn.querySelector('svg');
+    if (copySvg) copySvg.style.display = 'none';
+    roomCodeDisplay.style.display = 'none';
+    copiedSpan.style.display = 'inline';
     clearTimeout(copiedTimer);
-    copiedTimer = setTimeout(() => { copiedSpan.style.display = 'none'; roomCodeDisplay.style.display = ''; }, 2000);
+    copiedTimer = setTimeout(() => {
+      copiedSpan.style.display = 'none';
+      roomCodeDisplay.style.display = '';
+      if (copySvg) copySvg.style.display = '';
+    }, 2000);
   });
 
   // ───────────────────────── go ─────────────────────────

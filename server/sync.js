@@ -1,4 +1,19 @@
 const { WebSocketServer } = require('ws');
+const os = require('os');
+const { getIceServers } = require('./ice-servers');
+
+function getLocalLanIp() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return '127.0.0.1';
+}
+const LOCAL_LAN_IP = getLocalLanIp();
 
 // --- Room Storage ---
 const rooms = new Map();
@@ -22,11 +37,7 @@ function generateRoomCode() {
 function getRoom(ws) {
   if (!ws.roomCode) {
     sendTo(ws, { type: 'error', message: 'Not in a room' });
-    // Strands
-  if (msg.type === 'game_sync' && msg.action === 'full_state' && msg.state) {
-    return { game: 'strands', snapshot: msg };
-  }
-  return null;
+    return null;
   }
   const room = rooms.get(ws.roomCode);
   if (!room) {
@@ -43,13 +54,35 @@ function sendTo(ws, data) {
   }
 }
 
+function getUniqueUsersCount(room) {
+  if (!room) return 0;
+  const uniqueSessions = new Set();
+  let anonymousCount = 0;
+  room.users.forEach(u => {
+    if (u.sessionId) uniqueSessions.add(u.sessionId);
+    else anonymousCount++;
+  });
+  if (room.pendingLeaves) {
+    room.pendingLeaves.forEach((_, sid) => {
+      uniqueSessions.add(sid);
+    });
+  }
+  return Math.max(1, uniqueSessions.size + anonymousCount);
+}
+
 function broadcastToRoom(code, data, excludeWs = null) {
   const room = rooms.get(code);
   if (!room) return;
 
   const msg = JSON.stringify(data);
+  const isWebRtc = data && data.type && (data.type.startsWith('webrtc_') || data.type === 'room_invite');
+  const senderId = (data && (data.from || data.senderId)) || (excludeWs && excludeWs.sessionId);
+
   room.users.forEach(user => {
     if (user !== excludeWs && user.readyState === 1) {
+      if (!isWebRtc && senderId && user.sessionId && user.sessionId === senderId) {
+        return;
+      }
       user.send(msg);
     }
   });
@@ -60,6 +93,19 @@ function relayToRoom(ws, msg) {
   if (!room) return;
   room.lastActivity = Date.now();
   broadcastToRoom(room.code, msg, ws);
+}
+
+function extractSessionId(msg) {
+  if (!msg) return null;
+  if (msg.sessionId && typeof msg.sessionId === 'string') {
+    return msg.sessionId;
+  }
+  const raw = msg.from || msg.senderId;
+  if (typeof raw !== 'string') return null;
+  // If raw is formatted as "usr_<session>_<peer>", extract "usr_<session>"
+  const m = raw.match(/^(usr_[a-zA-Z0-9]+)_[a-zA-Z0-9]+$/);
+  if (m) return m[1];
+  return raw;
 }
 
 // --- Game Snapshot Persistence ---
@@ -74,6 +120,10 @@ function extractGameSnapshot(msg) {
   // Wordle: { type:'game_sync', history:[...], from }
   if (msg.type === 'game_sync' && Array.isArray(msg.history) && msg.history.length > 0) {
     return { game: 'wordle', snapshot: msg };
+  }
+  // Strands: { type:'game_sync', action:'full_state', state:{...} }
+  if (msg.type === 'game_sync' && msg.action === 'full_state' && msg.state) {
+    return { game: 'strands', snapshot: msg };
   }
   return null;
 }
@@ -91,6 +141,7 @@ function createRoom(ws, requestedCode) {
   const room = {
     code,
     users: new Set([ws]),
+    pendingLeaves: new Map(),
     ytPlaylists: [],
     ytQueue: [],
     lastActivity: Date.now(),
@@ -103,7 +154,8 @@ function createRoom(ws, requestedCode) {
 
   sendTo(ws, {
     type: 'room_created',
-    code
+    code,
+    iceServers: getIceServers()
   });
 
   console.log(`Room ${code} created. Total rooms: ${rooms.size}`);
@@ -117,7 +169,7 @@ function joinRoom(ws, code) {
 
   code = code.toUpperCase().trim();
 
-  if (ws.roomCode) leaveRoom(ws);
+  if (ws.roomCode && ws.roomCode !== code) leaveRoom(ws);
 
   const room = rooms.get(code);
   if (!room) {
@@ -126,6 +178,28 @@ function joinRoom(ws, code) {
     return;
   }
 
+  if (!room.pendingLeaves) {
+    room.pendingLeaves = new Map();
+  }
+
+  const userSessionId = ws.sessionId;
+
+  // Check if this user is already represented in this room:
+  // 1. By another currently active WebSocket socket
+  const isAlreadyConnected = Boolean(
+    userSessionId && Array.from(room.users).some(u => u !== ws && u.sessionId === userSessionId)
+  );
+
+  // 2. By a pending leave timer during a grace period (e.g. reload or page navigation)
+  let hadPendingLeave = false;
+  if (userSessionId && room.pendingLeaves.has(userSessionId)) {
+    clearTimeout(room.pendingLeaves.get(userSessionId));
+    room.pendingLeaves.delete(userSessionId);
+    hadPendingLeave = true;
+  }
+
+  const isUserAlreadyInRoom = isAlreadyConnected || hadPendingLeave;
+
   room.users.add(ws);
   room.lastActivity = Date.now();
   ws.roomCode = code;
@@ -133,7 +207,8 @@ function joinRoom(ws, code) {
   sendTo(ws, {
     type: 'room_joined',
     code,
-    usersCount: room.users.size
+    usersCount: getUniqueUsersCount(room),
+    iceServers: getIceServers()
   });
 
   // ── Replay persisted game snapshots so the client recovers full state ──
@@ -171,15 +246,20 @@ function joinRoom(ws, code) {
     });
   }
 
-  broadcastToRoom(code, {
-    type: 'user_joined',
-    usersCount: room.users.size
-  }, ws);
-
-  console.log(`User joined room ${code}. Users: ${room.users.size}`);
+  // Broadcast user_joined ONLY when a user who was not already in the room joins!
+  if (!isUserAlreadyInRoom) {
+    broadcastToRoom(code, {
+      type: 'user_joined',
+      usersCount: getUniqueUsersCount(room),
+      from: ws.sessionId
+    }, ws);
+    console.log(`User ${ws.sessionId || 'anon'} joined room ${code}. Total users: ${getUniqueUsersCount(room)}`);
+  } else {
+    console.log(`User ${ws.sessionId || 'anon'} added connection to room ${code} (already present). Suppressed user_joined.`);
+  }
 }
 
-function leaveRoom(ws) {
+function leaveRoom(ws, immediate = false) {
   const code = ws.roomCode;
   if (!code) return;
 
@@ -192,15 +272,63 @@ function leaveRoom(ws) {
   room.users.delete(ws);
   ws.roomCode = null;
 
+  const userSessionId = ws.sessionId;
+
+  // Check if this user still has another active socket in the room
+  const hasOtherSocket = Boolean(
+    userSessionId && Array.from(room.users).some(u => u.sessionId === userSessionId)
+  );
+
+  if (hasOtherSocket) {
+    // User is still present in the room via another socket (e.g. room shell or another tab).
+    // Do not notify friend that user left!
+    console.log(`Socket closed for user ${userSessionId || 'anon'}, but user still has active sockets in room ${code}. Suppressed user_left.`);
+    return;
+  }
+
+  // User has no remaining active sockets in this room.
+  if (userSessionId && !immediate) {
+    // Start a 3500ms grace period so route changes, reloads, or temporary network drops
+    // do not trigger false "friend left" / "friend joined" notifications.
+    if (!room.pendingLeaves) room.pendingLeaves = new Map();
+
+    if (room.pendingLeaves.has(userSessionId)) {
+      clearTimeout(room.pendingLeaves.get(userSessionId));
+    }
+
+    const timer = setTimeout(() => {
+      if (rooms.has(code)) {
+        room.pendingLeaves.delete(userSessionId);
+        const reconnected = Array.from(room.users).some(u => u.sessionId === userSessionId);
+        if (!reconnected) {
+          console.log(`User ${userSessionId} truly left room ${code} (grace period expired). Broadcasting user_left.`);
+          broadcastToRoom(code, {
+            type: 'user_left',
+            usersCount: getUniqueUsersCount(room),
+            from: userSessionId
+          });
+        }
+      }
+    }, 3500);
+
+    room.pendingLeaves.set(userSessionId, timer);
+  } else {
+    // Either immediate leave or anonymous user without session ID
+    if (userSessionId && room.pendingLeaves && room.pendingLeaves.has(userSessionId)) {
+      clearTimeout(room.pendingLeaves.get(userSessionId));
+      room.pendingLeaves.delete(userSessionId);
+    }
+    broadcastToRoom(code, {
+      type: 'user_left',
+      usersCount: getUniqueUsersCount(room),
+      from: userSessionId
+    });
+  }
+
   if (room.users.size === 0) {
     // Keep the room alive — it will be cleaned up after TTL expires.
     // This preserves game state for refreshing players.
     console.log(`Room ${code} now empty, kept alive for ${ROOM_TTL / 60000} min. Total rooms: ${rooms.size}`);
-  } else {
-    broadcastToRoom(code, {
-      type: 'user_left',
-      usersCount: room.users.size
-    });
   }
 }
 
@@ -218,10 +346,23 @@ function updateSnapshot(ws, snapshot) {
 }
 
 function handleMessage(ws, msg) {
+  const sid = extractSessionId(msg);
+  if (sid) {
+    ws.sessionId = sid;
+  }
   switch (msg.type) {
     case 'create_room': createRoom(ws); break;
     case 'join_room': joinRoom(ws, msg.code); break;
-    case 'leave_room': leaveRoom(ws); break;
+    case 'leave_room':
+      if (ws.sessionId && ws.roomCode && rooms.has(ws.roomCode)) {
+        const r = rooms.get(ws.roomCode);
+        if (r && r.pendingLeaves && r.pendingLeaves.has(ws.sessionId)) {
+          clearTimeout(r.pendingLeaves.get(ws.sessionId));
+          r.pendingLeaves.delete(ws.sessionId);
+        }
+      }
+      leaveRoom(ws, true);
+      break;
     case 'ping': sendTo(ws, { type: 'pong' }); break;
     case 'yt_play':
     case 'yt_pause':
@@ -233,6 +374,20 @@ function handleMessage(ws, msg) {
     case 'yt_queue_reorder':
     case 'yt_next':
     case 'yt_prev':
+    case 'webrtc_signal':
+    case 'webrtc_offer':
+    case 'webrtc_answer':
+    case 'webrtc_candidate':      // sent by call.js
+    case 'webrtc_ice_candidate':  // kept for backwards compatibility
+    case 'webrtc_status':
+    case 'room_invite':
+      if (ws.clientIp && !msg.senderIp) {
+        msg.senderIp = ws.clientIp;
+      }
+      if (['webrtc_candidate', 'webrtc_ice_candidate', 'webrtc_offer', 'webrtc_answer', 'webrtc_status'].includes(msg.type)) {
+        const candStr = msg.candidate ? (msg.candidate.candidate || JSON.stringify(msg.candidate)) : undefined;
+        console.log(`[SYNC-WEBRTC] type=${msg.type} room=${ws.roomCode} from=${msg.from || ws.sessionId} ip=${msg.senderIp || ws.clientIp}${candStr ? ` cand="${candStr}"` : ''}${msg.status ? ` status=${msg.status}` : ''}${msg.callActive !== undefined ? ` callActive=${msg.callActive}` : ''}`);
+      }
       relayToRoom(ws, msg);
       break;
     case 'game_sync': {
@@ -287,11 +442,42 @@ let wss;
 let heartbeatInterval;
 let cleanupInterval;
 
-function setupWebSocket(server) {
-  wss = new WebSocketServer({ server });
+function setupWebSocket(httpServer, httpsServer = null) {
+  wss = new WebSocketServer({ noServer: true });
 
-  wss.on('connection', (ws) => {
+  const onUpgrade = (request, socket, head) => {
+    let pathname = '/';
+    try {
+      pathname = new URL(request.url, 'http://localhost').pathname;
+    } catch (_) {}
+    if (pathname === '/coop-signal' || pathname === '/bcoop-signal' || pathname === '/ccoop-signal' || pathname === '/contra-signal' || pathname === '/ws') return;
+
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit('connection', ws, request);
+    });
+  };
+
+  if (httpServer) {
+    httpServer.on('upgrade', onUpgrade);
+  }
+  if (httpsServer) {
+    httpsServer.on('upgrade', onUpgrade);
+  }
+
+  wss.on('connection', (ws, req) => {
     ws.isAlive = true;
+    ws.on('pong', () => { ws.isAlive = true; });
+
+    let clientIp = req?.socket?.remoteAddress || '';
+    if (clientIp.startsWith('::ffff:')) {
+      clientIp = clientIp.substring(7);
+    }
+    // If client connects from loopback on server machine (laptop), stamp with LAN IP
+    if (!clientIp || clientIp === '127.0.0.1' || clientIp === '::1') {
+      clientIp = LOCAL_LAN_IP;
+    }
+    ws.clientIp = clientIp;
+
     ws.roomCode = null;
 
     ws.on('message', (data) => {
@@ -306,7 +492,6 @@ function setupWebSocket(server) {
     });
 
     ws.on('close', () => handleDisconnect(ws));
-    ws.on('pong', () => { ws.isAlive = true; });
     ws.on('error', (err) => console.error('WebSocket error:', err.message));
   });
 
@@ -327,6 +512,10 @@ function setupWebSocket(server) {
       // Delete rooms that have been inactive past TTL
       // Empty rooms stay alive until TTL so refreshing players can rejoin
       if (now - room.lastActivity > ROOM_TTL) {
+        if (room.pendingLeaves) {
+          room.pendingLeaves.forEach(t => clearTimeout(t));
+          room.pendingLeaves.clear();
+        }
         room.users.forEach(ws => {
           sendTo(ws, { type: 'error', message: 'Room expired' });
           ws.roomCode = null;

@@ -64,7 +64,6 @@
               id="room-code-input"
               class="yt-code-input"
               placeholder="Enter room code"
-              maxlength="6"
               autocomplete="off"
               autocapitalize="characters"
               spellcheck="false"
@@ -114,11 +113,18 @@
           return;
         }
 
+        let sid = null;
+        try { sid = sessionStorage.getItem('snuggle_session_id'); } catch (_) {}
+        if (!sid) {
+          sid = 'usr_' + Math.random().toString(36).slice(2, 10);
+          try { sessionStorage.setItem('snuggle_session_id', sid); } catch (_) {}
+        }
+
         ws.onopen = () => {
           if (action === 'create') {
-            ws.send(JSON.stringify({ type: 'create_room' }));
+            ws.send(JSON.stringify({ type: 'create_room', sessionId: sid, from: sid }));
           } else if (action === 'join') {
-            ws.send(JSON.stringify({ type: 'join_room', code: code }));
+            ws.send(JSON.stringify({ type: 'join_room', code: code, sessionId: sid, from: sid }));
           }
         };
 
@@ -127,8 +133,9 @@
             const msg = JSON.parse(event.data);
             if (msg.type === 'room_created' || msg.type === 'room_joined') {
               sessionStorage.setItem('snuggle_room_code', msg.code);
+              localStorage.setItem('snuggle_room_code', msg.code);
               ws.close();
-              window.location.href = '/home';
+              window.location.href = `/room?code=${encodeURIComponent(msg.code)}`;
             } else if (msg.type === 'error') {
               joinError.textContent = msg.message || 'Error joining room.';
               joinError.style.display = 'block';
@@ -146,8 +153,8 @@
       }
 
       function join(code) {
-        if (!code || code.length < 4) {
-          joinError.textContent = 'Enter a valid room code (4–6 characters).';
+        if (!code) {
+          joinError.textContent = 'Enter a valid room code.';
           joinError.style.display = 'block';
           return;
         }
@@ -182,6 +189,13 @@
         codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
         joinError.style.display = 'none';
       });
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlCode = urlParams.get('code');
+      if (urlCode && urlCode.trim().length > 0) {
+        codeInput.value = urlCode.trim().toUpperCase();
+        join(codeInput.value);
+      }
     });
   </script>
 </body>

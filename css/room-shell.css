@@ -1,0 +1,1728 @@
+/* =============================================
+   SNUGGLE — Room Shell & Video Call Anywhere Styles
+   ============================================= */
+
+:root {
+  --ribbon-height: 60px;
+  --shell-bg: #2b1a0b;
+  --shell-bg-dark: #190e05;
+  --accent-gold: #f4a261;
+  --accent-coral: #e76f51;
+  --accent-teal: #2ec4b6;
+}
+
+html, body.room-shell-body, body.room-shell-body.loaded {
+  opacity: 1 !important;
+  visibility: visible !important;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--shell-bg-dark);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #ffffff;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.room-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 20%, #3e2612 0%, #1c0f06 100%);
+}
+
+/* ── Main Viewport Area ── */
+.shell-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.shell-tab-content {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.shell-tab-content.is-active {
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* ── Tab 1: Website Frame View ── */
+#shell-site-section {
+  background: var(--bg-primary, #3c280d);
+}
+
+.shell-site-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  flex: 1;
+  background: transparent;
+}
+
+/* ── Tab 2: Full Call View ── */
+.room-shell.is-call-view #snuggle-pip {
+  display: none !important;
+}
+
+#shell-call-section {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #0d0702;
+  overflow: hidden;
+}
+
+#shell-call-section .call-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  padding: 0 16px;
+  padding-top: max(4px, env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to bottom, rgba(14, 8, 3, 0.88) 0%, rgba(14, 8, 3, 0.4) 60%, transparent 100%);
+  border: none;
+  z-index: 30;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease;
+}
+
+.call-minimize-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.call-minimize-btn:hover {
+  background: rgba(244, 162, 97, 0.25);
+  transform: scale(1.08);
+}
+
+#shell-call-section .call-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: #0d0702;
+  overflow: hidden;
+  z-index: 1;
+  padding: 0;
+  display: block;
+}
+
+#shell-call-section .video-container--remote {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+
+#shell-call-section #stage-remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+#shell-call-section #remote-placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+/* ── Signal Desktop Calling Design System Styles ── */
+
+/* Signal Call Controls Floating Dock */
+#shell-call-section .call-controls,
+.CallControls {
+  position: absolute;
+  bottom: calc(var(--ribbon-height) + env(safe-area-inset-bottom, 0px) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: calc(100% - 32px);
+  max-width: 620px;
+  height: 68px;
+  background-color: rgba(45, 45, 45, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  padding: 0 20px;
+  text-align: center;
+  z-index: 30;
+  transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1), opacity 0.32s ease, bottom 0.32s ease;
+}
+
+.CallControls__InfoDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  flex: 1 1 0%;
+  min-width: 0;
+  text-align: left;
+}
+
+.CallControls__CallTitle {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.CallControls__Status {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.CallControls__Status .call-timer-text {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-left: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.CallControls__ButtonContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* Signal Calling Button Icons */
+.CallingButton__icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.CallingButton__icon:hover {
+  background: rgba(255, 255, 255, 0.26);
+  transform: scale(1.06);
+}
+
+.CallingButton__icon:active {
+  transform: scale(0.95);
+}
+
+.CallingButton__icon .ctrl-btn__icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Signal signature highlighted solid white state for muted/off */
+.CallingButton__icon:has(.ctrl-btn__icon--off),
+.CallingButton__icon.ctrl-btn__icon--off {
+  background: #ffffff !important;
+  color: #121212 !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.CallingButton__icon:has(.ctrl-btn__icon--off) .ctrl-btn__icon {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+.CallingButton__icon:hover:has(.ctrl-btn__icon--off),
+.CallingButton__icon.ctrl-btn__icon--off:hover {
+  background: #f0f0f0 !important;
+}
+
+.CallingButton__icon .ctrl-btn__icon--off {
+  color: #121212 !important;
+}
+
+.CallingButton__icon-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.CallingButton__icon-svg svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.CallingButton__icon--flip .CallingButton__icon-svg svg {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.CallingButton__icon--flip.is-flipped .CallingButton__icon-svg svg {
+  transform: rotate(180deg);
+}
+
+/* Right: Signal Red Pill Hangup Button */
+.CallControls__JoinLeaveButtonContainer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1 1 0%;
+}
+
+.CallControls__JoinLeaveButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 40px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.CallControls__JoinLeaveButton--hangup {
+  background-color: #d32f2f;
+  color: #ffffff;
+}
+
+.CallControls__JoinLeaveButton--hangup:hover {
+  background-color: #b71c1c;
+  transform: scale(1.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+.CallControls__JoinLeaveButton--hangup:active {
+  transform: scale(0.96);
+}
+
+.CallControls__HangupIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+}
+
+.CallControls__HangupIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Signal Local Preview Viewport */
+.module-ongoing-call__local-preview,
+#shell-call-section .video-container--local {
+  position: absolute;
+  bottom: calc(var(--ribbon-height) + env(safe-area-inset-bottom, 0px) + 94px);
+  right: 18px;
+  width: 112px;
+  height: 158px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  background: #1e1e1e;
+  z-index: 25;
+  transition: bottom 0.32s cubic-bezier(0.2, 0, 0, 1), transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.module-ongoing-call__local-preview:hover,
+#shell-call-section .video-container--local:hover {
+  transform: scale(1.03);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+/* Auto-hide states */
+#shell-call-section.controls-hidden .call-header {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#shell-call-section.controls-hidden .call-controls {
+  transform: translate(-50%, calc(100% + 40px));
+  opacity: 0;
+  pointer-events: none;
+}
+
+#shell-call-section.controls-hidden .video-container--local {
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+/* Swapped state: when local video is main view and remote video is preview inset */
+#shell-call-section .call-stage.is-swapped .video-container--local {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 1;
+  cursor: default;
+}
+
+#shell-call-section .call-stage.is-swapped .video-container--local:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+#shell-call-section .call-stage.is-swapped #stage-local-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#shell-call-section .call-stage.is-swapped .video-container--remote {
+  position: absolute;
+  inset: auto;
+  bottom: 104px;
+  right: 18px;
+  width: 112px;
+  height: 158px;
+  max-width: none;
+  max-height: none;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
+  background: #1e1e1e;
+  z-index: 25;
+  transition: bottom 0.32s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+#shell-call-section .call-stage.is-swapped .video-container--remote:hover {
+  transform: scale(1.03);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.8), 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+#shell-call-section.controls-hidden .call-stage.is-swapped .video-container--remote {
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile Ergonomics & Signal Touch Controls */
+@media (max-width: 600px) {
+  #shell-call-section .video-container--local,
+  .module-ongoing-call__local-preview,
+  #shell-call-section .call-stage.is-swapped .video-container--remote {
+    width: 96px;
+    height: 136px;
+    bottom: calc(var(--ribbon-height) + env(safe-area-inset-bottom, 0px) + 84px);
+    right: 12px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75);
+  }
+
+  .module-ongoing-call__local-preview:active,
+  #shell-call-section .video-container--local:active,
+  #shell-call-section .call-stage.is-swapped .video-container--remote:active {
+    transform: scale(0.96);
+  }
+
+  /* Remote Audio Indicator Mobile Sizing */
+  .video-badge--remote {
+    top: 66px;
+    left: 14px;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+  }
+
+  #shell-call-section.controls-hidden .video-badge--remote {
+    top: 14px;
+  }
+
+  /* Signal Mobile Floating Controls Dock */
+  #shell-call-section .call-controls,
+  .CallControls {
+    height: 68px;
+    padding: 0 16px;
+    gap: 12px;
+    width: auto;
+    max-width: calc(100% - 24px);
+    border-radius: 36px;
+    bottom: calc(var(--ribbon-height) + env(safe-area-inset-bottom, 0px) + 12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+    background: rgba(36, 36, 36, 0.94);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  /* Mobile hides title to give full width to ergonomic thumb buttons */
+  .CallControls__InfoDisplay {
+    display: none;
+  }
+
+  .CallControls__ButtonContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  /* 48px Touch Targets for Thumb Ergonomics */
+  .CallingButton__icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+  }
+
+  .CallingButton__icon-svg,
+  .CallingButton__icon-svg svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .CallControls__JoinLeaveButtonContainer {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+  }
+
+  /* Red Circular End Call Button on Mobile */
+  .CallControls__JoinLeaveButton {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .CallControls__JoinLeaveButtonText {
+    display: none;
+  }
+
+  .CallControls__HangupIcon,
+  .CallControls__HangupIcon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Pre-Call Lobby Card on Mobile */
+  .module-CallingLobby,
+  .call-idle-card {
+    max-width: 88vw;
+    margin: 6px auto 0 auto;
+    padding: 0 10px;
+  }
+
+  .call-idle-title,
+  .module-CallingPreCallInfo__title {
+    font-size: 1.15rem;
+  }
+
+  .call-idle-desc,
+  .module-CallingPreCallInfo__subtitle {
+    font-size: 0.84rem;
+    max-width: 280px;
+  }
+
+  .btn-start-call,
+  .CallingLobby__JoinButton {
+    height: 48px;
+    padding: 0 28px;
+    font-size: 15px;
+    border-radius: 30px;
+  }
+}
+
+#remote-placeholder:has(~ #call-idle-actions:not([hidden])) > #remote-placeholder-text,
+#call-stage:has(#call-idle-actions:not([hidden])) #remote-placeholder-text {
+  display: none;
+}
+
+/* ── Signal Calling Lobby & Pre-Call Info Card ── */
+.module-CallingLobby,
+.call-idle-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 380px;
+  width: calc(100% - 32px);
+  margin: 0;
+  padding: 24px 20px;
+  background: rgba(30, 18, 8, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(244, 162, 97, 0.25);
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  text-align: center;
+  z-index: 10;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.call-idle-card[hidden] {
+  display: none !important;
+}
+
+.module-calling__background--blur {
+  display: none;
+}
+
+.module-CallingPreCallInfo {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.call-idle-title,
+.module-CallingPreCallInfo__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
+}
+
+.call-idle-desc,
+.module-CallingPreCallInfo__subtitle {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.45;
+  margin: 0;
+  max-width: 320px;
+}
+
+.btn-start-call,
+.CallingLobby__JoinButton {
+  background: var(--accent-gold, #f4a261);
+  color: #3c280d;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: none;
+  border-radius: 40px;
+  padding: 12px 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 20px rgba(244, 162, 97, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-start-call:hover,
+.CallingLobby__JoinButton:hover {
+  background: #f7b27d;
+  color: #3c280d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 26px rgba(244, 162, 97, 0.35);
+}
+
+.btn-start-call:active,
+.CallingLobby__JoinButton:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35), 0 0 12px rgba(244, 162, 97, 0.2);
+}
+
+.btn-start-call:focus-visible,
+.CallingLobby__JoinButton:focus-visible {
+  outline: 2px solid var(--accent-gold, #f4a261);
+  outline-offset: 3px;
+}
+
+.CallingLobby__CallLinkNotice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 18px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: rgba(52, 52, 52, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Signal Audio Indicator Badge */
+.CallingAudioIndicator {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.CallingAudioIndicator--with-content {
+  background: rgba(35, 35, 35, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Local Preview Audio Indicator (Signal Mobile Style) */
+.module-ongoing-call__local-preview .CallingAudioIndicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.module-ongoing-call__local-preview .CallingAudioIndicator:has(.speaking-indicator.is-speaking),
+.module-ongoing-call__local-preview .CallingAudioIndicator.is-speaking {
+  opacity: 1;
+  visibility: visible;
+}
+
+.module-ongoing-call__local-preview .CallingAudioIndicator .speaking-indicator {
+  margin: 0;
+}
+
+/* Remote Audio Indicator (Signal Mobile Style) */
+.video-badge--remote {
+  position: absolute;
+  top: 72px;
+  left: 18px;
+  bottom: auto;
+  right: auto;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(30, 30, 30, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease, top 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.video-badge--remote:has(.speaking-indicator.is-speaking),
+.video-badge--remote:has(.video-badge__muted:not([hidden])),
+.video-badge--remote.is-speaking,
+.video-badge--remote.is-muted {
+  opacity: 1;
+  visibility: visible;
+}
+
+.video-badge--remote .speaking-indicator {
+  margin: 0;
+}
+
+.video-badge--remote .video-badge__muted {
+  color: #ff5252;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+#shell-call-section.controls-hidden .video-badge--remote {
+  top: 18px;
+}
+
+/* Swapped mode audio indicator adjustments */
+#shell-call-section .call-stage.is-swapped .video-container--remote .video-badge--remote {
+  top: 8px;
+  right: 8px;
+  left: auto;
+  bottom: auto;
+  width: 28px;
+  height: 28px;
+}
+
+#shell-call-section .call-stage.is-swapped .video-container--local .CallingAudioIndicator {
+  top: 72px;
+  left: 18px;
+  right: auto;
+  bottom: auto;
+  width: 32px;
+  height: 32px;
+}
+
+#shell-call-section.controls-hidden .call-stage.is-swapped .video-container--local .CallingAudioIndicator {
+  top: 18px;
+}
+
+/* Hide removed / legacy badges */
+.video-badge--local,
+#local-name-badge,
+#remote-name-label {
+  display: none !important;
+}
+
+/* ── Live Call Timer Text ── */
+.call-timer-text {
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(0, 0, 0, 0.45);
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  letter-spacing: 0.04em;
+  margin-left: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.call-timer-text[hidden] {
+  display: none !important;
+}
+
+/* ── Real-time Voice Speaking Indicator ── */
+.speaking-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5px;
+  height: 12px;
+  margin-right: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  vertical-align: middle;
+}
+
+.speaking-indicator.is-speaking {
+  opacity: 1;
+  visibility: visible;
+}
+
+.speaking-bar {
+  width: 2.5px;
+  height: 10px;
+  background: #2ec4b6;
+  border-radius: 2px;
+  transform-origin: bottom;
+  animation: speakingBarWave 0.7s ease-in-out infinite alternate;
+}
+
+.speaking-bar:nth-child(1) {
+  height: 6px;
+  animation-delay: 0.1s;
+}
+
+.speaking-bar:nth-child(2) {
+  height: 12px;
+  animation-delay: 0.3s;
+}
+
+.speaking-bar:nth-child(3) {
+  height: 8px;
+  animation-delay: 0.2s;
+}
+
+@keyframes speakingBarWave {
+  0% { transform: scaleY(0.35); }
+  100% { transform: scaleY(1); }
+}
+
+/* ── Floating Picture-in-Picture (PiP) Window ── */
+.snuggle-pip {
+  position: fixed;
+  z-index: 9999;
+  width: 168px;
+  height: 246px;
+  background: rgba(38, 22, 10, 0.95);
+  border: 1.5px solid rgba(244, 162, 97, 0.38);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, width 0.25s cubic-bezier(0.16, 1, 0.3, 1), height 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.25s ease;
+}
+
+.snuggle-pip[hidden] {
+  display: none !important;
+}
+
+.snuggle-pip.is-dragging {
+  cursor: grabbing;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.88), 0 4px 12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: rgba(244, 162, 97, 0.7);
+  transform: scale(1.02);
+}
+
+.snuggle-pip.is-resizing {
+  transition: none !important;
+  transform: none !important;
+  border-color: rgba(244, 162, 97, 0.85);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.9), 0 0 0 1.5px rgba(244, 162, 97, 0.55);
+}
+
+body.is-pip-resizing,
+body.is-pip-dragging {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.is-pip-resizing .shell-site-frame,
+body.is-pip-dragging .shell-site-frame {
+  pointer-events: none !important;
+}
+
+/* ── PiP Edge Resizers (Desktop Edge Dragging) ── */
+.pip-resizer {
+  position: absolute;
+  z-index: 10;
+  touch-action: none;
+  background: transparent;
+}
+
+.pip-resizer--n {
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.pip-resizer--s {
+  bottom: 0;
+  left: 14px;
+  right: 14px;
+  height: 8px;
+  cursor: ns-resize;
+}
+
+.pip-resizer--w {
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.pip-resizer--e {
+  right: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 8px;
+  cursor: ew-resize;
+}
+
+.pip-resizer--nw {
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 11;
+}
+
+.pip-resizer--ne {
+  top: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+  z-index: 11;
+}
+
+.pip-resizer--sw {
+  bottom: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+  z-index: 11;
+}
+
+.pip-resizer--se {
+  bottom: 0;
+  right: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  z-index: 11;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 3px;
+}
+
+.pip-resize-grip-icon {
+  width: 9px;
+  height: 9px;
+  color: rgba(244, 162, 97, 0.4);
+  pointer-events: none;
+  transition: color 0.15s ease, transform 0.15s ease;
+}
+
+.snuggle-pip:hover .pip-resize-grip-icon {
+  color: rgba(244, 162, 97, 0.85);
+}
+
+.pip-resizer--se:hover .pip-resize-grip-icon,
+.snuggle-pip.is-resizing .pip-resize-grip-icon {
+  color: var(--accent-gold);
+  transform: scale(1.15);
+}
+
+.snuggle-pip.is-mini .pip-resizer {
+  display: none !important;
+}
+
+/* PiP Responsive mobile sizing */
+@media (max-width: 600px) {
+  .snuggle-pip {
+    width: 136px;
+    height: 196px;
+    border-radius: 14px;
+  }
+}
+
+/* Mini Bubble / Compact Audio Mode for PiP (Solves Mobile Game Obstruction) */
+.snuggle-pip.is-mini {
+  width: auto !important;
+  min-width: 156px;
+  max-width: 230px;
+  height: 42px !important;
+  border-radius: 22px;
+  background: rgba(26, 15, 6, 0.96);
+  border: 1.5px solid rgba(244, 162, 97, 0.45);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.snuggle-pip.is-mini .pip-video-wrap,
+.snuggle-pip.is-mini .pip-controls {
+  display: none !important;
+}
+
+.snuggle-pip.is-mini .pip-header {
+  height: 100%;
+  border-bottom: none;
+  background: transparent;
+  padding: 0 10px;
+  gap: 8px;
+}
+
+.snuggle-pip.is-mini .pip-minimize-mode-btn {
+  display: none;
+}
+
+/* PiP Header / Drag Bar */
+.pip-header {
+  height: 34px;
+  padding: 0 8px 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(26, 15, 6, 0.92);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: grab;
+}
+
+.pip-header__info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.pip-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 12;
+}
+
+.pip-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.pip-status-dot.is-live {
+  background: #2ec4b6;
+}
+
+.pip-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}
+
+.pip-timer {
+  font-size: 0.74rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-left: 2px;
+}
+
+.pip-header-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent-gold);
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.pip-header-btn:hover {
+  background: rgba(244, 162, 97, 0.2);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.pip-header-btn:active {
+  transform: scale(0.96);
+}
+
+.pip-expand-btn {
+  composes: pip-header-btn;
+}
+
+/* PiP Video Viewport */
+.pip-video-wrap {
+  flex: 1;
+  position: relative;
+  background: #110903;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#pip-remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pip-avatar-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: radial-gradient(circle, #341f0e 0%, #180d05 100%);
+  color: var(--accent-gold);
+  z-index: 1;
+}
+
+.pip-avatar-fallback[hidden] {
+  display: none !important;
+}
+
+.pip-avatar-fallback svg {
+  width: 38px;
+  height: 38px;
+  opacity: 0.85;
+}
+
+.pip-avatar-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  padding: 0 6px;
+}
+
+/* Local self preview inset in corner of PiP */
+.pip-local-inset {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 46px;
+  height: 64px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  z-index: 3;
+}
+
+.pip-local-inset[hidden] {
+  display: none !important;
+}
+
+#pip-local-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  display: block;
+}
+
+/* Prompt overlay inside PiP when friend is calling but user hasn't joined */
+.pip-join-prompt {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 8, 3, 0.78);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  z-index: 5;
+  text-align: center;
+}
+
+.pip-join-prompt[hidden] {
+  display: none !important;
+}
+
+.pip-join-prompt-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.3;
+}
+
+.pip-join-btn {
+  background: var(--accent-teal);
+  color: #0b3430;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  border-radius: 20px;
+  padding: 7px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  animation: pulse-join-btn 2.4s ease-in-out infinite;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.pip-join-btn:hover {
+  transform: scale(1.04);
+  background: #39d9cb;
+}
+
+@keyframes pulse-join-btn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* PiP Bottom Controls Strip */
+.pip-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  background: linear-gradient(to top, rgba(18, 9, 3, 0.96) 0%, rgba(18, 9, 3, 0.76) 75%, transparent 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 8px;
+  z-index: 12;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s ease;
+}
+
+.snuggle-pip.controls-hidden .pip-controls {
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.pip-ctrl-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 12;
+  transition: all 0.15s ease;
+}
+
+.pip-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.08);
+}
+
+.pip-ctrl-btn.is-active-off {
+  background: rgba(231, 111, 81, 0.25);
+  border-color: rgba(231, 111, 81, 0.6);
+  color: var(--accent-coral);
+}
+
+.pip-ctrl-btn--danger {
+  background: var(--accent-coral);
+  border-color: var(--accent-coral);
+  color: #ffffff;
+}
+
+.pip-ctrl-btn--danger:hover {
+  background: #d85c3f;
+  transform: scale(1.08);
+}
+
+.pip-ctrl-btn--close {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.pip-ctrl-btn--close:hover {
+  background: rgba(230, 57, 70, 0.4);
+  border-color: rgba(230, 57, 70, 0.7);
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+/* ── Bottom Navigation Ribbon ── */
+.snuggle-ribbon {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--ribbon-height);
+  min-height: var(--ribbon-height);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: rgba(30, 17, 7, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1.5px solid rgba(244, 162, 97, 0.24);
+  box-shadow: 0 -6px 28px rgba(0, 0, 0, 0.5);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  z-index: 1000;
+  flex-shrink: 0;
+  transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1),
+              opacity 0.24s ease,
+              box-shadow 0.32s ease;
+  will-change: transform;
+}
+
+/* Hidden state - sleek slide-down animation (Android style) */
+.room-shell.ribbon-hidden .snuggle-ribbon,
+.snuggle-ribbon.is-hidden {
+  transform: translateY(calc(100% + env(safe-area-inset-bottom, 0px) + 12px));
+  opacity: 0;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+/* ── Peek Wake Pill (Android-style Gesture Pill) ── */
+.ribbon-peek-pill {
+  position: absolute;
+  bottom: max(6px, env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(24px);
+  width: 48px;
+  height: 5px;
+  padding: 0;
+  background: rgba(244, 162, 97, 0.42);
+  border: 1px solid rgba(244, 162, 97, 0.25);
+  border-radius: 9999px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 0 10px rgba(244, 162, 97, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1001;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.32s cubic-bezier(0.2, 0, 0, 1),
+              opacity 0.25s ease,
+              background-color 0.2s ease,
+              box-shadow 0.25s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Expand touch target for mobile thumb tapping */
+.ribbon-peek-pill::before {
+  content: '';
+  position: absolute;
+  inset: -14px -16px;
+  background: transparent;
+}
+
+.room-shell.ribbon-hidden:not(.is-call-view) .ribbon-peek-pill {
+  opacity: 0.85;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.ribbon-peek-pill:hover,
+.ribbon-peek-pill:focus-visible {
+  opacity: 1;
+  background: var(--accent-gold);
+  transform: translateX(-50%) scale(1.15) translateY(-2px);
+  box-shadow: 0 4px 16px rgba(244, 162, 97, 0.65), 0 0 12px rgba(244, 162, 97, 0.45);
+}
+
+.ribbon-peek-pill:active {
+  transform: translateX(-50%) scale(0.95);
+}
+
+.ribbon-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.65);
+  position: relative;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 6px 12px;
+  outline: none;
+}
+
+.ribbon-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24%;
+  right: 24%;
+  height: 3px;
+  background: transparent;
+  border-radius: 0 0 3px 3px;
+  transition: all 0.25s ease;
+}
+
+.ribbon-tab:hover {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(244, 162, 97, 0.08);
+}
+
+.ribbon-tab.is-active {
+  color: #ffffff;
+  background: radial-gradient(ellipse at 50% 0%, rgba(244, 162, 97, 0.22) 0%, rgba(244, 162, 97, 0.05) 70%, transparent 100%);
+  box-shadow: inset 0 1px 0 rgba(244, 162, 97, 0.5);
+  font-weight: 600;
+}
+
+.ribbon-tab.is-active::before {
+  background: var(--accent-gold);
+  box-shadow: 0 2px 10px rgba(244, 162, 97, 0.65), 0 0 12px rgba(244, 162, 97, 0.4);
+}
+
+.ribbon-tab__icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ribbon-tab__icon {
+  width: 22px;
+  height: 22px;
+  transition: transform 0.2s ease, stroke 0.2s ease, filter 0.2s ease;
+  stroke: currentColor;
+}
+
+.ribbon-tab.is-active .ribbon-tab__icon {
+  transform: scale(1.08);
+  stroke: var(--accent-gold);
+  filter: drop-shadow(0 2px 6px rgba(244, 162, 97, 0.45));
+}
+
+.ribbon-tab__label {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  font-family: inherit;
+  font-weight: 600;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.ribbon-tab.is-active .ribbon-tab__label {
+  color: #ffffff;
+  text-shadow: 0 1px 8px rgba(244, 162, 97, 0.45);
+}
+
+/* Pulsing Badge on Video Call Tab */
+.ribbon-badge {
+  position: absolute;
+  top: -2px;
+  right: -5px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent-teal);
+  box-shadow: 0 0 10px var(--accent-teal);
+  animation: pulse-ribbon-badge 1.8s infinite;
+}
+
+.ribbon-badge[hidden] {
+  display: none !important;
+}
+
+@keyframes pulse-ribbon-badge {
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(46, 196, 182, 0.8); }
+  70% { transform: scale(1.15); box-shadow: 0 0 0 7px rgba(46, 196, 182, 0); }
+  100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(46, 196, 182, 0); }
+}
+
+/* ── Toast in Shell ── */
+.shell-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(30, 18, 8, 0.92);
+  border: 1px solid rgba(244, 162, 97, 0.35);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #ffffff;
+  padding: 10px 18px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 100000;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shell-toast.is-active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 600px) {
+  .snuggle-pip {
+    width: 142px;
+    height: 216px;
+    border-radius: 14px;
+  }
+  .pip-header {
+    height: 28px;
+  }
+  .pip-controls {
+    height: 38px;
+  }
+  .pip-ctrl-btn {
+    width: 26px;
+    height: 26px;
+  }
+  .pip-local-inset {
+    width: 38px;
+    height: 52px;
+  }
+}
+
+/* ── Permission Dialog ── */
+.call-dialog-backdrop[hidden] {
+  display: none !important;
+}
+
+.call-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100000;
+}
+
+.call-dialog {
+  background: var(--bg-card, #2e1a0b);
+  border: 1px solid rgba(244, 162, 97, 0.35);
+  border-radius: 18px;
+  padding: 28px 24px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  color: #fff;
+}
+
+.call-dialog__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(231, 111, 81, 0.2);
+  color: var(--accent-coral, #e76f51);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px auto;
+}
+
+.call-dialog__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.call-dialog__desc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.call-dialog__btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--accent-warm, #f4a261);
+  border: none;
+  border-radius: 10px;
+  color: #3c280d;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: block;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.call-dialog__btn:hover {
+  background: #f7b27d;
+}
+

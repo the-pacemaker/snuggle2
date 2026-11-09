@@ -74,8 +74,8 @@ class LobbyController {
   attemptJoin() {
     if (!this.codeInput) return;
     const code = this.codeInput.value.trim().toUpperCase();
-    if (!code || code.length < 4) {
-      this.setError('Enter a valid room code (4–6 characters).');
+    if (!code) {
+      this.setError('Enter a valid room code.');
       return;
     }
     this.setError('');

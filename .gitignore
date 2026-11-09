@@ -6,3 +6,8 @@ server/node_modules/
 *.db-wal
 .env
 colour.txt
+experiment/
+*.log
+server.log
+*.pem
+.impeccable/

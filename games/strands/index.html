@@ -57,17 +57,17 @@ h1{margin:14px 0 0;font:700 32px var(--font-title);letter-spacing:.5px}
 </style></head><body>
 <div id="bar">
   <div class="l">
-    <button class="pill" id="back" onclick="location.href='/games/'" aria-label="Back to games" style="padding:4px 8px">
+    <button class="pill" id="back" onclick="location.href='/games/?code=' + encodeURIComponent(sessionStorage.getItem('snuggle_room_code')||'')" aria-label="Back to games" style="padding:4px 8px">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
       <span>Back</span>
     </button>
     <span id="dot"></span><span id="status">Connecting...</span>
   </div>
-  <button class="pill" id="copy" aria-label="Copy invite link" title="Tap to copy invite link">
+  <button class="pill" id="copy" aria-label="Invite" title="Invite friend">
     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
     </svg>
-    <span id="code" style="letter-spacing:1px">------</span>
+    <span id="code" style="letter-spacing:1px">Invite</span>
     <span id="copied" style="display:none;color:#4ade80">Copied!</span>
   </button>
 </div>
@@ -229,9 +229,10 @@ const urlCode = urlParams.get('code');
 if (urlCode) { sessionStorage.setItem('snuggle_room_code', urlCode.toUpperCase().trim()); }
 const reqCode = sessionStorage.getItem('snuggle_room_code');
 if (!reqCode) { window.location.href = '/'; }
+else if (window === window.top) { window.location.replace(`/games/strands/?code=${encodeURIComponent(reqCode)}`); }
 else if (!urlCode || urlCode.toUpperCase().trim() !== reqCode) { urlParams.set('code', reqCode); window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`); }
 let ws=null,room=null,joining=false,rt=null;
-const raw=o=>{if(ws&&ws.readyState===1)ws.send(JSON.stringify(o))};
+const raw=o=>{if(ws&&ws.readyState===1){if(o&&typeof o==='object'){const sid=(window.SnuggleInvite&&window.SnuggleInvite.getSessionId)?window.SnuggleInvite.getSessionId():null;if(sid&&!o.sessionId)o.sessionId=sid;}ws.send(JSON.stringify(o))}};
 const send=o=>{if(room)raw({...o,from:ID})};
 const sendState=()=>send({type:'game_sync',action:'full_state',state:S});
 const status=(k,t)=>{$('#dot').style.background={connecting:'#f39c12',online:'#2ecc71',offline:'#e74c3c'}[k]||'#f39c12';$('#status').textContent=t};
@@ -244,18 +245,24 @@ function mergeState(s){
   remote=[];cur=cur.filter(i=>!locked(i));
   checkWin();render();
 }
+let peers = 1;
 function onMsg(m){
   switch(m.type){
     case 'room_created':case 'room_joined':{
-      joining=false;room=m.code||room;$('#code').textContent=room;
+      joining=false;room=m.code||room;
       localStorage.setItem('snuggle_last_room_code', room);
       try{const u=new URL(location.href);u.searchParams.delete('action');u.searchParams.set('code',room);history.replaceState(null,'',u)}catch(_){}
-      const c=(m.usersCount||(m.type==='room_joined'?2:1));status(c>1?'online':'connecting',c>1?'Synced with friend!':'Waiting');
+      const c=(m.usersCount||(m.type==='room_joined'?2:1));
+      peers = c > 1 ? 2 : 1;
+      status(c>1?'online':'connecting',c>1?'Synced with friend!':'Waiting');
       if(m.type==='room_joined')send({type:'game_sync',action:'request_state'});
       if(window.snuggleTrack){snuggleTrack(m.type==='room_created'?'room_create':'room_join',{roomCode:room,section:'strands'});snuggleTrack('game_play',{game:'strands',action:m.type==='room_created'?'create':'join',roomCode:room});}
       break}
-    case 'user_joined':status('online','Synced with friend!');sendState();break;
-    case 'user_left':status('connecting','Waiting');remote=[];render();break;
+    case 'room_invite':
+      if(window.SnuggleInvite) window.SnuggleInvite.showInviteModal(m);
+      break;
+    case 'user_joined':peers=2;status('online','Synced with friend!');sendState();break;
+    case 'user_left':peers=1;status('connecting','Waiting');remote=[];render();break;
     case 'game_sync':
       if(m.from===ID)break;
       if(m.action==='request_state')sendState();
@@ -272,17 +279,30 @@ function connect(){
   clearTimeout(rt);
   if(!/^https?:$/.test(location.protocol)){status('offline','Offline');return}
   try{ws=new WebSocket(`${location.protocol==='https:'?'wss:':'ws:'}//${location.host}`)}catch(_){status('offline','Offline');return}
-  ws.onopen=()=>{const c=room||reqCode;if(c){joining=true;status('online','Joining room...');raw({type:'join_room',code:c})}else{status('online','Creating room...');raw({type:'create_room'})}};
+  ws.onopen=()=>{const c=room||reqCode;const from=(window.SnuggleInvite&&window.SnuggleInvite.getSessionId)?window.SnuggleInvite.getSessionId():null;if(c){joining=true;status('online','Joining room...');raw({type:'join_room',code:c,from})}else{status('online','Creating room...');raw({type:'create_room',from})}};
   ws.onmessage=e=>{let m;try{m=JSON.parse(e.data)}catch(_){return}if(m&&typeof m==='object')onMsg(m)};
   ws.onclose=()=>{status('offline','Disconnected — reconnecting...');rt=setTimeout(connect,3000)};
 }
 $('#copy').addEventListener('click',async()=>{
   if(!room)return toast('Room not ready yet');
+  if(peers > 1){
+    const myId=(window.SnuggleInvite&&window.SnuggleInvite.getSessionId)?window.SnuggleInvite.getSessionId():null;
+    if(window.SnuggleInvite&&window.SnuggleInvite.markInviteSent)window.SnuggleInvite.markInviteSent();
+    raw({type:'room_invite', activity:'Strands', url:location.href, from: myId, senderId: myId});
+    toast('Invite sent to friend!');
+    return;
+  }
   const url=location.href;
   if(navigator.share){try{await navigator.share({title:'Join my room',url});return}catch(_){}}
-  try{await navigator.clipboard.writeText(url)}catch(_){const t=document.createElement('textarea');t.value=url;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();document.execCommand('copy');t.remove()}
-  $('#code').style.display='none';$('#copied').style.display='inline';
-  setTimeout(()=>{$('#copied').style.display='none';$('#code').style.display=''},2000);
+  const copySvg = $('#copy svg');
+  if (copySvg) copySvg.style.display = 'none';
+  $('#code').style.display='none';
+  $('#copied').style.display='inline';
+  setTimeout(()=>{
+    $('#copied').style.display='none';
+    $('#code').style.display='';
+    if (copySvg) copySvg.style.display = '';
+  },2000);
 });
 
 // ---- puzzle data (same /api/strands-daily shape as before) ----
@@ -299,4 +319,4 @@ $('#copy').addEventListener('click',async()=>{
   render();connect();
 })();
 })();
-</script><script src="../../js/analytics.js"></script></body></html>
+</script><script src="../../js/snuggle-invite.js"></script><script src="../../js/analytics.js"></script></body></html>

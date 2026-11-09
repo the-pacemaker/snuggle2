@@ -11,6 +11,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/styles.css?v=2">
+  <style>
+    .yt-unmute-pill {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      pointer-events: none;
+      background: rgba(20, 15, 10, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      animation: ytPillFadeIn 0.25s ease-out;
+    }
+    .yt-unmute-pill[hidden] {
+      display: none !important;
+    }
+    @keyframes ytPillFadeIn {
+      from { opacity: 0; transform: translate(-50%, -6px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+  </style>
 </head>
 <body>
   <!-- Toast notification -->
@@ -34,15 +65,13 @@
         type="button"
         class="yt-room-code-pill"
         id="yt-room-code-pill"
-        aria-label="Copy room code"
-        title="Tap to copy"
+        aria-label="Invite"
+        title="Invite friend"
       >
         <svg class="yt-room-code-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-          
-          
         </svg>
-        <span class="yt-room-code-text" id="yt-room-code-text">——————</span>
+        <span class="yt-room-code-text" id="yt-room-code-text">Invite</span>
         <span class="yt-room-code-copied" id="yt-code-copied" aria-live="polite">Copied!</span>
       </button>
     </div>
@@ -58,6 +87,14 @@
       </div>
       <!-- YouTube iframe injected here by room.js -->
       <div id="yt-player"></div>
+      <div class="yt-unmute-pill" id="yt-unmute-pill" hidden aria-live="polite">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+          <line x1="23" y1="9" x2="17" y2="15"/>
+          <line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        <span>Playing muted · Tap video to unmute</span>
+      </div>
     </div>
 
     <!-- ── Now Playing + Prev/Next ── -->
@@ -204,6 +241,7 @@
   </div>
 
   <script src="../js/analytics.js"></script>
+  <script src="../js/snuggle-invite.js"></script>
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="js/room.js"></script>
 </body>

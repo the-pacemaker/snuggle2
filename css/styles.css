@@ -136,6 +136,7 @@ body.loaded {
   max-width: 480px;
   margin: 0 auto;
   padding: var(--space-xl) var(--space-lg);
+  padding-bottom: calc(var(--space-xl) + 64px);
 }
 
 /* --- Header / Branding --- */
@@ -919,22 +920,32 @@ body.loaded {
 
 .yt-room-code-copied {
   position: absolute;
-  inset: 0;
+  inset: -1px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
-  background: rgba(74, 222, 128, 0.15);
+  background: var(--bg-primary, #3c280d);
+  border: 1px solid #4ade80;
   color: #4ade80;
-  font-size: var(--font-size-xs);
+  font-size: 0.85rem;
   font-weight: var(--font-weight-bold);
   opacity: 0;
   transition: opacity var(--duration-fast) var(--ease-smooth);
   pointer-events: none;
+  z-index: 2;
 }
 
 .yt-room-code-copied.visible {
   opacity: 1;
+}
+
+.yt-room-code-pill.copied .yt-room-code-text,
+.yt-room-code-pill.copied .yt-room-code-icon,
+.yt-room-code-pill:has(.yt-room-code-copied.visible) .yt-room-code-text,
+.yt-room-code-pill:has(.yt-room-code-copied.visible) .yt-room-code-icon {
+  opacity: 0;
+  visibility: hidden;
 }
 
 /* ── Player ── */

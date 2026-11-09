@@ -31,7 +31,7 @@
   let reconnectAttempt = 0;
   let reconnectTimer = null;
 
-  const clientId = Math.random().toString(36).slice(2, 10);
+  const clientId = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : Math.random().toString(36).slice(2, 10);
   let remoteState = null;          // last known state of the friend { pos, playing, t }
   let myFile = null;               // { name, size, duration }
   let friendFile = null;
@@ -48,6 +48,8 @@
   let ROOM_CODE = sessionStorage.getItem('snuggle_room_code');
   if (!ROOM_CODE) {
     window.location.href = '/';
+  } else if ((window.self === window.top) && !window.frameElement) {
+    window.location.replace(`/movies/?code=${encodeURIComponent(ROOM_CODE)}`);
   } else if (!urlCode || urlCode.toUpperCase().trim() !== ROOM_CODE) {
     urlParams.set('code', ROOM_CODE);
     window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
@@ -64,6 +66,7 @@
   const nowText = $('mv-now-text');
   const friendChip = $('mv-friend-file');
   const backBtn = $('mv-back');
+  if (backBtn) backBtn.href = `/home?code=${encodeURIComponent(ROOM_CODE)}`;
   const toast = $('yt-toast');
 
   // ── "Expect" queue ────────────────────────────────
@@ -91,7 +94,7 @@
     document.body.classList.add('loaded');
 
 
-    roomCodeText.textContent = ROOM_CODE || '------';
+    roomCodeText.textContent = 'Invite';
 
     initPlayer();
     setupEventListeners();
@@ -192,7 +195,7 @@
 
     ws.addEventListener('open', () => {
       reconnectAttempt = 0;
-      sendWS({ type: 'join_room', code: ROOM_CODE });
+      sendWS({ type: 'join_room', code: ROOM_CODE, from: clientId });
     });
 
     ws.addEventListener('message', (event) => {
@@ -227,7 +230,6 @@
     switch (msg.type) {
       case 'room_created': {
         ROOM_CODE = msg.code;
-        roomCodeText.textContent = ROOM_CODE;
         usersCount = 1;
         updateConnectionStatus();
         // Update URL so it can be refreshed/copied
@@ -239,6 +241,10 @@
         break;
       }
 
+      case 'room_invite':
+        if (window.SnuggleInvite) SnuggleInvite.showInviteModal(msg);
+        break;
+
       case 'room_joined':
         usersCount = msg.usersCount || 1;
         updateConnectionStatus();
@@ -246,18 +252,24 @@
         break;
 
       case 'user_joined':
+        if (msg.from && (msg.from === clientId || msg.sessionId === clientId)) return;
         usersCount = msg.usersCount || (usersCount + 1);
         updateConnectionStatus();
-        showToast('Your friend joined the room 🎉');
+        if (window.self === window.top) {
+          showToast('Your friend joined the room 🎉');
+        }
         shareStateWithFriend();      // so a late joiner gets subtitles, timing and file info
         break;
 
       case 'user_left':
+        if (msg.from && (msg.from === clientId || msg.sessionId === clientId)) return;
         usersCount = msg.usersCount || Math.max(1, usersCount - 1);
         updateConnectionStatus();
         friendFile = null;
         updateFriendChip();
-        showToast('Your friend left the room.');
+        if (window.self === window.top) {
+          showToast('Your friend left the room.');
+        }
         break;
 
       case 'error':
@@ -298,6 +310,10 @@
 
   function sendWS(data) {
     if (ws && ws.readyState === WebSocket.OPEN) {
+      if (data && typeof data === 'object') {
+        if (!data.sessionId) data.sessionId = clientId;
+        if (!data.from) data.from = clientId;
+      }
       ws.send(JSON.stringify(data));
       return true;
     }
@@ -519,14 +535,30 @@
   }
 
   roomCodePill.addEventListener('click', async () => {
+    if (usersCount > 1) {
+      if (window.SnuggleInvite && window.SnuggleInvite.markInviteSent) window.SnuggleInvite.markInviteSent();
+      sendWS({
+        type: 'room_invite',
+        activity: 'Movies',
+        url: window.location.href,
+        from: clientId,
+        senderId: clientId
+      });
+      showToast('Invite sent to friend!');
+      return;
+    }
     const url = window.location.href;
     if (navigator.share) {
       try { await navigator.share({ title: 'Join my room', url }); return; } catch (e) { /* cancelled: fall through to copy */ }
     }
     copyText(url).then(() => {
+      roomCodePill.classList.add('copied');
       codeCopied.classList.add('visible');
-      setTimeout(() => codeCopied.classList.remove('visible'), 2000);
-    }).catch(() => showToast('Could not copy. Room code: ' + ROOM_CODE));
+      setTimeout(() => {
+        codeCopied.classList.remove('visible');
+        roomCodePill.classList.remove('copied');
+      }, 2000);
+    }).catch(() => showToast('Could not copy'));
   });
 
   // ── Toast ─────────────────────────────────────────

@@ -25,6 +25,8 @@ let syncGuardCount = 0;       // Counter-based guard: >0 means suppress re-broad
 let usersCount  = 0;
 let pendingSnapshot = null;
 let pendingLoad     = null;   // Deferred loadQueueItem when player not ready yet
+let isAutoplayMuted = false;  // Remote first video starts muted to allow instant autoplay without clicks
+let hasUserInteracted = false; // Tracks if user has unmuted or interacted with controls
 
 let queue       = [];         // Array of { videoId, title, thumbnail }
 let currentIdx  = -1;         // Currently playing queue index
@@ -44,10 +46,15 @@ if (urlCode) {
 let ROOM_CODE = sessionStorage.getItem('snuggle_room_code');
 if (!ROOM_CODE) {
   window.location.href = '/';
+} else if ((window.self === window.top) && !window.frameElement) {
+  window.location.replace(`/youtube/?code=${encodeURIComponent(ROOM_CODE)}`);
 } else if (!urlCode || urlCode.toUpperCase().trim() !== ROOM_CODE) {
   urlParams.set('code', ROOM_CODE);
   window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
 }
+
+const ytBackBtn = document.getElementById('yt-back');
+if (ytBackBtn) ytBackBtn.href = `/home?code=${encodeURIComponent(ROOM_CODE)}`;
 
 // ── DOM refs ─────────────────────────────────────
 const roomCodeText   = document.getElementById('yt-room-code-text');
@@ -56,6 +63,15 @@ const codeCopied     = document.getElementById('yt-code-copied');
 const statusDot      = document.getElementById('yt-status-dot');
 const statusLabel    = document.getElementById('yt-status-label');
 const playerEmpty    = document.getElementById('yt-player-empty');
+const unmutePill     = document.getElementById('yt-unmute-pill');
+
+function showUnmutePill() {
+  if (unmutePill) unmutePill.hidden = false;
+}
+
+function hideUnmutePill() {
+  if (unmutePill) unmutePill.hidden = true;
+}
 const nowPlayingBar  = document.getElementById('yt-now-playing');
 const nowPlayingLbl  = document.getElementById('yt-now-playing-label');
 const prevBtn        = document.getElementById('yt-prev-btn');
@@ -97,7 +113,7 @@ function isSyncing() {
 document.addEventListener('DOMContentLoaded', () => {
   document.body.classList.add('loaded');
 
-  roomCodeText.textContent = ROOM_CODE || '------';
+  roomCodeText.textContent = 'Invite';
   setupEventListeners();
   connectWS();
   updateApiKeyUI();
@@ -156,16 +172,41 @@ function onPlayerReady() {
     applySnapshot(pendingSnapshot);
     pendingSnapshot = null;
   } else if (pendingLoad) {
+    if (pendingLoad.isRemote && !hasUserInteracted) {
+      isAutoplayMuted = true;
+      if (player.mute) player.mute();
+      showUnmutePill();
+    }
     loadQueueItem(pendingLoad.index, false, pendingLoad.position);
     pendingLoad = null;
   }
 }
 
 function onPlayerStateChange(event) {
+  // Check if user unmuted natively via YouTube controls
+  if (isAutoplayMuted && player && player.isMuted && !player.isMuted()) {
+    isAutoplayMuted = false;
+    hasUserInteracted = true;
+    hideUnmutePill();
+  }
+
+  // If this state change was caused by a sync action from peer, ignore
   if (isSyncing()) return;
 
   const state = event.data;
   const pos   = player.getCurrentTime ? player.getCurrentTime() : 0;
+
+  // If autoplay was muted and the local user tapped the video to unmute,
+  // YouTube pauses on the first tap. Intercept this local tap, unmute, and resume playing.
+  if (isAutoplayMuted && state === YT.PlayerState.PAUSED) {
+    isAutoplayMuted = false;
+    hasUserInteracted = true;
+    hideUnmutePill();
+    enterSyncGuard();
+    if (player.unMute) player.unMute();
+    if (player.playVideo) player.playVideo();
+    return;
+  }
 
   if (state === YT.PlayerState.PLAYING) {
     // Update lastKnownPos so the seek detector doesn't fire on natural play start
@@ -211,6 +252,13 @@ function startSeekPolling() {
     const state = player.getPlayerState();
     if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.PAUSED) return;
 
+    // Check if user unmuted natively via YouTube controls while polling
+    if (isAutoplayMuted && player.isMuted && !player.isMuted()) {
+      isAutoplayMuted = false;
+      hasUserInteracted = true;
+      hideUnmutePill();
+    }
+
     const currentPos = player.getCurrentTime();
     // Expected position: lastKnownPos + elapsed time (for playing) or same (for paused)
     const elapsed = state === YT.PlayerState.PLAYING ? SEEK_POLL_MS / 1000 : 0;
@@ -246,7 +294,8 @@ function connectWS() {
   }
 
   ws.addEventListener('open', () => {
-    sendWS({ type: 'join_room', code: ROOM_CODE });
+    const from = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+    sendWS({ type: 'join_room', code: ROOM_CODE, from });
   });
 
   ws.addEventListener('message', (event) => {
@@ -279,7 +328,6 @@ function handleMessage(msg) {
     case 'room_created':
       ROOM_CODE = msg.code;
       localStorage.setItem('snuggle_last_room_code', ROOM_CODE);
-      roomCodeText.textContent = ROOM_CODE;
       usersCount = 1;
       updateConnectionStatus();
       // Update URL so it can be refreshed/copied
@@ -290,6 +338,10 @@ function handleMessage(msg) {
       if (window.snuggleTrack) snuggleTrack('room_create', { roomCode: ROOM_CODE, section: 'youtube' });
       break;
 
+    case 'room_invite':
+      if (window.SnuggleInvite) SnuggleInvite.showInviteModal(msg);
+      break;
+
     case 'room_joined':
       localStorage.setItem('snuggle_last_room_code', ROOM_CODE);
       usersCount = msg.usersCount || 1;
@@ -297,19 +349,29 @@ function handleMessage(msg) {
       if (window.snuggleTrack) snuggleTrack('room_join', { roomCode: ROOM_CODE, usersCount, section: 'youtube' });
       break;
 
-    case 'user_joined':
+    case 'user_joined': {
+      const myId = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+      if (msg.from && myId && (msg.from === myId || msg.sessionId === myId)) return;
       usersCount = msg.usersCount || (usersCount + 1);
       updateConnectionStatus();
-      showToast('Your friend joined the room 🎉');
+      if (window.self === window.top) {
+        showToast('Your friend joined the room 🎉');
+      }
       // Send a fresh snapshot so the new user gets our latest state
       sendSnapshotToServer();
       break;
+    }
 
-    case 'user_left':
+    case 'user_left': {
+      const myId = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+      if (msg.from && myId && (msg.from === myId || msg.sessionId === myId)) return;
       usersCount = msg.usersCount || Math.max(1, usersCount - 1);
       updateConnectionStatus();
-      showToast('Your friend left the room.');
+      if (window.self === window.top) {
+        showToast('Your friend left the room.');
+      }
       break;
+    }
 
     case 'error':
       console.warn('[Snuggle WS]', msg.message);
@@ -411,6 +473,13 @@ function handleRemoteLoadVideo(msg) {
 
 function sendWS(data) {
   if (ws && ws.readyState === WebSocket.OPEN) {
+    if (data && typeof data === 'object') {
+      const myId = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+      if (myId) {
+        if (!data.sessionId) data.sessionId = myId;
+        if (!data.from) data.from = myId;
+      }
+    }
     ws.send(JSON.stringify(data));
   }
 }
@@ -463,6 +532,11 @@ function applySnapshot(snap) {
         player.cueVideoById({ videoId: video.videoId, startSeconds: pos });
       } else {
         // PLAYING or other state: loadVideoById starts playback
+        if (!hasUserInteracted) {
+          isAutoplayMuted = true;
+          if (player.mute) player.mute();
+          showUnmutePill();
+        }
         player.loadVideoById({ videoId: video.videoId, startSeconds: pos });
       }
     }
@@ -478,6 +552,11 @@ function syncPlay(position) {
     const diff = Math.abs(player.getCurrentTime() - position);
     if (diff > SEEK_THRESHOLD_S) player.seekTo(position, true);
     lastKnownPos = position;
+  }
+  if (!hasUserInteracted && (!player.getPlayerState || player.getPlayerState() !== YT.PlayerState.PLAYING)) {
+    isAutoplayMuted = true;
+    if (player.mute) player.mute();
+    showUnmutePill();
   }
   player.playVideo();
 }
@@ -506,6 +585,9 @@ function addToQueue(video, broadcast = true) {
   renderQueue();
 
   if (broadcast) {
+    hasUserInteracted = true;
+    isAutoplayMuted = false;
+    hideUnmutePill();
     sendWS({ type: 'yt_queue_add', video });
 
     // Auto-load first video only if we are the ones adding it
@@ -552,12 +634,17 @@ function loadQueueItem(index, broadcast = true, position = 0) {
 
   enterSyncGuard();
   if (playerReady) {
+    if (!broadcast && !hasUserInteracted) {
+      isAutoplayMuted = true;
+      if (player.mute) player.mute();
+      showUnmutePill();
+    }
     player.loadVideoById({ videoId: video.videoId, startSeconds: position });
     // Update lastKnownPos so seek detector doesn't false-trigger
     lastKnownPos = position;
   } else {
     // Defer the actual video load until player is ready
-    pendingLoad = { index, position };
+    pendingLoad = { index, position, isRemote: !broadcast };
   }
 
   nowPlayingLbl.innerHTML = `
@@ -598,6 +685,8 @@ function resetPlayer() {
   currentIdx = -1;
   if (playerReady) player.stopVideo();
   playerEmpty.style.display = 'flex';
+  isAutoplayMuted = false;
+  hideUnmutePill();
   nowPlayingLbl.innerHTML = `
     <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
     Nothing playing
@@ -1001,16 +1090,51 @@ function setStatus(state) {
   }
 }
 
-// ── Room Code Copy ────────────────────────────────
+// ── Room Code Copy / Invite ───────────────────────
 roomCodePill.addEventListener('click', async () => {
+  if (usersCount > 1) {
+    const myId = (window.SnuggleInvite && window.SnuggleInvite.getSessionId) ? window.SnuggleInvite.getSessionId() : null;
+    if (window.SnuggleInvite && window.SnuggleInvite.markInviteSent) window.SnuggleInvite.markInviteSent();
+    sendWS({
+      type: 'room_invite',
+      activity: 'YouTube',
+      url: window.location.href,
+      from: myId,
+      senderId: myId
+    });
+    showToast('Invite sent to friend!');
+    return;
+  }
   const url = window.location.href;
   if (navigator.share) {
     try { await navigator.share({ title: 'Join my room', url }); return; } catch(e) {}
   }
-  navigator.clipboard.writeText(url).then(() => {
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(url);
+    copied = true;
+  } catch (e) {
+    try {
+      const t = document.createElement('textarea');
+      t.value = url;
+      t.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(t);
+      t.select();
+      document.execCommand('copy');
+      t.remove();
+      copied = true;
+    } catch (err) {}
+  }
+  if (copied) {
+    roomCodePill.classList.add('copied');
     codeCopied.classList.add('visible');
-    setTimeout(() => codeCopied.classList.remove('visible'), 2000);
-  });
+    setTimeout(() => {
+      codeCopied.classList.remove('visible');
+      roomCodePill.classList.remove('copied');
+    }, 2000);
+  } else {
+    showToast('Could not copy room link');
+  }
 });
 
 // ── Toast ─────────────────────────────────────────
