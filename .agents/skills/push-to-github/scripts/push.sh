@@ -5,10 +5,13 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../" && pwd)"
 cd "$PROJECT_ROOT"
 
-# Resolve token from environment or .env file
-TOKEN="${GITHUB_TOKEN:-}"
-if [[ -z "$TOKEN" && -f ".env" ]]; then
+# Resolve token from project .env first (so project-specific token takes priority), then environment
+TOKEN=""
+if [[ -f ".env" ]]; then
   TOKEN="$(grep -E '^GITHUB_TOKEN=' .env | cut -d '=' -f2- | tr -d ' "\r\n' || true)"
+fi
+if [[ -z "$TOKEN" ]]; then
+  TOKEN="${GITHUB_TOKEN:-}"
 fi
 
 REPO_OWNER="the-pacemaker"
