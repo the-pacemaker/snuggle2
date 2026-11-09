@@ -151,6 +151,14 @@
       const d = e.detail;
       myFile = { name: d.name, size: d.size, duration: d.duration };
       setNowPlaying(d.name || 'Video ready');
+      if (window.snuggleTrack) {
+        snuggleTrack('movie_watch', {
+          fileName: d.name || 'Local Video',
+          duration: Math.round(d.duration || 0),
+          fileSize: d.size || 0,
+          roomCode: ROOM_CODE
+        });
+      }
       if (!d.resumed) {
         sendFileInfo();
         applyRemoteState();      // join whatever the friend is doing right now

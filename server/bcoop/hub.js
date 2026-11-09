@@ -64,6 +64,27 @@ class BattleCityHub {
       slot = 0;
     } else if (room.slots[1] === null) {
       slot = 1;
+    } else if (!conn.isSolo) {
+      // Room is full — but if one of the occupants is a solo-peer bot, preempt it
+      // so a real player can take its place.
+      const soloIdx = [0, 1].find(i => {
+        const st = this.conns.get(room.slots[i]);
+        return st && st.isSolo;
+      });
+      if (soloIdx !== undefined) {
+        const soloConn = room.slots[soloIdx];
+        // Kick the solo peer gracefully
+        this._send(soloConn, { type: 'error', code: 'preempted', message: 'a real player has joined' });
+        soloConn.close(4000, 'preempted by real player');
+        this.conns.delete(soloConn);
+        room.slots[soloIdx] = null;
+        // Let the real player take the freed slot
+        slot = soloIdx;
+      } else {
+        this._send(conn, { type: 'error', code: 'room_full', message: 'this room already has two players' });
+        conn.close(4003, 'room full');
+        return false;
+      }
     } else {
       this._send(conn, { type: 'error', code: 'room_full', message: 'this room already has two players' });
       conn.close(4003, 'room full');
@@ -76,6 +97,7 @@ class BattleCityHub {
     this.conns.set(conn, {
       roomCode,
       slot,
+      isSolo: !!conn.isSolo,
       windowStart: Date.now(),
       msgCount: 0
     });

@@ -488,7 +488,21 @@
     }, delay);
   }
 
+  // Returns true if the site frame (or top document) is currently in a fullscreen state,
+  // including the pseudo-fullscreen class used by games like Battle City.
+  function isFrameFullscreen() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) return true;
+    try {
+      const frameDoc = siteFrame && (siteFrame.contentDocument || siteFrame.contentWindow?.document);
+      if (frameDoc && frameDoc.querySelector('.pseudo-fullscreen, .gp--pseudo')) return true;
+    } catch (_) {}
+    return false;
+  }
+
   function showRibbon(autoHide = true) {
+    // Never pop the ribbon up while a game is in fullscreen
+    if (isFrameFullscreen()) return;
+
     clearTimeout(ribbonHideTimer);
     isRibbonHidden = false;
     if (roomShell) roomShell.classList.remove('ribbon-hidden');
@@ -502,6 +516,9 @@
   }
 
   function wakeRibbon() {
+    // Never pop the ribbon up while a game is in fullscreen
+    if (isFrameFullscreen()) return;
+
     if (isRibbonHidden) {
       showRibbon(true);
     } else {

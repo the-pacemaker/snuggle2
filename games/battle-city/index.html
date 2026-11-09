@@ -2099,7 +2099,14 @@
         if (!peerPresent) {
           peerSlot = null;
         } else {
+          // A peer (real or solo) has joined — broadcast our slot choice
           window.__bc_broadcast_slot?.(chosenSlot);
+          // If a real peer just arrived, remove any lingering solo-peer iframe
+          // (the solo peer will have been preempted by the server already)
+          const soloPeerEl = $('#solo-peer-iframe');
+          if (soloPeerEl) {
+            soloPeerEl.remove();
+          }
         }
         updateSlotUI(chosenSlot);
       });
@@ -2200,7 +2207,8 @@
         if (!gameEl) return;
 
         const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${wsProtocol}//${location.host}/bcoop-signal`;
+        // Solo-peer connections are tagged so the server can preempt them when a real player arrives
+        const wsUrl = `${wsProtocol}//${location.host}/bcoop-signal${isSoloPeer ? '?is_solo=1' : ''}`;
         let iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },

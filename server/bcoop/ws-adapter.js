@@ -41,9 +41,11 @@ function attachBattleCitySignaling(opts = {}) {
     }
 
     wss.handleUpgrade(req, socket, head, (ws) => {
+      const isSolo = url.searchParams.get('is_solo') === '1';
       const conn = {
         send: (s) => ws.send(s),
         close: (code, reason) => ws.close(code, reason),
+        isSolo,
       };
 
       ws.isAlive = true;
