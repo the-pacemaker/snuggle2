@@ -2101,14 +2101,19 @@
         } else {
           // A peer (real or solo) has joined — broadcast our slot choice
           window.__bc_broadcast_slot?.(chosenSlot);
-          // If a real peer just arrived, remove any lingering solo-peer iframe
-          // (the solo peer will have been preempted by the server already)
+        }
+        updateSlotUI(chosenSlot);
+      });
+
+      // When a real player joins, the server preempts the solo-peer iframe,
+      // which sends us a message to cleanly remove it from the DOM.
+      window.addEventListener('message', (e) => {
+        if (e.data?.type === 'bc:solo_preempted') {
           const soloPeerEl = $('#solo-peer-iframe');
           if (soloPeerEl) {
             soloPeerEl.remove();
           }
         }
-        updateSlotUI(chosenSlot);
       });
 
       // On-screen stage corner fullscreen button
@@ -2207,8 +2212,9 @@
         if (!gameEl) return;
 
         const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        // Solo-peer connections are tagged so the server can preempt them when a real player arrives
-        const wsUrl = `${wsProtocol}//${location.host}/bcoop-signal${isSoloPeer ? '?is_solo=1' : ''}`;
+        // Solo-peer connections use dedicated path so server preempts them when a real player arrives
+        const wsPath = isSoloPeer ? '/bcoop-signal-solo' : '/bcoop-signal';
+        const wsUrl = `${wsProtocol}//${location.host}${wsPath}`;
         let iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },

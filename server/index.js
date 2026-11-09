@@ -262,7 +262,7 @@ const coopSignaling = attachSignaling({
 // Attach Battle City WebRTC signaling service
 const bcoopSignaling = attachBattleCitySignaling({
   servers: [httpServer, httpsServer].filter(Boolean),
-  paths: ['/bcoop-signal', '/ws']
+  paths: ['/bcoop-signal', '/bcoop-signal-solo', '/ws']
 });
 
 // Attach Contra WebRTC signaling service

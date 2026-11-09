@@ -95,10 +95,13 @@ if (typeof window !== 'undefined') {
             window.__bc_pending_outgoing_signals = [];
         }
         if (window.__bc_pending_incoming_signals && window.__bc_pending_incoming_signals.length > 0) {
-            for (const item of window.__bc_pending_incoming_signals) {
-                try { item.cb.call(item.target, item.event); } catch (_) {}
-            }
+            const incoming = window.__bc_pending_incoming_signals;
             window.__bc_pending_incoming_signals = [];
+            setTimeout(() => {
+                for (const item of incoming) {
+                    try { item.cb.call(item.target, item.event); } catch (_) {}
+                }
+            }, 30);
         }
     };
 }
@@ -859,8 +862,8 @@ function __wbg_get_imports() {
         __wbg_send_b5bdd806efe4baf6: function() { return handleError(function (arg0, arg1, arg2) {
             const raw = getStringFromWasm0(arg1, arg2);
 
-            // Hold WebRTC offer/answer until both peers have confirmed different slots
-            if (raw.includes('"offer"') || raw.includes('"answer"')) {
+            // Hold WebRTC offer/answer/candidates until both peers have confirmed different slots
+            if (raw.includes('"offer"') || raw.includes('"answer"') || raw.includes('"candidate"') || raw.includes('"ice"')) {
                 if (typeof window !== 'undefined' && !window.__bc_slots_confirmed) {
                     window.__bc_pending_outgoing_signals = window.__bc_pending_outgoing_signals || [];
                     window.__bc_pending_outgoing_signals.push({ ws: arg0, raw });
@@ -1034,7 +1037,13 @@ function __wbg_get_imports() {
                                 window.dispatchEvent(new CustomEvent('bc:peer_presence', { detail: { present: false } }));
                                 window.dispatchEvent(new CustomEvent('bc:peer_slot_choice', { detail: { slot: null } }));
                             }
-                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'offer' || parsed.data.type === 'answer')) {
+                            if (parsed.type === 'error' && parsed.code === 'preempted') {
+                                if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+                                    window.parent.postMessage({ type: 'bc:solo_preempted' }, '*');
+                                }
+                                return;
+                            }
+                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'offer' || parsed.data.type === 'answer' || parsed.data.candidate || parsed.data.type === 'ice')) {
                                 if (!window.__bc_slots_confirmed) {
                                     window.__bc_pending_incoming_signals = window.__bc_pending_incoming_signals || [];
                                     window.__bc_pending_incoming_signals.push({ target: this, event: e, cb: origCb });
@@ -1097,7 +1106,13 @@ function __wbg_get_imports() {
                                 window.dispatchEvent(new CustomEvent('bc:peer_presence', { detail: { present: false } }));
                                 window.dispatchEvent(new CustomEvent('bc:peer_slot_choice', { detail: { slot: null } }));
                             }
-                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'offer' || parsed.data.type === 'answer')) {
+                            if (parsed.type === 'error' && parsed.code === 'preempted') {
+                                if (typeof window !== 'undefined' && window.parent && window.parent !== window) {
+                                    window.parent.postMessage({ type: 'bc:solo_preempted' }, '*');
+                                }
+                                return;
+                            }
+                            if (parsed.type === 'signal' && parsed.data && (parsed.data.type === 'offer' || parsed.data.type === 'answer' || parsed.data.candidate || parsed.data.type === 'ice')) {
                                 if (!window.__bc_slots_confirmed) {
                                     window.__bc_pending_incoming_signals = window.__bc_pending_incoming_signals || [];
                                     window.__bc_pending_incoming_signals.push({ target: this, event: e, cb: origCb });
