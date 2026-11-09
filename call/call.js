@@ -915,7 +915,7 @@
   function setupListeners() {
     ctrlMic.addEventListener('click', toggleMic);
     ctrlCam.addEventListener('click', toggleCamera);
-    ctrlSwitchCam.addEventListener('click', switchCamera);
+    if (ctrlSwitchCam) ctrlSwitchCam.addEventListener('click', switchCamera);
     ctrlPip.addEventListener('click', togglePiP);
     ctrlSwap.addEventListener('click', toggleSwap);
     localContainer.addEventListener('click', toggleSwap);

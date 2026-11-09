@@ -1286,7 +1286,15 @@
     // Fullscreen support
     function isFsActive() {
       const stageContainer = $('#bc-stage-container');
-      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || stageContainer?.classList.contains('pseudo-fullscreen'));
+      const topDoc = (window.top && window.top !== window) ? window.top.document : null;
+      return !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        topDoc?.fullscreenElement ||
+        topDoc?.webkitFullscreenElement ||
+        stageContainer?.classList.contains('pseudo-fullscreen')
+      );
     }
 
     function updateFsUI(active) {
@@ -1307,11 +1315,19 @@
       const container = $('#bc-stage-container') || document.documentElement;
       if (!container) return;
 
+      const topWin = (window.top && window.top !== window) ? window.top : null;
+      const topDoc = topWin?.document;
+
       if (isFsActive()) {
         if (container.classList?.contains('pseudo-fullscreen')) {
           container.classList.remove('pseudo-fullscreen');
         }
-        if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (topDoc?.fullscreenElement || topDoc?.webkitFullscreenElement) {
+          try {
+            if (topDoc.exitFullscreen) await topDoc.exitFullscreen();
+            else if (topDoc.webkitExitFullscreen) await topDoc.webkitExitFullscreen();
+          } catch (_) {}
+        } else if (document.fullscreenElement || document.webkitFullscreenElement) {
           try {
             if (document.exitFullscreen) await document.exitFullscreen();
             else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
@@ -1321,9 +1337,19 @@
         toast('Exited fullscreen');
       } else {
         try {
-          if (container.requestFullscreen) await container.requestFullscreen();
-          else if (container.webkitRequestFullscreen) await container.webkitRequestFullscreen();
-          else container.classList.add('pseudo-fullscreen');
+          if (topDoc?.documentElement?.requestFullscreen) {
+            await topDoc.documentElement.requestFullscreen();
+            container.classList.add('pseudo-fullscreen');
+          } else if (topDoc?.documentElement?.webkitRequestFullscreen) {
+            await topDoc.documentElement.webkitRequestFullscreen();
+            container.classList.add('pseudo-fullscreen');
+          } else if (container.requestFullscreen) {
+            await container.requestFullscreen();
+          } else if (container.webkitRequestFullscreen) {
+            await container.webkitRequestFullscreen();
+          } else {
+            container.classList.add('pseudo-fullscreen');
+          }
           updateFsUI(true);
           toast('Fullscreen mode (Press ESC or F to exit)');
         } catch (_) {
@@ -1337,6 +1363,12 @@
 
     document.addEventListener('fullscreenchange', () => updateFsUI(isFsActive()));
     document.addEventListener('webkitfullscreenchange', () => updateFsUI(isFsActive()));
+    if (window.top && window.top !== window) {
+      try {
+        window.top.document.addEventListener('fullscreenchange', () => updateFsUI(isFsActive()));
+        window.top.document.addEventListener('webkitfullscreenchange', () => updateFsUI(isFsActive()));
+      } catch (_) {}
+    }
 
     // Controls Guide Modal
     function openControlsModal() {

@@ -525,6 +525,12 @@
       const fsChange = () => this._onFullscreenChange();
       this._on(document, 'fullscreenchange', fsChange);
       this._on(document, 'webkitfullscreenchange', fsChange);
+      if (typeof window !== 'undefined' && window.top && window.top !== window) {
+        try {
+          this._on(window.top.document, 'fullscreenchange', fsChange);
+          this._on(window.top.document, 'webkitfullscreenchange', fsChange);
+        } catch (_) {}
+      }
 
       // Wake lock follows playback; re-acquire when the tab comes back
       this._on(document, 'visibilitychange', () => { if (document.visibilityState === 'visible' && !v.paused) this._wake(true); });
@@ -903,10 +909,22 @@
 
     toggleFullscreen() {
       const r = this.$.root;
-      const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      const topWin = (typeof window !== 'undefined' && window.top && window.top !== window) ? window.top : null;
+      const topDoc = topWin?.document;
+      const fsEl = document.fullscreenElement || document.webkitFullscreenElement || topDoc?.fullscreenElement || topDoc?.webkitFullscreenElement;
       if (fsEl || this._pseudoFs) {
-        if (fsEl) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); }
+        if (topDoc?.fullscreenElement || topDoc?.webkitFullscreenElement) {
+          try { (topDoc.exitFullscreen || topDoc.webkitExitFullscreen).call(topDoc); } catch (_) {}
+        } else if (fsEl) {
+          try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (_) {}
+        }
         if (this._pseudoFs) this._setPseudoFs(false);
+        return;
+      }
+      if (topDoc?.documentElement?.requestFullscreen) {
+        topDoc.documentElement.requestFullscreen({ navigationUI: 'hide' })
+          .then(() => this._setPseudoFs(true))
+          .catch(() => this._setPseudoFs(true));
         return;
       }
       const req = r.requestFullscreen || r.webkitRequestFullscreen;
@@ -926,7 +944,14 @@
     }
 
     _onFullscreenChange() {
-      const fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || !!this._pseudoFs;
+      const topDoc = (typeof window !== 'undefined' && window.top && window.top !== window) ? window.top.document : null;
+      const isTopFs = !!(topDoc && (topDoc.fullscreenElement || topDoc.webkitFullscreenElement));
+      if (topDoc && !isTopFs && this._pseudoFs) {
+        this._pseudoFs = false;
+        this.$.root.classList.remove('gp--pseudo');
+        document.documentElement.classList.remove('gp-lock');
+      }
+      const fs = !!(document.fullscreenElement || document.webkitFullscreenElement) || isTopFs || !!this._pseudoFs;
       this.$.root.classList.toggle('gp--fs', fs);
       this.$.btnFs.innerHTML = fs ? ICON.fsExit : ICON.fs;
       try {

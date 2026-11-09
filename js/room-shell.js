@@ -606,6 +606,7 @@
   }
 
   // ── Auto-Hide PiP Bottom Controls ──────────────
+  const PIP_CONTROLS_HIDE_DELAY = 3500;
   let pipControlsHideTimer = null;
   let arePipControlsVisible = true;
 
@@ -616,7 +617,7 @@
     if (autoHide) {
       pipControlsHideTimer = setTimeout(() => {
         hidePipControls();
-      }, 2800);
+      }, PIP_CONTROLS_HIDE_DELAY);
     }
   }
 
@@ -624,6 +625,13 @@
     clearTimeout(pipControlsHideTimer);
     arePipControlsVisible = false;
     snugglePip.classList.add('controls-hidden');
+  }
+
+  function schedulePipControlsHide(delay = PIP_CONTROLS_HIDE_DELAY) {
+    clearTimeout(pipControlsHideTimer);
+    pipControlsHideTimer = setTimeout(() => {
+      hidePipControls();
+    }, delay);
   }
 
   // ── Floating PiP Visibility & State ────────────
@@ -1737,7 +1745,7 @@
     snugglePip.addEventListener('pointerleave', () => {
       if (!isResizing && !isDragging) {
         snugglePip.style.cursor = '';
-        hidePipControls();
+        schedulePipControlsHide(PIP_CONTROLS_HIDE_DELAY);
       }
     });
 
@@ -2023,7 +2031,10 @@
           setTimeout(() => {
             pinchJustEnded = false;
           }, 350);
+          showPipControls(true);
         }
+      } else {
+        showPipControls(true);
       }
     });
 
@@ -2033,6 +2044,7 @@
         snugglePip.classList.remove('is-resizing');
         document.body.classList.remove('is-pip-resizing');
       }
+      showPipControls(true);
     });
 
     snugglePip.addEventListener('pointerdown', onPointerDown);
@@ -2235,6 +2247,33 @@
 
     // Setup Draggable behavior for PiP
     setupDraggablePip();
+
+    // Fullscreen synchronization to keep PiP visible and update stage/ribbon
+    const onFullscreenChange = () => {
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+      if (isFs) {
+        hideRibbon();
+      } else {
+        try {
+          const frameWin = siteFrame && siteFrame.contentWindow;
+          const frameDoc = siteFrame && (siteFrame.contentDocument || frameWin?.document);
+          if (frameDoc) {
+            const pseudoEls = frameDoc.querySelectorAll('.pseudo-fullscreen, .gp--pseudo');
+            pseudoEls.forEach(el => {
+              el.classList.remove('pseudo-fullscreen');
+              el.classList.remove('gp--pseudo');
+            });
+            frameDoc.dispatchEvent(new Event('fullscreenchange'));
+            if (frameWin) frameWin.dispatchEvent(new Event('resize'));
+          }
+        } catch (_) {}
+      }
+      clampAndSetPipPosition(snugglePip.offsetLeft, snugglePip.offsetTop);
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    hookFrameFullscreen();
   }
 
   // ── In-App Section Reload & Keyboard Shortcuts ──
@@ -2338,12 +2377,89 @@
     } catch (_) {}
   }
 
+  // ── Game Fullscreen Coordination ───────────────
+  // Keep video call Picture-in-Picture visible when a game enters fullscreen.
+  // When an element inside the activity frame requests fullscreen, we request
+  // fullscreen on the top-level document (room-shell) and apply pseudo-fullscreen
+  // to the game container inside the iframe. This ensures the PiP window is part
+  // of the fullscreen top-layer rendering context and stays floating over the game.
+  function hookFrameFullscreen() {
+    try {
+      const frameWin = siteFrame && siteFrame.contentWindow;
+      const frameDoc = siteFrame && (siteFrame.contentDocument || frameWin?.document);
+      if (!frameWin || !frameDoc || frameWin.__snuggleFsHooked) return;
+      frameWin.__snuggleFsHooked = true;
+
+      const origElRequestFs = frameWin.Element.prototype.requestFullscreen;
+      const origElWebkitRequestFs = frameWin.Element.prototype.webkitRequestFullscreen;
+      const origDocExitFs = frameDoc.exitFullscreen || frameWin.Document.prototype.exitFullscreen;
+
+      frameWin.Element.prototype.requestFullscreen = async function (options) {
+        try {
+          if (document.documentElement.requestFullscreen) {
+            await document.documentElement.requestFullscreen(options);
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            await document.documentElement.webkitRequestFullscreen(options);
+          }
+          this.classList.add('pseudo-fullscreen');
+          this.dispatchEvent(new Event('fullscreenchange', { bubbles: true }));
+          frameDoc.dispatchEvent(new Event('fullscreenchange'));
+          hideRibbon();
+          return Promise.resolve();
+        } catch (_) {
+          this.classList.add('pseudo-fullscreen');
+          this.dispatchEvent(new Event('fullscreenchange', { bubbles: true }));
+          frameDoc.dispatchEvent(new Event('fullscreenchange'));
+          return Promise.resolve();
+        }
+      };
+
+      if (origElWebkitRequestFs) {
+        frameWin.Element.prototype.webkitRequestFullscreen = frameWin.Element.prototype.requestFullscreen;
+      }
+
+      frameDoc.exitFullscreen = async function () {
+        try {
+          if (document.fullscreenElement || document.webkitFullscreenElement) {
+            if (document.exitFullscreen) await document.exitFullscreen();
+            else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+          }
+        } catch (_) {}
+        const pseudoEls = frameDoc.querySelectorAll('.pseudo-fullscreen, .gp--pseudo');
+        pseudoEls.forEach(el => {
+          el.classList.remove('pseudo-fullscreen');
+          el.classList.remove('gp--pseudo');
+        });
+        frameDoc.dispatchEvent(new Event('fullscreenchange'));
+        return Promise.resolve();
+      };
+
+      if (frameWin.Document && frameWin.Document.prototype) {
+        frameWin.Document.prototype.exitFullscreen = frameDoc.exitFullscreen;
+      }
+
+      try {
+        Object.defineProperty(frameDoc, 'fullscreenElement', {
+          get: () => {
+            const pseudo = frameDoc.querySelector('.pseudo-fullscreen, .gp--pseudo');
+            if (pseudo) return pseudo;
+            return (document.fullscreenElement || document.webkitFullscreenElement) ? frameDoc.body : null;
+          },
+          configurable: true
+        });
+      } catch (_) {}
+    } catch (err) {
+      console.warn('[Snuggle Shell] Could not hook frame fullscreen:', err);
+    }
+  }
+
   function onFrameLoaded() {
     syncUrlFromIframe(false);
     attachKeyHandlerToFrame();
     attachScrollListenersToFrame();
     observeFrameHistory();
     broadcastUserCountToFrame();
+    hookFrameFullscreen();
   }
 
   function onPopState(e) {
