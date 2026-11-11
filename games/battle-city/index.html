@@ -2128,23 +2128,7 @@
         window.__bc_slots_confirmed = true;
         window.__bc_flush_pending_signals?.();
 
-        // 5. If single player, spawn background solo peer iframe to run lockstep
-        if (!peerPresent && !$('#solo-peer-iframe')) {
-          const iframe = document.createElement('iframe');
-          iframe.id = 'solo-peer-iframe';
-          const otherSlot = chosenSlot === 0 ? 1 : 0;
-          iframe.src = `/games/battle-city/?code=${encodeURIComponent(roomCode)}&slot=${otherSlot}&solo_peer=1&direct=1&embedded=1`;
-          iframe.style.position = 'fixed';
-          iframe.style.left = '0px';
-          iframe.style.top = '0px';
-          iframe.style.width = '32px';
-          iframe.style.height = '32px';
-          iframe.style.opacity = '0.01';
-          iframe.style.pointerEvents = 'none';
-          iframe.style.zIndex = '-999';
-          iframe.tabIndex = -1;
-          document.body.appendChild(iframe);
-        }
+        // 5. (Single player now runs locally inside the client; no hidden partner iframe needed.)
 
         // 6. Send NES Start button in chosen mode (1 Player vs 2 Players)
         setTimeout(() => {
@@ -2360,7 +2344,7 @@
 
         const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
         // Solo-peer connections use dedicated path so server preempts them when a real player arrives
-        const wsPath = isSoloPeer ? '/bcoop-signal-solo' : '/bcoop-signal';
+        const wsPath = '/bcoop-signal';
         const wsUrl = `${wsProtocol}//${location.host}${wsPath}`;
         let iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -2401,7 +2385,6 @@
         gameEl.dataset.wsUrl = wsUrl;
         gameEl.dataset.romUrl = './rom/battle-city.nes';
         gameEl.dataset.shareMenu = 'true';
-        gameEl.dataset.inputDelay = '3';
         gameEl.dataset.peerTimeoutMs = '60000';
         gameEl.dataset.iceServers = iceServersJson;
 
@@ -2409,7 +2392,6 @@
         gameEl.setAttribute('data-ws-url', wsUrl);
         gameEl.setAttribute('data-rom-url', './rom/battle-city.nes');
         gameEl.setAttribute('data-share-menu', 'true');
-        gameEl.setAttribute('data-input-delay', '3');
         gameEl.setAttribute('data-peer-timeout-ms', '60000');
         gameEl.setAttribute('data-ice-servers', iceServersJson);
 
