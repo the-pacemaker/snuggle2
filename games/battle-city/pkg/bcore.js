@@ -194,6 +194,15 @@ export class Session {
         }
     }
     /**
+     * Read a byte of console RAM (used to detect which game screen is showing).
+     * @param {number} addr
+     * @returns {number}
+     */
+    peek(addr) {
+        const ret = wasm.session_peek(this.__wbg_ptr, addr);
+        return ret;
+    }
+    /**
      * How many frames we are running ahead of what the peer has confirmed (for the HUD).
      * @returns {number}
      */

@@ -1784,6 +1784,24 @@
           }
         }, { passive: false });
 
+        // Stage-select screen: right half = next stage (A / fire, above), left half = previous stage (B).
+        const onStageSelectScreen = () => typeof window.__bc_phase === 'function' && window.__bc_phase() === 3;
+        const tapPrevStage = () => {
+          dispatchKey('KeyZ', true);
+          setTimeout(() => dispatchKey('KeyZ', false), 70);
+        };
+        const stageTapBlocked = (el) => el.closest('#bc-stage-fs-btn, .bc-center-controls, .bc-pause-overlay, .bc-minimal-box, .bc-modal');
+        stageContainer.addEventListener('touchstart', (e) => {
+          if (!isPlaying || !onStageSelectScreen() || stageTapBlocked(e.target)) return;
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (!isRightHalf(e.changedTouches[i].clientX)) { tapPrevStage(); break; }
+          }
+        }, { passive: true });
+        stageContainer.addEventListener('mousedown', (e) => {
+          if (!isPlaying || !onStageSelectScreen() || stageTapBlocked(e.target)) return;
+          if (!isRightHalf(e.clientX)) tapPrevStage();
+        });
+
         stageContainer.addEventListener('touchend', (e) => {
           for (let i = 0; i < e.changedTouches.length; i++) {
             const t = e.changedTouches[i];
@@ -2113,7 +2131,7 @@
         toast(`Selected ${newSlot === 0 ? 'Player 1 (Yellow Tank)' : 'Player 2 (Green Tank)'}`);
       }
 
-      function startGameSession() {
+      function startGameSession(opts = {}) {
         if (isPlaying) return;
         isPlaying = true;
 
@@ -2124,31 +2142,40 @@
         const controlsEl = $('#bc-mobile-controls');
         if (controlsEl) controlsEl.style.display = 'flex';
 
+        // 5. (Single player now runs locally inside the client; no hidden partner iframe needed.)
+
+        // 6. Pick 1 Player / 2 Players on the NES title screen and press Start.
+        //    The game menu only reads controller 1, so in an online game only the Player 1 tank's
+        //    device sends these keys. They are sent once the emulator reports it has started
+        //    (the title screen ignores input during its intro), not on a fixed timer.
+        if (!opts.inProgress) {
+          const gameHost = document.getElementById('game');
+          const sendTitleKeys = () => {
+            if (peerPresent && chosenSlot !== 0) return;
+            if (chosenMode === '2p') {
+              dispatchKey('ShiftLeft', true);
+              setTimeout(() => {
+                dispatchKey('ShiftLeft', false);
+                setTimeout(() => {
+                  dispatchKey('Enter', true);
+                  setTimeout(() => dispatchKey('Enter', false), 80);
+                }, 200);
+              }, 120);
+            } else {
+              dispatchKey('Enter', true);
+              setTimeout(() => dispatchKey('Enter', false), 80);
+            }
+          };
+          const onStarted = () => {
+            gameHost?.removeEventListener('bcoop:started', onStarted);
+            setTimeout(sendTitleKeys, 500);
+          };
+          gameHost?.addEventListener('bcoop:started', onStarted);
+        }
+
         // 3. Confirm slots and flush signals
         window.__bc_slots_confirmed = true;
         window.__bc_flush_pending_signals?.();
-
-        // 5. (Single player now runs locally inside the client; no hidden partner iframe needed.)
-
-        // 6. Send NES Start button in chosen mode (1 Player vs 2 Players)
-        setTimeout(() => {
-          if (chosenMode === '2p') {
-            // Press Select (ShiftLeft) to move cursor to 2 PLAYERS
-            dispatchKey('ShiftLeft', true);
-            setTimeout(() => {
-              dispatchKey('ShiftLeft', false);
-              setTimeout(() => {
-                // Press Start (Enter) to begin 2-Player mode
-                dispatchKey('Enter', true);
-                setTimeout(() => dispatchKey('Enter', false), 50);
-              }, 150);
-            }, 100);
-          } else {
-            // 1 Player mode (cursor is already at 1 PLAYER)
-            dispatchKey('Enter', true);
-            setTimeout(() => dispatchKey('Enter', false), 50);
-          }
-        }, 1200);
 
         setStatus('online', 'Playing');
         toast(chosenMode === '2p' ? '2-Player Co-op started! Defend the eagle base together!' : 'Game started! Defend the eagle base!');
@@ -2220,7 +2247,7 @@
           switchMode(e.detail.mode, false);
         }
         if (!isPlaying) {
-          startGameSession();
+          startGameSession({ inProgress: !!e.detail?.inProgress });
         }
       });
 

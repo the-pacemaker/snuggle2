@@ -61,7 +61,7 @@ export function mount(elementId) {
   const canvas = document.createElement('canvas'); canvas.className = 'bcoop-canvas';
   canvas.width = 256; canvas.height = 240; canvas.tabIndex = 0;
   canvas.setAttribute('aria-label', 'Battle City game screen');
-  const g2d = canvas.getContext('2d', { alpha: false, desynchronized: true });
+  const g2d = canvas.getContext('2d', { alpha: false });
   g2d.fillStyle = '#000'; g2d.fillRect(0, 0, 256, 240);
   const overlay = document.createElement('div'); overlay.className = 'bcoop-overlay';
   overlay.setAttribute('role', 'status'); overlay.setAttribute('aria-live', 'polite');
@@ -84,7 +84,7 @@ export function mount(elementId) {
   // ---------- shared state / page hooks ----------
   const S = (window.__bc_state = window.__bc_state || {});
   S.isLocalInactive = false; S.isPeerPaused = false; S.peerPresent = false; S.pauseChannel = null;
-  let resyncCount = 0, noRetry = false, stopped = false, status = 'loading', session = null, rom = null;
+  let booting = false, wsDelay = 1500, softTimer = 0, unstableShown = false, resyncCount = 0, noRetry = false, stopped = false, status = 'loading', session = null, rom = null;
   let ws = null, serverSlot = null, pc = null, chControl = null, chInput = null, chPause = null;
   let channelsOpen = false, begun = false, running = false, online = false, resyncPending = 0;
   let rttMs = 60, lastStallAt = 0, stalledSince = 0, lastStatusSent = '';
@@ -103,6 +103,9 @@ export function mount(elementId) {
   const fire = (name, detail) => window.dispatchEvent(new CustomEvent(name, { detail }));
   const paused = () => !!(S.isLocalInactive || (online && S.isPeerPaused));
   window.__bc_is_game_paused = paused;
+  // 3 while the "STAGE nn" selection screen is showing, else 0. Identified by three RAM bytes that only
+  // hold these values on that screen (verified against title, stage-select and in-game states).
+  window.__bc_phase = () => (session && session.peek(0x00) === 0xC0 && session.peek(0x0C) === 0x0E && session.peek(0x57) === 0x10 ? 3 : 0);
   window.__bc_resume_raf = () => { lastT = nowMs(); if (!raf && !stopped) raf = requestAnimationFrame(frameLoop); };
 
   // ---------- audio: jitter-buffered scheduling ----------
@@ -153,26 +156,34 @@ export function mount(elementId) {
     ws = new WebSocket(`${wsUrl}${wsUrl.includes('?') ? '&' : '?'}room=${encodeURIComponent(room)}`);
     S.ws = ws;
     ws.onmessage = (e) => { let m; try { m = JSON.parse(e.data); } catch (_) { return; } onServerMsg(m); };
-    ws.onclose = () => { if (!stopped && !noRetry) { if (!channelsOpen) emit('failed'); setTimeout(connectWs, 1500); } };
+    ws.onopen = () => { wsDelay = 1500; };
+    // The signaling socket is only needed to set up the connection. If it drops (very common on phones)
+    // the game must carry on over the direct link, so reconnect quietly in the background.
+    ws.onclose = () => { if (stopped || noRetry) return; setTimeout(connectWs, wsDelay); wsDelay = Math.min(10000, Math.round(wsDelay * 1.6)); };
     ws.onerror = () => {};
   }
 
   function onServerMsg(m) {
     if (m.type === 'welcome') {
-      serverSlot = m.slot; S.localSlot = localSlot(); S.peerPresent = !!m.peer_present;
+      if (!pc) serverSlot = m.slot; // never change roles mid-game
+      if (channelsOpen) return;     // signaling reconnect while already connected peer-to-peer
+      S.localSlot = localSlot(); S.peerPresent = !!m.peer_present;
       fire('bc:peer_presence', { present: !!m.peer_present });
       if (m.peer_present) { window.__bc_broadcast_slot(localSlot()); startPeerConnection(); }
-      emit(begun ? status : 'waiting-for-peer');
+      if (!running && !booting) emit(begun ? status : 'waiting-for-peer');
     } else if (m.type === 'peer_joined') {
+      if (channelsOpen) return;
       S.peerPresent = true; fire('bc:peer_presence', { present: true });
       window.__bc_broadcast_slot(localSlot()); startPeerConnection();
     } else if (m.type === 'peer_left') {
-      S.peerPresent = false; window.__bc_peer_selected_slot = null; window.__bc_slots_confirmed = false;
-      fire('bc:peer_presence', { present: false }); fire('bc:peer_slot_choice', { slot: null });
-      teardownPeer(); begun = false; running = false; online = false;
-      say('Your partner left the game.'); emit('peer-left');
+      // If our direct link is alive the partner is still here (only their signaling socket dropped).
+      if (channelsOpen) return;
+      peerGone('Your partner left the game.');
     } else if (m.type === 'error') {
-      if (m.code === 'room_full') { say('This room already has two players.', true); noRetry = true; emit('failed'); }
+      if (m.code === 'room_full') {
+        if (pc || channelsOpen || running) return; // our own stale socket; the game is unaffected
+        say('This room already has two players.', true); noRetry = true; emit('failed');
+      }
       else if (m.code !== 'preempted') console.warn('signal error', m);
     } else if (m.type === 'signal' && m.data) {
       const d = m.data, k = d.type || d.kind;
@@ -201,15 +212,17 @@ export function mount(elementId) {
       channelsOpen = true; onChannelsOpen();
     };
     chControl.onopen = maybeOpen; chInput.onopen = maybeOpen;
-    const onClosed = () => { if (channelsOpen && !stopped) { channelsOpen = false; if (running) { say('Lost contact with the other player.', true); emit('failed'); } } };
-    chControl.onclose = onClosed;
+    chControl.onclose = () => { if (!stopped && channelsOpen) { channelsOpen = false; peerGone('The other player disconnected.'); } };
     pc.onicecandidate = (ev) => { if (ev.candidate) wsSend({ type: 'signal', data: { kind: 'ice', candidate: ev.candidate.candidate, sdpMid: ev.candidate.sdpMid, sdpMLineIndex: ev.candidate.sdpMLineIndex } }); };
     let discTimer = 0;
     pc.oniceconnectionstatechange = () => {
       const s = pc?.iceConnectionState;
-      if (s === 'disconnected') { clearTimeout(discTimer); discTimer = setTimeout(() => { if (pc?.iceConnectionState !== 'connected' && pc?.iceConnectionState !== 'completed') { say('Lost contact with the other player.', true); emit('failed'); } }, peerTimeoutMs); }
-      else if (s === 'failed') { try { pc.restartIce(); } catch (_) {} }
-      else clearTimeout(discTimer);
+      if (s === 'disconnected') {
+        clearTimeout(discTimer); clearTimeout(softTimer);
+        softTimer = setTimeout(() => { if (running) { unstableShown = true; say('Connection unstable… trying to recover'); } }, 2500);
+        discTimer = setTimeout(() => { if (pc?.iceConnectionState !== 'connected' && pc?.iceConnectionState !== 'completed') peerGone('Lost contact with the other player.'); }, peerTimeoutMs);
+      } else if (s === 'failed') { try { pc.restartIce(); } catch (_) {} }
+      else { clearTimeout(discTimer); clearTimeout(softTimer); if (unstableShown) { unstableShown = false; say(''); } }
     };
     if (!begun) emit('negotiating');
     if (isHost()) makeOffer();
@@ -236,7 +249,15 @@ export function mount(elementId) {
       }
     } catch (e) { console.warn('rtc signal error', e); }
   }
+  function peerGone(msg) {
+    S.peerPresent = false; window.__bc_peer_selected_slot = null; window.__bc_slots_confirmed = false;
+    fire('bc:peer_presence', { present: false }); fire('bc:peer_slot_choice', { slot: null });
+    teardownPeer(); booting = false; begun = false; running = false; online = false;
+    say(msg || 'Your partner left the game.'); emit('peer-left');
+  }
   function teardownPeer() {
+    clearTimeout(softTimer);
+    for (const ch of [chControl, chInput, chPause]) if (ch) { ch.onclose = null; ch.onopen = null; ch.onmessage = null; }
     channelsOpen = false; clearInterval(pingTimer); joinSent = false;
     try { chControl?.close(); chInput?.close(); chPause?.close(); pc?.close(); } catch (_) {}
     pc = chControl = chInput = chPause = null; S.pauseChannel = null; pendingSignals = []; resyncPending = 0;
@@ -294,7 +315,7 @@ export function mount(elementId) {
       session.set_local_slot(localSlot()); session.set_input_delay(currentDelay());
       session.import_state(r.buf, false); session.set_solo(false);
       session.set_rtt_ms(rttMs);
-      fire('bc:peer_start_game', {}); begun = true; running = true; online = true; startLoop(); say('');
+      fire('bc:peer_start_game', { inProgress: true }); begun = true; running = true; online = true; startLoop(); say(''); emit('playing');
     } catch (e) { console.warn('state import failed', e); emit('failed'); }
   }
 
@@ -305,13 +326,31 @@ export function mount(elementId) {
     session.set_max_pred(Math.max(8, Math.min(18, Math.ceil(rttMs / FRAME_MS) + 4)));
     session.set_rtt_ms(rttMs);
   }
+  // The title screen ignores input for its first ~280 frames (intro animation). Both players simulate
+  // those frames offline in the background (it is deterministic, no network needed), then go online at
+  // the same frame with the menu ready to accept Select/Start.
+  const INTRO_FRAMES = 300;
+  function bootGame(solo) {
+    booting = true; running = false; online = false; say('Starting…');
+    ensureSession(); session.reset(true, 0); session.set_local_pad(0);
+    let n = 0;
+    const slice = () => {
+      if (stopped || !booting) return;
+      for (let i = 0; i < 25 && n < INTRO_FRAMES; i++, n++) session.tick();
+      if (n < INTRO_FRAMES) { setTimeout(slice, 0); return; }
+      booting = false;
+      if (!solo) { session.set_input_delay(currentDelay()); session.set_rtt_ms(rttMs); session.go_online(); }
+      online = !solo; running = true; audioCursor = 0; draw(); say(''); startLoop(); emit('playing');
+      host.dispatchEvent(new CustomEvent('bcoop:started', { detail: { online: !solo, slot: localSlot() } }));
+    };
+    setTimeout(slice, 0);
+  }
   function beginOnline(asHost) {
-    ensureSession();
-    session.reset(false, currentDelay()); online = true; running = true; audioCursor = 0; say(''); startLoop(); emit('playing');
     if (asHost) sendCtl(T_START, new Uint8Array([localSlot()]));
+    bootGame(false);
   }
   function onBegin() {
-    if (!session || begun && running) return;
+    if (!session || (begun && (running || booting))) return;
     begun = true;
     if (channelsOpen) {
       if (isHost()) beginOnline(true);
@@ -319,7 +358,7 @@ export function mount(elementId) {
     } else if (S.peerPresent) {
       say('Connecting to your partner…'); emit('negotiating');   // channels still opening; onChannelsOpen continues
     } else {
-      ensureSession(); session.reset(true, 0); online = false; running = true; audioCursor = 0; say(''); startLoop(); emit('playing');
+      bootGame(true);
     }
   }
   function onChannelsOpen() {
